@@ -4,7 +4,7 @@ To get the PCORI R package published on CRAN, we need to complete the following 
 
 - Write the R functions and document the package using `roxygen` or similar.
 
-- Have a testing framework running with `tinytest` or `testthat` (I prefer the former.)
+- Have a testing framework running with [`tinytest`](https://github.com/markvanderloo/tinytest) or [`testthat`](https://testthat.r-lib.org/) (I prefer the former.)
 
 - Have `x` number of vignettes written with `rmarkdown` or `quarto` (not sure about the latter).
 
