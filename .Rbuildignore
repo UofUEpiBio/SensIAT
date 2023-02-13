@@ -1,2 +1,4 @@
 Makefile
 \.github
+^.*\.Rproj$
+^\.Rproj\.user$
