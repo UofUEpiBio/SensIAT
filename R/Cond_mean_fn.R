@@ -12,7 +12,9 @@
 #' @param alpha sensitivity
 #'
 #' @return
-#' a list containing $\frac{E[ Y exp(\alpha Y) ]}{E[ exp(\alpha Y]}$ and $E[ exp(\alpha Y) ]$
+#' a list containing
+#' \eqn{\frac{E[ Y exp(\alpha Y) ]}{E[ exp(\alpha Y)]}}{(E[ Y*exp(\alpha Y) ]/(E[exp(\alpha Y)])}
+#' and $E[ exp(\alpha Y) ]$
 #' for Y a (truncated version of) a negative binomial having mean `mu` and
 #' size `theta`.
 #'

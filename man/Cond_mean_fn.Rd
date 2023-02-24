@@ -14,7 +14,9 @@ Cond_mean_fn(mu, theta, alpha)
 \item{alpha}{sensitivity}
 }
 \value{
-a list containing $\frac{E\link[= Y exp(\\alpha Y) ]{ Y exp(\alpha Y) }}{E\link[= exp(\\alpha Y]{ exp(\alpha Y}}$ and $E\link[= exp(\\alpha Y) ]{ exp(\alpha Y) }$
+a list containing
+\eqn{\frac{E[ Y exp(\alpha Y) ]}{E[ exp(\alpha Y)]}}{(E[ Y*exp(\alpha Y) ]/(E[exp(\alpha Y)])}
+and $E\link[= exp(\\alpha Y) ]{ exp(\alpha Y) }$
 for Y a (truncated version of) a negative binomial having mean \code{mu} and
 size \code{theta}.
 }
