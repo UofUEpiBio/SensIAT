@@ -39,6 +39,20 @@
 #' @export
 #'
 #' @examples
+#' data(ARC_data, package='pcoriRPackage')
+#' ARC_formatted <- formatting_fn(
+#'     df              = ARC_data,
+#'     id_var          = "elig_pid",
+#'     treatment_var   = "Trt",
+#'     outcome_var     = "Asthma_control",
+#'     visitnumber_var = "Visit_number",
+#'     time_var        = "time",
+#'     V               = 5,
+#'     knots           = c(59,59,59,59,260,461,461,461,461),
+#'     spline_seq      = 60:460,
+#'     last_day = 830
+#' )
+
 formatting_fn <- function(
         df,
         id_var,
@@ -49,7 +63,7 @@ formatting_fn <- function(
         spline_seq,
         V,
         knots,
-        p,
+        p = length(knots)-4,
         last_day = max(df[[time_var]], na.rm = TRUE)
 ){
 
@@ -119,7 +133,8 @@ formatting_fn <- function(
     B_t_matrix <- matrix(
         sapply(
             spline_seq,
-            spline_fn
+            spline_fn,
+            knots = knots
         ),
         byrow = FALSE,
         nrow  = p
@@ -132,10 +147,9 @@ formatting_fn <- function(
     Weights_term2 <- V_inverse %*% B_t_matrix
 
     structure(
-        list(
-            Baseline_df,
-            Visits_df,
-            Survival_df
+        list(BaseLine = Baseline_df,
+             Visits   = Visits_df,
+             Survival = Survival_df
         ),
         spline_seq    = spline_seq,
         End           = last_day,
