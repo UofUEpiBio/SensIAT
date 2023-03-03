@@ -14,7 +14,7 @@ formatting_fn(
   spline_seq,
   V,
   knots,
-  p,
+  p = length(knots) - 4,
   last_day = max(df[[time_var]], na.rm = TRUE)
 )
 }
@@ -64,4 +64,20 @@ applying \code{spline_fn} to \code{spline_seq};
 }
 \description{
 This performs additional formatting on the cleaned ARC data.
+}
+\examples{
+data(ARC_data, package='pcoriRPackage')
+ARC_formatted <- formatting_fn(
+    df              = ARC_data,
+    id_var          = "elig_pid",
+    treatment_var   = "Trt",
+    outcome_var     = "Asthma_control",
+    visitnumber_var = "Visit_number",
+    time_var        = "time",
+    V               = 5,
+    knots           = c(59,59,59,59,260,461,461,461,461),
+    spline_seq      = 60:460,
+    last_day = 830
+)
+glimpse(ARC_formatted)
 }
