@@ -52,7 +52,7 @@
 #'     spline_seq      = 60:460,
 #'     last_day = 830
 #' )
-
+#' glimpse(ARC_formatted)
 formatting_fn <- function(
         df,
         id_var,
@@ -72,12 +72,22 @@ formatting_fn <- function(
     K  <- dim(df)[1]
 
     # Lagging
-    Prev_outcome <- c(NA_real_, df[[outcome_var]][-1])
-    Prev_time    <- c(NA_real_, df[[time_var]][-1])
+    Prev_outcome=rep(0,K)
+    Prev_time=rep(0,K)
 
-    # Correcting for not matching
-    Prev_outcome[ df[[visitnumber_var]] == 0] <- NA_real_
-    Prev_time[ df[[visitnumber_var]] == 0]    <- NA_real_
+    for(i in 1:K){
+
+        if(df$Visit_number[i]==0){Prev_outcome[i]=NA}
+        if(df$Visit_number[i] !=0){Prev_outcome[i]=df$Asthma_control[i-1]}
+
+    }
+
+    for(i in 1:K){
+
+        if(df$Visit_number[i]==0){Prev_time[i]=NA}
+        if(df$Visit_number[i] !=0){Prev_time[i]=df$time[i-1]}
+
+    }
 
     df$Prev_outcome <- Prev_outcome
     df$Prev_time    <- Prev_time
