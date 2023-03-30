@@ -1,6 +1,6 @@
 #' Construct Intensity model
 #'
-#' @param survival_data The Survival formatted data limited to the treatment group.
+#' @param survival.data The Survival formatted data limited to the treatment group.
 #'                      Must include named components `time`, `Event`, `Prev_time`,
 #'                      `Prev_outcome`, and `Visit_number`
 #' @param id.var The patient identifier variable in `survival_data`
@@ -23,22 +23,23 @@
 #'     spline_seq      = 60:460,
 #'     last_day = 830
 #' )
-#' survival_data <- ARC_formatted$Survival |> filter(Trt == "home_visits")
+#' survival.data <- ARC_formatted$Survival |> filter(Trt == "home_visits")
 #' intensity <- construct_intensity_model(survival_data)
 #' glimpse(intensity)
 construct_intensity_model <-
 function(
-    survival_data,
-    id.var = names(survival_data)[[1]]
+    survival.data,
+    id.var = names(survival.data)[[1]]
 ){
     AG_model <-
-        coxph( Surv(Prev_time,time,Event)~Prev_outcome+strata(Visit_number),
-               id = survival_data[[id.var]],
-               data = survival_data)
+        coxph(
+            Surv(Prev_time,time,Event)~Prev_outcome+strata(Visit_number),
+               id = survival.data[[id.var]],
+               data = survival.data)
     AG_surv <- survfit(AG_model,newdata=data.frame(Prev_outcome=0))
     strata <- AG_surv$strata
 
-    End <- max(survival_data$time, na.rm = TRUE)
+    End <- max(survival.data$time, na.rm = TRUE)
 
 
     v1 <- strata[1]
