@@ -157,7 +157,7 @@ formatting_fn <- function(
     Weights_term2 <- V_inverse %*% B_t_matrix
 
     structure(
-        list(BaseLine = Baseline_df,
+        list(Baseline = Baseline_df,
              Visits   = Visits_df,
              Survival = Survival_df
         ),
