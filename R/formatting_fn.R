@@ -109,7 +109,7 @@ formatting_fn <- function(
 
     # [2022-12-19] George Seems to be completing the number of observations.
     less_than_V <- as.integer(names(which(
-        table(ARC_data[[ id_var ]]) < V
+        table(Survival_df[[ id_var ]]) < V
     )))
 
     for(h in less_than_V){
@@ -135,6 +135,7 @@ formatting_fn <- function(
         Survival_df <- rbind(Survival_df, temp_df)
 
     }
+    less_than_V
 
     Survival_df <- Survival_df[order(Survival_df[[ id_var ]]),]
     Survival_df <- subset(Survival_df, Survival_df[[ visitnumber_var ]] != 0)
