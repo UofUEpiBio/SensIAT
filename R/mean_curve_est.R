@@ -3,6 +3,27 @@
 
 
 
+#' Title
+#'
+#' @param data
+#' @param patient_id_var
+#' @param treatment
+#' @param spline_seq
+#' @param Knots
+#' @param spline_fn
+#' @param ...
+#' @param End
+#' @param Alpha_seq
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' estimates <-
+#'     estimate_mean_curves(
+#'         ARC_data, elig_pid, Trt='home_visits',
+#'
+#'     )
 estimate_mean_curves <-
     function(
     data,
@@ -68,6 +89,10 @@ function(
         # baseline, survival, visits,
         # patient_id_var,
         # B_t_matrix, spline_seq,
+        target = list(
+            time = spline_seq,
+            B_t = B_t_matrix
+        ),
         ...,
         do.var = TRUE
         ) {
@@ -290,12 +315,7 @@ function(
     # }
 
 
-    purrr::map( Alpha_seq, estimate_curve_for_one_alpha
-              # , baseline = baseline, survival = survival, visits = Visits_df
-              # , patient_id_var = patient_id_var
-              # , B_t_matrix = B_t_matrix
-              # , spline_seq = spline_seq
-              , ...)
+    purrr::map( Alpha_seq, estimate_curve_for_one_alpha, ...)
 }
 if(FALSE){#@Testing
     data <- ARC_data |>
@@ -333,6 +353,12 @@ if(FALSE){#@Testing
         Alpha_seq = c(-0.6,-0.3,0,0.3,0.6),
         Cond_mean_fn = Cond_mean_fn
     )
+
+    dplyr::bind_rows(df) |>
+        select(alpha, mean_curve) |>
+        tidyr::unnest(mean_curve) |>
+        ggplot2::qplot(data=_, ggplot2::aes(x=time, y=mean, col=alpha), geom='line')
+
 }
 if(F){
     knots <- c(59,59,59,59,260,461,461,461,461)
@@ -356,6 +382,12 @@ if(F){
     trt.expr <- rlang::expr(Trt == "home_visits")
 
     B_t_matrix <- matrix(sapply(spline_seq, spline_fn, knots),byrow=FALSE,nrow=length(knots)-4)
+
+
+
+    mean_curve_ests(
+        data$Baseline,
+        data$Visits)
 
     result <- estimate_curve_for_one_alpha(
         alpha = 0

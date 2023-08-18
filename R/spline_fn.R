@@ -3,7 +3,7 @@
 
 #' Compute Spline Basis
 #'
-#' Computes the cubis spline basis \eqn{B(t)=(B_1(t), \dots, B_p(t))}
+#' Computes the cubic spline basis \eqn{B(t)=(B_1(t), \dots, B_p(t))}
 #' for a given day, `t`, using a given set of knots.
 #'
 #' @param t time
