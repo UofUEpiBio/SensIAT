@@ -14,8 +14,8 @@
 #'
 #' @return List with elements
 #'
-#'   * ``
-#'   * ``
+#'   * `E(y)` and
+#'   * `E(exp(alpha*y))`
 #'
 #' @export
 #'
@@ -42,8 +42,8 @@ function(alpha, X, Y, x, beta, bandwidth){
     E_Y_past <- E_Yexp_alphaY/E_exp_alphaY
 
     return(list(
-        E_Y_past,
-        E_exp_alphaY
+        'E(y)' = E_Y_past,
+        'E(exp(alpha*y))' = E_exp_alphaY
     ))
 
 }
