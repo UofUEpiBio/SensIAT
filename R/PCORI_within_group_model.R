@@ -28,133 +28,228 @@
 #'
 #' @examples
 #'
-#' fitted.trt <-
-#'     fit_within_group_model(
+#' fitted.trt.nb <-
+#'     fit_PCORI_within_group_model(
 #'         group.data = filter(ARC_data, Trt=='home_visits'),
+#'         id.var = elig_pid,
+#'         outcome.var = Asthma_control,
+#'         time.var = time,
+#'         intensity.bandwidth = 30,
+#'         End = 830,
 #'         outcome_modeler = glm.nb
 #'     )
 #'
 #' fitted.trt <-
-#'     fit_within_group_model(
+#'     fit_PCORI_within_group_model(
 #'         group.data = filter(ARC_data, Trt=='home_visits'),
-#'         outcome_modeler = pcori_sim_outcome_modeler  #< not yet defined.
+#'         outcome_modeler = PCORI_sim_outcome_modeler,
+#'         id.var = elig_pid,
+#'         outcome.var = Asthma_control,
+#'         time.var = time,
+#'         intensity.bandwidth = 30,
+#'         End = 830
 #'     )
 #'
 fit_PCORI_within_group_model <- function(
         group.data,
         outcome_modeler,
-        End = max(group.data$time),
+        id.var,
+        outcome.var,
+        time.var,
+        intensity.covariates = ~1,
+        intensity.bandwidth,
+        outcome.covariates = ~-1,
+        End = max({{time.var}}, na.rm = TRUE) + 1,
         ...
 ){
+    id.var <- rlang::ensym(id.var)
+    outcome.var <- rlang::ensym(outcome.var)
+    time.var <- rlang::ensym(time.var)
     outcome_modeler <- match.fun(outcome_modeler)
+    End <- rlang::eval_tidy({{End}}, data = group.data, env =parent.frame())
+
     # For example, if we want to fit models for the treatment group
     # Then the group.data should includes parameter "End"
     # Dataframe: "data_baseline_hv", "data_visits_hv", "data_survival_hv"
 
     group.data2 <- filter(group.data, time <= End)
 
-    data_formatted <- formatting_fn(df = group.data2, last_day = End)
-
-    data_baseline_hv <- data_formatted[[1]]
+    data_formatted <- formatting_fn(df = group.data2,
+         id_var          = "elig_pid",
+         treatment_var   = "Trt",
+         outcome_var     = "Asthma_control",
+         visitnumber_var = "Visit_number",
+         time_var        = "time",
+         V               = 5,
+         knots           = c(59,59,59,59,260,461,461,461,461),
+         spline_seq      = 60:460,
+         last_day = 830
+     )
+    # data_baseline_hv <- data_formatted[[1]]
     data_visits_hv <- data_formatted[[2]]
-    data_survival_hv <- data_formatted[[3]]
+    # data_survival_hv <- data_formatted[[3]]
 
-    N_hv <- dim(data_baseline_hv)[1]
-    u_hv <- unique(data_survival_hv$elig_pid)
+    u_hv <- group.data2 |> select(!!id.var) |> dplyr::distinct() |> pull()
+    N <- pull(dplyr::summarize(group.data2, n_distinct(!!id.var)))
+    # N <- dim(data_baseline_hv)[1]
 
     ###########################   Model 1: Intensity model  ######################
 
     # Andrew [@halpo]: the user can only change this part, "Prev_outcome+strata(Visit_number)"
 
     ######   Andersen-Gill model stratifying by assessment number
-    Int_model <- coxph(Surv(Prev_time,time,Event)~Prev_outcome+strata(Visit_number),
-                       id=elig_pid,data=data_survival_hv)
+
+    model.data <-
+        rlang::inject(!!outcome.var ~ !!id.var + !!time.var + !!rlang::f_rhs(intensity.covariates)) |>
+        model.frame(data=dplyr::filter(group.data, (!!time.var) < !!End)) |>
+        dplyr::arrange(!!id.var, !!time.var) |>
+        dplyr::group_by(!!id.var) |>
+        dplyr::mutate(
+            visit.number = seq_along(!!time.var)
+        ) |>
+        dplyr::ungroup() |>
+        tidyr::complete(!!id.var, visit.number, fill = tibble::lst(!!time.var := !!End)) |>
+        dplyr::group_by(!!id.var) |>
+        dplyr::arrange(!!id.var, visit.number) |>
+        dplyr::mutate(
+            "lag({outcome.var})" := dplyr::lag(!!outcome.var, order_by = !!time.var),
+            "lag({time.var})"    := dplyr::lag(!!time.var, order_by =  !!time.var),
+            dplyr::across(time.var, dplyr::coalesce, !!End)
+        ) |>
+        filter(!(visit.number > 1 & is.na(dplyr::lag(!!outcome.var))))
+
+    intensity.model <-
+        rlang::inject(coxph(
+            Surv(!!rlang::sym(glue::glue("lag({time.var})")),
+                 !!time.var,
+                 !is.na(!!outcome.var))~(!!rlang::sym(glue::glue("lag({outcome.var})")))+strata(visit.number),
+            id = !!id.var,
+            data = filter(model.data, !!time.var > 0)
+        ))
+
     # gamma <- Int_model$coefficients # parameter lambda in lambda(t, O(t))
     # we need this gamma value
 
 
     ############  Estimated baseline intensities for each stratum ############
     {
-        data_surv <- survfit(Int_model, newdata=data.frame(Prev_outcome=0))
+
+
+        # data_surv <- survfit(intensity.model, newdata=data.frame(Prev_outcome=0))
+        data_surv <- survfit(intensity.model, newdata=tibble("lag({outcome.var})" := 0))
         strata <- data_surv$strata
 
         # Andrew [@halpo]: change this part for a general version (use that general v)
 
         # the following is to find the baseline intensity function for each strata k
-        v1=strata[1]
-        cumhaz_v1=data.frame(time <- data_surv$time[1:v1],
-                             cumhaz <- data_surv$cumhaz[1:v1])
-        base_intens_v1=sapply(1:End,lambda0_fn,b=30,surv=cumhaz_v1)
 
-        v2=strata[2]
-        cumhaz_v2=data.frame(time=data_surv$time[(v1+1):(v1+v2)],
-                             cumhaz=data_surv$cumhaz[(v1+1):(v1+v2)])
-        base_intens_v2=sapply(1:End,lambda0_fn,b=30,surv=cumhaz_v2)
+        cumhaz.data <-
+            tibble(time = data_surv$time,
+                   cumhaz = data_surv$cumhaz,
+                   strata = factor(rep(names(strata), strata), levels = names(strata))
+                   ) |>
+            dplyr::group_by(strata) |>
+            dplyr::mutate(hazard = cumhaz - dplyr::lag(cumhaz, default=0, order_by = time))
+        base_intens <- cumhaz.data |>
+            dplyr::group_by(strata) |>
+            dplyr::group_map(rlang::inject(~purrr::map_dbl(seq.int(!!End), lambda0_fn, b=intensity.bandwidth, surv = .x)))
 
-        v3=strata[3]
-        cumhaz_v3=data.frame(time=data_surv$time[(v1+v2+1):(v1+v2+v3)],
-                             cumhaz=data_surv$cumhaz[(v1+v2+1):(v1+v2+v3)])
-        base_intens_v3=sapply(1:End,lambda0_fn,b=30,surv=cumhaz_v3)
 
-        v4=strata[4]
-        cumhaz_v4=data.frame(time=data_surv$time[(v1+v2+v3+1):(v1+v2+v3+v4)],
-                             cumhaz=data_surv$cumhaz[(v1+v2+v3+1):(v1+v2+v3+v4)])
-        base_intens_v4=sapply(1:End,lambda0_fn,b=30,surv=cumhaz_v4)
+        tmp <- outer(data_surv$time, seq.int(End), `-`)
+
+        base_intens <- apply(
+            0.75*(1 - (tmp/intensity.bandwidth)**2) * (abs(tmp) < intensity.bandwidth) * cumhaz.data$hazard,
+            2, tapply, cumhaz.data$strata, sum
+        )
+
+        # v1=strata[1]
+        # cumhaz_v1=data.frame(time <- data_surv$time[1:v1],
+        #                      cumhaz <- data_surv$cumhaz[1:v1])
+        # base_intens_v1=sapply(1:End,lambda0_fn,b=30,surv=cumhaz_v1)
+        #
+        # v2=strata[2]
+        # cumhaz_v2=data.frame(time=data_surv$time[(v1+1):(v1+v2)],
+        #                      cumhaz=data_surv$cumhaz[(v1+1):(v1+v2)])
+        # base_intens_v2=sapply(1:End,lambda0_fn,b=30,surv=cumhaz_v2)
+        #
+        # v3=strata[3]
+        # cumhaz_v3=data.frame(time=data_surv$time[(v1+v2+1):(v1+v2+v3)],
+        #                      cumhaz=data_surv$cumhaz[(v1+v2+1):(v1+v2+v3)])
+        # base_intens_v3=sapply(1:End,lambda0_fn,b=30,surv=cumhaz_v3)
+        #
+        # v4=strata[4]
+        # cumhaz_v4=data.frame(time=data_surv$time[(v1+v2+v3+1):(v1+v2+v3+v4)],
+        #                      cumhaz=data_surv$cumhaz[(v1+v2+v3+1):(v1+v2+v3+v4)])
+        # base_intens_v4=sapply(1:End,lambda0_fn,b=30,surv=cumhaz_v4)
     }
 
 
     #############  Model 2: Outcome model - single index model   ############
     {
 
-        # Andrew @[halpo]: keep the single index model as a fliexble model
+        # Andrew [@halpo]: keep the single index model as a flexible model
 
-        outcome.formula <- Asthma_control~ns(Prev_outcome, df=3) + scale(time) + scale(Lag_time)
-        data_visits_hv1 <- cbind(data_visits_hv,
-                                 ns1 = ns(data_visits_hv$Prev_outcome, df = 3)[, 1],
-                                 ns2 = ns(data_visits_hv$Prev_outcome, df = 3)[, 2],
-                                 ns3 = ns(data_visits_hv$Prev_outcome, df = 3)[, 3],
-                                 time_scale = scale(data_visits_hv$time),
-                                 Lag_time_scale = scale(data_visits_hv$Lag_time))
+        # Question: Does this make sense to scale the Lag_time?  should we be lagging scaled time instead?
+        outcome.formula <- rlang::inject(
+            !!outcome.var~
+                ns(!!rlang::sym(glue::glue("lag({outcome.var})")), df=3) +
+                scale(!!time.var) +
+                scale(!!time.var - !!rlang::sym(glue::glue("lag({time.var})"))) +
+                !!rlang::f_rhs(outcome.covariates)
+        )
+        # data_visits_hv1 <- cbind(data_visits_hv,
+        #                          ns1 = ns(data_visits_hv$Prev_outcome, df = 3)[, 1],
+        #                          ns2 = ns(data_visits_hv$Prev_outcome, df = 3)[, 2],
+        #                          ns3 = ns(data_visits_hv$Prev_outcome, df = 3)[, 3],
+        #                          time_scale = scale(data_visits_hv$time),
+        #                          Lag_time_scale = scale(data_visits_hv$Lag_time))
 
-        time_mean <- mean(data_visits_hv1$time)
-        time_sd <- sd(data_visits_hv1$time)
-        Lag_time_mean <- mean(data_visits_hv1$Lag_time)
-        Lag_time_sd <- sd(data_visits_hv1$Lag_time)
+        # time_mean <- mean(data_visits_hv1$time)
+        # time_sd <- sd(data_visits_hv1$time)
+        # Lag_time_mean <- mean(data_visits_hv1$Lag_time)
+        # Lag_time_sd <- sd(data_visits_hv1$Lag_time)
 
-        Xi <- data.frame(data_visits_hv1$ns1,
-                         data_visits_hv1$ns2,
-                         data_visits_hv1$ns3,
-                         data_visits_hv1$time_scale,
-                         data_visits_hv1$Lag_time_scale)
+        centering.statistics <-
+        dplyr::summarize( dplyr::ungroup(dplyr::filter(model.data, !!time.var > 0, !is.na(!!outcome.var)))
+                        , "mean({time.var})" := mean(!!time.var)
+                        , "sd({time.var})" := sd(!!time.var)
+                        , "mean({time.var} - lag({time.var}))" := mean(!!time.var - !!rlang::sym(glue::glue("lag({time.var})")))
+                        , "sd({time.var} - lag({time.var}))" := sd(!!time.var - !!rlang::sym(glue::glue("lag({time.var})")))
+                        )
 
-        Xi <- as.matrix(Xi)
 
-        Xi <- model.matrix(outcome.formula, data = data_visits_hv)
-        Yi <- as.matrix(data_visits_hv1$Asthma_control, ncol = 1)
+        # Xi <- data.frame(data_visits_hv1$ns1,
+        #                  data_visits_hv1$ns2,
+        #                  data_visits_hv1$ns3,
+        #                  data_visits_hv1$time_scale,
+        #                  data_visits_hv1$Lag_time_scale)
+        #
+        # Xi <- as.matrix(Xi)
+        # Yi <- as.matrix(data_visits_hv1$Asthma_control, ncol = 1)
 
-        # Yujing: send these two functions to Andrew - done
+        Xi <- model.matrix(outcome.formula, data = dplyr::filter(model.data, !!time.var > 0, !is.na(!!outcome.var)))
+        Yi <- model.response(model.frame(outcome.formula, data = dplyr::filter(model.data, !!time.var > 0, !is.na(!!outcome.var)))) |>
+                as.matrix(ncol=1)
+
         # Andrew [@halpo]: add these functions into the R package
         # new method to get the SIM's estimation
-        SDR1 <- cumuSIR_new(X = Xi, Y = Yi)
-        Outcome_model <- SIDRnew(X = Xi, Y = Yi, initial = SDR1$basis[, 1], kernel = "dnorm", method = "nmk")
+        # SDR1 <- cumuSIR_new(X = Xi, Y = Yi)
+        # Outcome_model <- SIDRnew(X = Xi, Y = Yi, initial = SDR1$basis[, 1], kernel = "dnorm", method = "nmk")
     }
-    Outcome_model <- outcome_modeler(outcome_formula, data = data_visits_hv)
+    outcome.model <- outcome_modeler(outcome.formula, data = dplyr::filter(model.data, !!time.var > 0, !is.na(!!outcome.var)))
 
     structure(list(
-        intensity_model = Int_model,
-        baseline_intensity = list(base_intens_v1,
-                                  base_intens_v2,
-                                  base_intens_v3,
-                                  base_intens_v4),
-        outcome_model = Outcome_model,
-        outcome_model_info = list(data_visits_hv1,
-                                  Xi,
-                                  Yi,
-                                  time_mean,
-                                  time_sd,
-                                  Lag_time_mean,
-                                  Lag_time_sd),
-        ...
+        intensity_model = intensity.model,
+        baseline_intensity = base_intens,
+        outcome_model = outcome.model,
+        outcome_model_centering = centering.statistics,
+        data = model.data,
+        variables = list(
+            id = id.var,
+            time = time.var,
+            outcome = outcome.var
+        ),
+        End = End
     ), class = "PCORI_within_group_model")
 }
 
@@ -180,16 +275,25 @@ fit_PCORI_within_group_model <- function(
 #'
 #' @examples
 #'
-#' fitted.trt <-
-#'     fit_within_group_model(
+#' fitted.trt.nb <-
+#'     fit_PCORI_within_group_model(
 #'         group.data = filter(ARC_data, Trt=='home_visits'),
-#'         outcome_modeler = pcori_nb_outcome_modeler  #< not yet defined.
+#'         id.var = elig_pid,
+#'         outcome.var = Asthma_control,
+#'         time.var = time,
+#'         intensity.bandwidth = 30,
+#'         End = 830,
+#'         outcome_modeler = glm.nb
 #'     )
-#' predict(fitted.trt, time = c(90, 180), alpha = c(-0.6, -0.3, 0, 0.3, 0.6))
+#' predict(fitted.trt.nb, time = c(90, 180), alpha = c(-0.6, -0.3, 0, 0.3, 0.6))
 #'
 `predict.PCORI_within_group_model` <-
-function(object, time, alpha){
+function(object, time, alpha,
+         ){
     #TODO
+
+    spline_seq =
+
 
     # Input parameter:
     # spline_seq: the whole time interval End

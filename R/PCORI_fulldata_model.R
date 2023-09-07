@@ -21,19 +21,26 @@
 #' @examples
 #'
 #' fitted.arc.nb.model <-
-#'     fit_pcori_model_for_full_data(
+#'     fit_PCORI_fulldata_model(
 #'         data = ARC_data,
 #'         Trt = trt=='home_visits',
 #'         # Passed to group model
 #'         outcome_modeler = pcori_nb_outcome_modeler  #< not yet defined.
+#'     )
+#' fitted.arc.sim.model <-
+#'     fit_PCORI_fulldata_model(
+#'         data = ARC_data,
+#'         Trt = trt=='home_visits',
+#'         # Passed to group model
+#'         outcome_modeler = PCORI_sim_outcome_modeler  #< not yet defined.
 #'     )
 #'
 fit_PCORI_fulldata_model <- function(data, trt, ...){
     trt <- rlang::enquo(trt) #< diffuses evaluation for tidy expressions
 
     structure(list(
-        control   = fit_within_group_model(filter(data, !(!!trt)), ...),
-        treatment = fit_within_group_model(fitler(data    !!trt  , ...))
+        control   = fit_PCORI_within_group_model(filter(data, !(!!trt)), ...),
+        treatment = fit_PCORI_within_group_model(fitler(data,   !!trt  , ...))
     ), class = 'PCORI_fulldata_model')
 }
 
