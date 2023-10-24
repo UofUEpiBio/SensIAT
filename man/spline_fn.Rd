@@ -11,10 +11,7 @@ spline_fn(t, knots = Knots)
 
 \item{knots}{spline knots.}
 }
-\value{
-
-}
 \description{
-Computes the cubis spline basis \eqn{B(t)=(B_1(t), \dots, B_p(t))}
+Computes the cubic spline basis \eqn{B(t)=(B_1(t), \dots, B_p(t))}
 for a given day, \code{t}, using a given set of knots.
 }

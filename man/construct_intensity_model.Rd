@@ -4,10 +4,10 @@
 \alias{construct_intensity_model}
 \title{Construct Intensity model}
 \usage{
-construct_intensity_model(survival_data, id.var = names(survival_data)[[1]])
+construct_intensity_model(survival.data, id.var = names(survival.data)[[1]])
 }
 \arguments{
-\item{survival_data}{The Survival formatted data limited to the treatment group.
+\item{survival.data}{The Survival formatted data limited to the treatment group.
 Must include named components \code{time}, \code{Event}, \code{Prev_time},
 \code{Prev_outcome}, and \code{Visit_number}}
 
@@ -34,7 +34,7 @@ ARC_formatted <- formatting_fn(
     spline_seq      = 60:460,
     last_day = 830
 )
-survival_data <- ARC_formatted$Survival |> filter(Trt == "home_visits")
+survival.data <- ARC_formatted$Survival |> filter(Trt == "home_visits")
 intensity <- construct_intensity_model(survival_data)
 glimpse(intensity)
 }

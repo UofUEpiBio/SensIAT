@@ -9,9 +9,6 @@ construct_influence_function(alpha)
 \arguments{
 \item{alpha}{}
 }
-\value{
-
-}
 \description{
 For a given sensitivity parameter $\alpha$, first estimate $\beta$,
 then estimate $Y(t)$.

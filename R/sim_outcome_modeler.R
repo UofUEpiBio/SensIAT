@@ -10,14 +10,56 @@
 #' @examples
 PCORI_sim_outcome_modeler <- function(formula, data, kernel = "dnorm", method = "nmk", ...){
   mf <- model.frame(formula, data = data)
-  Xi <- model.matrix(formula, data = data)
+  Xi <- model.matrix(formula, data = mf)
 
   Yi <-model.response(mf)
 
   SDR1 <- cumuSIR_new(X = Xi, Y = Yi)
-  structure( SIDRnew(X = Xi, Y = Yi, initial = SDR1$basis[, 1], kernel = kernel, method = method),
-             class = c('PCORI::Single-index-model'))
+  structure(
+      append(
+          SIDRnew(X = Xi, Y = Yi, initial = SDR1$basis[, 1], kernel = kernel, method = method),
+          list(
+              frame = mf,
+              data = data
+          )
+      ),
+      class = c('PCORI::outcome-model', 'PCORI::Single-index-outcome-model'),
+      terms = terms(mf))
 }
+
+#' @export
+`model.frame.PCORI::Single-index-outcome-model` <-
+    function(formula, data=NULL, ...){
+        if(is.null(data))
+            data <- formula$data
+        NextMethod('model.frame', data=data, ...)
+    }
+#' @export
+`model.matrix.PCORI::Single-index-outcome-model` <-
+    function(object, data = model.frame(object), ...){
+        model.matrix(terms(object), data = data, ...)
+    }#' @export
+`formula.PCORI::Single-index-outcome-model` <-
+    function(x, ...){
+        as.formula(terms(x))
+    }
+
+#' @export
+`predict.PCORI::Single-index-outcome-model` <-
+    function( object
+            , newdata = NULL
+            , type = c('response', 'terms')
+            , ...){
+        if(is.null(newdata)) newdata = model.frame(object)
+        type = match.arg(type)
+
+        frame <-
+
+
+        predict(object$formula, data = data, ...)
+
+        if(type == 'terms'){}
+    }
 
 cumuSIR_new <- function(X, Y, eps = 1e-7)
 {
@@ -69,7 +111,7 @@ cumuSIR_new <- function(X, Y, eps = 1e-7)
 SIDRnew <- function(X, Y,
                     Y.CP = NULL,
                     initial = NULL,
-                    kernel = "dnorm",
+                    kernel = "K2_Biweight",
                     method = "optim",
                     optim_method = "BFGS",
                     abs.tol = 1e-4,
@@ -394,7 +436,7 @@ SIDRnew <- function(X, Y,
 }
 
 
-NW_new <- function(Xb, Y, xb, y, h, kernel = "dnorm"){
+NW_new <- function(Xb, Y, xb, y, h, kernel = "K2_Biweight"){
 
     if(kernel == "dnorm"){
         K <- function(x, h){dnorm(x/h, 0, 1)} # Gaussian
@@ -416,3 +458,85 @@ NW_new <- function(Xb, Y, xb, y, h, kernel = "dnorm"){
 
 }
 
+Cond_mean_fn_single2 <-
+    function( alpha #< sensitivity parameter
+            , X     #< Matrix of covariates for all observations, including the spline basis as well as other covariates such as lag(time) and lag(outcome)
+            , Y     #< Outcome vector for all observations
+            , x     #< vector of covariates for the observation of interest
+            , beta
+            , bandwidth
+            , range_y){
+
+        #######
+        y <- range_y
+        #######
+
+        # conditional distribution
+        #start <- Sys.time()
+        Fhat <- NW_new(Xb = X %*% beta, Y = Y,
+                       xb = x %*% beta, y = y,
+                       h = bandwidth)
+        #end <- Sys.time()
+        #end - start
+
+        # density function
+        Fhat1 <- c(0, Fhat[1:(length(y) - 1)])
+        pmf <- Fhat - Fhat1
+
+        # Question: Are we assuming Y is finite with support range_y or are we approximating an integral here?
+        E_exp_alphaY <- sum( exp(alpha*y)*pmf )
+
+        E_Yexp_alphaY <- sum( y*exp(alpha*y)*pmf )
+
+        E_Y_past <- E_Yexp_alphaY/E_exp_alphaY
+
+        return(list(E_Y_past,E_exp_alphaY))
+
+    }
+
+
+
+#' @export
+`pcori_conditional_means.PCORI::Single-index-outcome-model` <-
+function(
+    model,
+    alpha,
+    # gamma,
+    new.data = model.frame(model),
+    ...
+    )
+{
+    assert_that(
+        is(model, 'PCORI::Single-index-outcome-model'),
+        is.numeric(alpha)
+    )
+    if(length(alpha) > 1){
+        return(purrr::map_dfr(alpha, `pcori_conditional_means.PCORI::Single-index-outcome-model`,
+                              model = model, new.data = new.data, ...))
+    }
+
+    Xi <- model.matrix(terms(model), model$data)
+    Yi <- model.response(model.frame(model))
+    Xi_new <- model.matrix(terms(model), data=new.data)
+
+    E_Y_past <- numeric(nrow(Xi_new))
+    E_exp_alphaY <- numeric(nrow(Xi_new))
+
+    for(k in 1:nrow(new.data)){
+        # df_k <- new.data[k, ]
+        # x = model.matrix(terms(model), data = df_k)
+        temp <- Cond_mean_fn_single2(alpha,
+                                     X = Xi,
+                                     Y = Yi,
+                                     x = Xi_new[k,,drop=FALSE],
+                                     beta = model$coef,
+                                     bandwidth = model$bandwidth,
+                                     range_y = sort(unique(Yi))
+        )
+
+        E_Y_past[k] <- temp[[1]]
+        E_exp_alphaY[k] <- temp[[2]]
+    }
+
+    tibble(new.data, alpha, E_Y_past, E_exp_alphaY)
+}

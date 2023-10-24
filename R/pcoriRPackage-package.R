@@ -2,6 +2,7 @@
 "_PACKAGE"
 
 ## usethis namespace: start
+#' @importFrom assertthat assert_that
 #' @importFrom dplyr bind_cols
 #' @importFrom dplyr filter
 #' @importFrom dplyr inner_join

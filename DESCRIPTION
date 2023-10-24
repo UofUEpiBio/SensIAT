@@ -19,6 +19,7 @@ Imports:
     tibble
 Suggests: 
     dfoptim,
+    testthat (>= 3.0.0),
     tinytest
 Config/testthat/edition: 3
 Depends: 
