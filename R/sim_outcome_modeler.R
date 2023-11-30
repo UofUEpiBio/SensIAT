@@ -8,7 +8,7 @@
 #' @export
 #'
 #' @examples
-PCORI_sim_outcome_modeler <- function(formula, data, kernel = "dnorm", method = "nmk", ...){
+PCORI_sim_outcome_modeler <- function(formula, data, kernel = "K2_Biweight", method = "nmk", ...){
   mf <- model.frame(formula, data = data)
   Xi <- model.matrix(formula, data = mf)
 
@@ -24,6 +24,7 @@ PCORI_sim_outcome_modeler <- function(formula, data, kernel = "dnorm", method = 
           )
       ),
       class = c('PCORI::outcome-model', 'PCORI::Single-index-outcome-model'),
+      kernel = kernel,
       terms = terms(mf))
 }
 
@@ -465,17 +466,19 @@ Cond_mean_fn_single2 <-
             , x     #< vector of covariates for the observation of interest
             , beta
             , bandwidth
-            , range_y){
+            , ...  #< for passing kernel to NW_new
+            ){
 
         #######
-        y <- range_y
+        y <- sort(unique(Y))
         #######
 
         # conditional distribution
         #start <- Sys.time()
         Fhat <- NW_new(Xb = X %*% beta, Y = Y,
                        xb = x %*% beta, y = y,
-                       h = bandwidth)
+                       h = bandwidth,
+                       ...)
         #end <- Sys.time()
         #end - start
 
@@ -531,7 +534,7 @@ function(
                                      x = Xi_new[k,,drop=FALSE],
                                      beta = model$coef,
                                      bandwidth = model$bandwidth,
-                                     range_y = sort(unique(Yi))
+                                     kernel = attr(model, 'kernel')
         )
 
         E_Y_past[k] <- temp[[1]]

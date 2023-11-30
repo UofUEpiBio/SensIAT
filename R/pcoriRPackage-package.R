@@ -11,6 +11,7 @@
 #' @importFrom dplyr pull
 #' @importFrom dplyr select
 #' @importFrom dplyr summarize
+#' @importFrom KernSmooth dpill
 #' @importFrom MASS glm.nb
 #' @importFrom splines ns
 #' @importFrom stats dnbinom

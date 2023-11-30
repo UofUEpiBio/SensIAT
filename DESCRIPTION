@@ -12,6 +12,7 @@ RoxygenNote: 7.2.3
 Imports: 
     assertthat,
     dplyr,
+    KernSmooth,
     MASS,
     splines,
     stats,

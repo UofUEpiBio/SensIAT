@@ -7,7 +7,7 @@
 #' treatment or control group.
 #'
 #' @param group.data The data for the group that is being analyzed.
-#'          Preferrably passed in as a single tibble that internally is
+#'          Preferably passed in as a single tibble that internally is
 #'          subsetted/filtered as needed.
 #' @param End The end time for this data analysis, we need to set the default value as the
 #'           max value of the time
@@ -57,7 +57,6 @@ fit_PCORI_within_group_model <- function(
         outcome.var,
         time.var,
         intensity.covariates = ~1,
-        intensity.bandwidth,
         outcome.covariates = ~-1,
         End = max({{time.var}}, na.rm = TRUE) + 1,
         ...
@@ -159,7 +158,7 @@ fit_PCORI_within_group_model <- function(
 
 
     ############  Estimated baseline intensities for each stratum ############
-    {
+    if(F){
         # data_surv <- survfit(intensity.model, newdata=data.frame(Prev_outcome=0))
         data_surv <- survfit(intensity.model, newdata=tibble(!!vars$prev_outcome := 0))
         strata <- data_surv$strata
@@ -175,15 +174,17 @@ fit_PCORI_within_group_model <- function(
                    ) |>
             dplyr::group_by(strata) |>
             dplyr::mutate(hazard = cumhaz - dplyr::lag(cumhaz, default=0, order_by = time))
-        base_intens <- cumhaz.data |>
+        base_intens1 <- cumhaz.data |>
             dplyr::group_by(strata) |>
             dplyr::group_map(rlang::inject(~purrr::map_dbl(seq.int(!!End), lambda0_fn, b=intensity.bandwidth, surv = .x)))
 
-
         tmp <- outer(data_surv$time, seq.int(End), `-`)
+        increment <- cumhaz.data$hazard
 
         base_intens <- apply(
-            0.75*(1 - (tmp/intensity.bandwidth)**2) * (abs(tmp) < intensity.bandwidth) * cumhaz.data$hazard,
+            0.75*(1 - (tmp/intensity.bandwidth)**2) *
+                (abs(tmp) < intensity.bandwidth) *
+                cumhaz.data$hazard,
             2, tapply, cumhaz.data$strata, sum
         )
 
@@ -258,7 +259,7 @@ fit_PCORI_within_group_model <- function(
 
     structure(list(
         intensity_model = intensity.model,
-        baseline_intensity = base_intens,
+        # baseline_intensity = base_intens,
         outcome_model = outcome.model,
         outcome_model_centering = centering.statistics,
         data = model.data,
@@ -273,7 +274,15 @@ fit_PCORI_within_group_model <- function(
 #'
 #' @param object a `PCORI_within_group_model` object.
 #' @param time The time(s) to evaluate at.
-#' @param alpha The alpha values to evaluate at.
+#' @param alpha The values for the sensitivity parameter to evaluate at.
+#' @param spline_fn Function to to generate the values for the spline functions
+#'      with knots given by `knots`.  Must accept time as the first argument and
+#'      knots as the second.
+#' @param spline_seq The time points used to approximate the integral in term 2
+#'          of the influence function.
+#' @param knots The knots used for the spline function.
+#'          Includes both boundary and internal knots.
+#' @param integral.resolution the number of points to use for numerical integration.
 #'
 #'  Evaluate the fitted model, `object`, at each combination of `time` and
 #'  `alpha`.
@@ -310,18 +319,41 @@ fit_PCORI_within_group_model <- function(
 #'         id.var = elig_pid,
 #'         outcome.var = Asthma_control,
 #'         time.var = time,
-#'         intensity.bandwidth = 30,
 #'         End = 830
 #'     )
 #' predict(fitted.trt.sim, time = c(90, 180),
-#'         alpha = 0, #c(-0.6, -0.3, 0, 0.3, 0.6),
+#'         alpha = c(-0.5, 0, 0.5), #c(-0.6, -0.3, 0, 0.3, 0.6),
+#'         intensity.bandwidth = 30,
 #'         spline_fn, spline_seq=seq(60, 460, by=1), knots=c(59,59,59,59,260,461,461,461,461)
 #' )
 `predict.PCORI_within_group_model` <-
 function(object, time, alpha,
-         spline_fn, spline_seq, knots
+         spline_fn,
+         knots,
+         intensity.bandwidth = NULL,
+         integral.resolution = 1000,
+         integral.interval = range(knots),
+         spline_seq=NULL
          ){
-    #TODO
+    assert_that(
+        is(object, 'PCORI_within_group_model'),
+        is.numeric(alpha),
+        is.numeric(knots)
+    )
+    assert_that(
+        is.null(spline_seq) || missing (integral.resolution)
+    )
+    spline_fn <- match.fun(spline_fn)
+    self_contained_spline <- \(x)t(sapply(x, spline_fn, knots = c(59,59,59,59,260,461,461,461,461)))
+
+    if(is.null(spline_seq)){
+        spline_seq <- seq(from=min(knots), to=max(knots), length.out=integral.resolution)
+    } else {
+        assert_that(
+            is.numeric(spline_seq),
+            length(unique(diff(spline_seq)))==1
+        )
+    }
 
     # Input parameter:
     # spline_seq: the whole time interval End
@@ -331,321 +363,176 @@ function(object, time, alpha,
     # Yujing : check this, see whether we can change this for some existing function - need to do
 
 
-    B_t = matrix(sapply(spline_seq,spline_fn, knots = knots),byrow=FALSE, nrow=length(knots)-4)
 
     ####  we approximated the integral V=\int_t B(t)B(t)'dt using sums of rectangles of width 1
-    V = tcrossprod(B_t) # %*% t(B_t)
-    V_inverse=solve(V)
+    # B_seq = matrix(sapply(spline_seq,spline_fn, knots = knots),byrow=FALSE, nrow=length(knots)-4)
+    # V = tcrossprod(B_seq)
+    # V_inverse=solve(V)
 
-    Weights_term2 = V_inverse %*% B_t
+    V_inverse = solve(estimate_spline_covariance(spline_fn, interval = range(knots), knots=knots))
+
 
 
     #######   Get each subject's baseline intensity at each of their own visit times  #######
     ####  assessments in the inference period [a,b]
-    # Visits_df <- filter(data_visits_hv1, time >= min(spline_seq),time <= max(spline_seq))
-    # K <- dim(Visits_df)[1]
 
-    gamma <- coef(object$intensity_model)
-
-    if(F){# Old method
-    baseline_lambda <- rep(NA,K)
-
-    for(k in 1:K){
-
-        visit_number=Visits_df$Visit_number[k]
-        time=Visits_df$time[k]
-
-
-        if(visit_number==1){
-
-            baseline_lambda[k]=base_intens_v1[time]
-        }
-
-        if(visit_number==2){
-
-            baseline_lambda[k]=base_intens_v2[time]
-        }
-
-        if(visit_number==3){
-
-            baseline_lambda[k]=base_intens_v3[time]
-        }
-
-        if(visit_number==4){
-
-            baseline_lambda[k]=base_intens_v4[time]
-        }
-
-    }
-
-    Visits_df <- mutate(Visits_df, baseline_lambda)
-    }
-
-
+    # baseline_lambda <-
+    #     estimate_baseline_intensity(object$intensity_model, object$data, intensity.bandwidth)
     Visits_df <- object$data |>
         dplyr::ungroup() |>
-        dplyr::mutate(
-            baseline_lambda = purrr::map2_dbl(pmax(visit.number-1L, 1L), dplyr::row_number(),
-                                              ~object$baseline_intensity[.x, .y])
-        ) |>
-        dplyr::filter(min(spline_seq) <= !!object$variables$time, !!object$variables$time <= max(spline_seq))
-
+        dplyr::filter(!!min(spline_seq) <= !!object$variables$time,
+                      !!object$variables$time <= !!max(spline_seq))
+    Visits_df$baseline_lambda <-
+        estimate_baseline_intensity(object$intensity_model, Visits_df, intensity.bandwidth)
 
     #######   For the given alpha  #######
-    if(F){# deprecated in favor of pcori_conditional_means
-
-    Visits_df_a <- Visits_df
-
-    K <- NROW(Visits_df)
-    E_Y_past <- rep(NA,K)
-    E_exp_alphaY <- rep(NA,K)
-    Exp_gamma <- rep(NA,K)
-
-    # Yujing: send  Cond_mean_fn_single2 to Andrew - done
-    ############## This part is for single index model ##############
-
-    Xi <- model.matrix(object$outcome_model)
-    Yi <- model.response(model.frame(object$outcome_model))
-    for(k in 1:K){
-        df_k <- Visits_df_a[k, ]
-        Exp_gamma[k] <- exp(gamma*pull(df_k, !!(object$variables$prev_outcome)))
-        x = model.matrix(terms(object$outcome_model), data = df_k)
-        temp <- Cond_mean_fn_single2(alpha,
-                                     X = Xi,
-                                     Y = Yi,
-                                     x = x,
-                                         # c(df_k$ns1,
-                                         #   df_k$ns2,
-                                         #   df_k$ns3,
-                                         #   df_k$time_scale,
-                                         #   df_k$Lag_time_scale),
-                                     beta = object$outcome_model$coef,
-                                     bandwidth = object$outcome_model$bandwidth,
-                                     range_y = sort(unique(Yi))
-                                     )
-
-        E_Y_past[k] <- temp[[1]]
-        E_exp_alphaY[k] <- temp[[2]]
-    }
+    gamma <- coef(object$intensity_model)
+    Visits_df_a <-
+        Visits_df |>
+        mutate(
+            Exp_gamma = exp(gamma*!!object$variables$prev_outcome)
+        ) |>
+        pcori_conditional_means(
+            object$outcome_model, alpha, new.data = _
+        ) |>
+        mutate(
+            Term1_unweighted =
+                (!!(object$variables$outcome)-E_Y_past)/
+                (baseline_lambda*Exp_gamma* exp(-alpha*!!(object$variables$outcome))*E_exp_alphaY)
+            # Term1_weighted = purrr::map2(!!object$variables$time, Term1_unweighted, \(time, UNW){
+            #     crossprod(spline_fn(time, knots), V_inverse) * UNW
+            # })
+        )
 
 
-    Visits_df_a <- mutate(Visits_df_a, Exp_gamma, E_Y_past, E_exp_alphaY)
-    } else {
-        Visits_df_a <-
-            Visits_df |>
-                mutate(Exp_gamma = exp(gamma*!!(object$variables$prev_outcome))) |>
-                pcori_conditional_means(
-                   object$outcome_model, alpha, new.data = _
-               )
-    }
 
-    Visits_df_a <- mutate(Visits_df_a,
-                          Term1_unweighted=(!!(object$variables$outcome)-E_Y_past)/
-                              (baseline_lambda*Exp_gamma*exp(-alpha*!!(object$variables$outcome))*E_exp_alphaY) )
-
-    ##########  Term 1 of the influence function:
+    # Construct  Term 1 of the influence function: -----------------------------
     ##########   the kth column is the term corresponding to visit k, in Term 1
 
 
     # Old Method
-    Term1_mat <- matrix(nrow=p, ncol=nrow(Visits_df_a))
-    for(k in 1:nrow(Visits_df_a)){
-        time_k <- Visits_df_a$time[k]
-        spline_k <- matrix(spline_fn(time_k, knots = knots),ncol=1)
-        Term1_mat[,k] <- (V_inverse%*%spline_k) * Visits_df_a$Term1_unweighted[k]
-    }
-
-    B_x <- t(sapply(Visits_df_a$time, spline_fn, knots = knots))
-    p <- ncol(B_x)
-    Term1_mat_2 <- (B_x %*% V_inverse) *  Visits_df_a$Term1_unweighted
+    # Term1_mat <- matrix(nrow=p, ncol=nrow(Visits_df_a))
+    # for(k in 1:nrow(Visits_df_a)){
+    #     time_k <- Visits_df_a$time[k]
+    #     spline_k <- matrix(spline_fn(time_k, knots = knots),ncol=1)
+    #     Term1_mat[,k] <- (V_inverse%*%spline_k) * Visits_df_a$Term1_unweighted[k]
+    # }
 
 
-    ############  Term 2 of the influence function:
-    ############   the ith column is Term 2 for participant i
+    # B_x <- t(sapply(Visits_df_a$time, spline_fn, knots = knots))
+    # p <- ncol(B_x)
+    # Term1_mat_2 <- (B_x %*% V_inverse) *  Visits_df_a$Term1_unweighted
+    expected_value <- \(data, ...){matrix(
+        pull(pcori_conditional_means(object$outcome_model, ..., new.data = data), 'E_Y_past'),
+        nrow = nrow(data)
+    )}
+
+    tmp <-
+        Visits_df_a |> dplyr::group_by(alpha, !!object$variables$id) |>
+        dplyr::summarize(
+            term1 =
+                list(crossprod(self_contained_spline(.data$time), .data$Term1_unweighted)),
+            term2 =
+
+        , .groups = 'drop_last') %>%
+
+        dplyr::summarize(dplyr::across(term1, purrr::reduce, `+`)) %>%
+        mutate(term1 = V_inverse %*% term1) %>%
+        tidyr::nest(term1=term1)
 
 
-    # this part matches with the outcome model - single index model
-    if(F){
-        Term2_mat=matrix(nrow=p, ncol=N_hv)
-        group.data2 <- filter(object$data, time <= End)
 
-        data_formatted <- formatting_fn(df = mutate(object$data, Trt=1),
-             id_var          = "elig_pid",
-             treatment_var   = "Trt",
-             outcome_var     = "Asthma_control",
-             visitnumber_var = "visit.number",
-             time_var        = "time",
-             V               = 5,
-             knots           = c(59,59,59,59,260,461,461,461,461),
-             spline_seq      = 60:460,
-             last_day = 830
-         )
-        # data_baseline_hv <- data_formatted[[1]]
-        # data_visits_hv <- data_formatted[[2]]
-        data_survival_hv <- data_formatted[[3]]
+    # Construct Term 2 of the influence function: ------------------------------
+    # in accordance with tidy principles the ith row is Term 2 for participant i.
+    # this is contrary to the original coding which had columns representing individuals.
 
-        data_survival_hv1 <- cbind(data_survival_hv,
-                               ns1 = ns(data_survival_hv$Prev_outcome, df = 3)[, 1],
-                               ns2 = ns(data_survival_hv$Prev_outcome, df = 3)[, 2],
-                               ns3 = ns(data_survival_hv$Prev_outcome, df = 3)[, 3],
-                               time_scale = (data_survival_hv$time - time_mean) / time_sd,
-                               Lag_time_scale = (data_survival_hv$Lag_time - Lag_time_mean) / Lag_time_sd)
-    }
 
-    # data_survival_hv1 <- model.frame(object$outcome_model)
-    data_survival_hv1 <- filter(object$data, visit.number > 1)
+    tmp$term2 <- purrr::map(alpha, function(alpha){
+        V_inverse %*% estimate_influence_term_2(
+            object, expected_value,
+            self_contained_spline,
+            a = min(integral.interval),
+            b = max(integral.interval),
+            resolution = integral.resolution,
+            var.map = object$variables
+        )
+    })
 
-    u_hv = dplyr::ungroup(object$data) |> pull(!!object$variables$id) |> unique()
-    N_hv = length(u_hv)
-    Term2_mat = matrix(ncol=ncol(B_x), nrow=N_hv)
-    for(i in 1:N_hv){
+    # data_survival_hv1 <- filter(object$data, visit.number > 1)
+
+    # u_hv = dplyr::ungroup(object$data) |> pull(!!object$variables$id) |> unique()
+    # N_hv = length(u_hv)
+
+    # Term2_mat = matrix(ncol=ncol(B_x), nrow=N_hv)
+    # IF_mat <- matrix(ncol=p, nrow=N_hv)
+    # Term2 <- array(dim = c(N_hv, ncol(B_x), length(alpha)))
+    # IF <- array(dim = c(N_hv, ncol(B_x), length(alpha)))
+
+    # Weights_term2 = V_inverse %*% B_seq
+
+    if(F)for(i in 1:N_hv){
         # print(i)
-        df_i1 = filter(data_survival_hv1, elig_pid==u_hv[i]) |> dplyr::arrange(!!object$variables$time)
+        df_i1 = object$data |>
+            filter(visit.number > 1, !!(object$variables$id)==u_hv[i]) |>
+            dplyr::arrange(!!object$variables$time)
 
-        ############## change this part for single index model ##############
-        {
-            # for the time interval spline_seq, generate the covariate matrix X
-            # length_time <- length(spline_seq)
-            # df_est <- data.frame(time = spline_seq,
-            #                      Lag_time = rep(0, length_time),
-            #                      ns1 = rep(0, length_time),
-            #                      ns2 = rep(0, length_time),
-            #                      ns3 = rep(0, length_time),
-            #                      time_scale = rep(0, length_time),
-            #                      Lag_time_scale = rep(0, length_time))
-
-            min_time <- min(pull(df_i1, !!object$variables$time))
-            max_time <- max(pull(df_i1, !!object$variables$time))
+        min_time <- min(pull(df_i1, !!object$variables$time))
+        max_time <- max(pull(df_i1, !!object$variables$time))
 
 
-            time_mean <- object$outcome_model_centering[[1]]
-            time_sd   <- object$outcome_model_centering[[2]]
-            Δ_time_mean <- object$outcome_model_centering[[3]]
-            Δ_time_sd   <- object$outcome_model_centering[[4]]
+        time_mean <- object$outcome_model_centering[[1]]
+        time_sd   <- object$outcome_model_centering[[2]]
+        Δ_time_mean <- object$outcome_model_centering[[3]]
+        Δ_time_sd   <- object$outcome_model_centering[[4]]
 
-            outcomes <- c( pull(df_i1, !!(object$variables$prev_outcome)),
-                           pull(df_i1, tail(!!(object$variables$outcome),1)))
+        outcomes <- c( pull(df_i1, !!(object$variables$prev_outcome)),
+                       pull(df_i1, tail(!!(object$variables$outcome),1)))
 
 
-            spline_df_est <-
+        # Construct estimating data frame for splines.
+        spline_df_est <-
             tibble(
                 time = spline_seq,
-                period = as.numeric(cut(spline_seq, c(-Inf, pull(df_i1, !!object$variables$time), Inf)))-1L,
-                # index1 = rowSums(!outer(time, df_i1$time, `<=`)),
-                # index2 = !!nrow(df_i1) - colSums(outer(df_i1$time, time, `>`))+1,
+                period = as.numeric(cut(spline_seq, c(-Inf, pull(df_i1, !!object$variables$time), Inf))),
             ) |>
-                # dplyr::count(period, index1, index2)
             mutate(
-                delta_time := time - c(0, df_i1$time)[period+1L],
-                    # case_when(
-                    #     time <= min_time ~ time,
-                    #     time >= max_time ~ time - max_time,
-                    #     TRUE ~ time - c(0, df_i1$time)[period]
-                    # ),
+                delta_time := time - c(0, df_i1$time)[period],
                 norm_time = (time - time_mean)/time_sd,
                 norm_delta_time = (delta_time - Δ_time_mean)/Δ_time_sd,
-                prev_outcome = (!!outcomes)[period+1L],
+                prev_outcome = (!!outcomes)[period],
                 outcome = 0
             ) |>
                 dplyr::rename(any_of(rlang::set_names(names(object$variables), sapply(object$variables, deparse))))
-
-            # Xi_est <- model.matrix(terms(object$outcome_model), data = spline_df_est, na.action=na.pass)
-
-            # new version
-            if(F){
-                for(k in 1:length_time){
-                    t <- spline_seq[k]
-
-
-
-
-
-                    if(t <= min_time){
-                        df_est[k, 2:7] <- c(t,
-                                            # df_i1$Prev_outcome[1],
-                                            df_i1$ns1[1],
-                                            df_i1$ns2[1],
-                                            df_i1$ns3[1],
-                                            (t - object$outcome_model_centering[[1]]) / object$outcome_model_centering[[2]],
-                                            (t - object$outcome_model_centering[[3]]) / object$outcome_model_centering[[4]])
-                    }else if(t >= max_time){
-                        temp <- df_i1$Asthma_control[nrow(df_i1)]
-                        df_est[k, 2:7] <- c(t - max_time,
-                                            # temp,
-                                            ns(temp + 0.01 , df = 3)[1],
-                                            ns(temp + 0.01, df = 3)[2],
-                                            ns(temp + 0.01, df = 3)[3],
-                                            (t - time_mean) / time_sd,
-                                            (t - max_time - Lag_time_mean) / Lag_time_sd)
-                    }else{
-                        # t within min_time and max_time
-                        t_index1 <- max(which(df_i1$time < t))
-                        t_index2 <- min(which(df_i1$time > t))
-                        df_est[k, 2:7] <- c(t - df_i1$time[t_index1],
-                                            # df_i1$Prev_outcome[t_index2],
-                                            df_i1$ns1[t_index2],
-                                            df_i1$ns2[t_index2],
-                                            df_i1$ns3[t_index2],
-                                            (t - time_mean) / time_sd,
-                                            (t - df_i1$time[t_index1] - Lag_time_mean) / Lag_time_sd)
-                    }
-
-                }
-            }
-
-            # cond.means <- purrr::map_dfr(alpha, ~pcori_conditional_means(object$outcome_model, ., new.data = spline_df_est), .id='alpha')
-
-            # start <- Sys.time()
-            # Time_means_single  <- matrix(0, nrow = nrow(Xi_est), ncol = 1)
-
-            # Xi <- model.matrix(object$outcome_model)
-            # Yi <- model.response(model.frame(object$outcome_model))
-
-            # start <- Sys.time()
-            # tmp <- pcori_conditional_means(object$outcome_model, )
-
+            # TODO: handling for extra variables in model.
 
             Time_means_single <-
-                purrr::map_dfr(alpha, pcori_conditional_means,
+                purrr::map(alpha, pcori_conditional_means,
                         model = object$outcome_model,
                         new.data = spline_df_est
                 )
-            # for(l in 1:nrow(spline_df_est)){
-            #     temp <- Cond_mean_fn_single2(alpha,
-            #                                  X = Xi,
-            #                                  Y = Yi,
-            #                                  x = Xi_est[l,],
-            #                                  beta = object$outcome_model$coef,
-            #                                  bandwidth = object$outcome_model$bandwidth,
-            #                                  sort(unique(Yi)))
-            #     Time_means_single[l] <- temp[[1]]
-            # }
-            # end <- Sys.time()
-            # end - start
-            Term2_mat[i, ] <- Weights_term2 %*% pull(Time_means_single, 'E_Y_past')
-        }
-    }
 
-    #######   Subject-specific p x 1 influence function  IF(O_i)
-    IF_mat <- matrix(ncol=p, nrow=N_hv)
+            E_Y_past_mat <- Time_means_single |> purrr::map(pull, 'E_Y_past') |>
+                do.call(cbind, args=_)
 
-    for(i in 1:N_hv){
+            # Term2_mat[i, ] <- Weights_term2 %*% E_Y_past_mat
+            Term2[i,,] <- Weights_term2 %*% E_Y_past_mat
 
-        # w=which(Visits_df_a$elig_pid==u[i]) # the previous code
-        w = which(pull(Visits_df_a, !!object$variables$id) == u_hv[i]) # the new code
+        # Compute Influence Function, subject specific. ----------------------------
+        #######   Subject-specific p x 1 influence function  IF(O_i)
 
-        # stopifnot(all.equal(Term1_mat[,w, drop=FALSE], t(Term1_mat_2[w,, drop=FALSE])))
-
-        # if(length(w) ==0){ temp = 0 } else
-        # if(length(w) ==1){ temp=Term1_mat[,w] } else
-        # if(length(w) > 1){ temp=rowSums(Term1_mat[,w]) }
-
-
-        IF_mat[i,]=colSums(Term1_mat_2[w,,drop=FALSE]) + Term2_mat[i,]
+        w = which(pull(Visits_df_a, !!object$variables$id) == u_hv[i])
+            Visits_df_a[w,'alpha']
+        IF[i,,]=colSums(Term1_mat_2[w,,drop=FALSE]) + Term2[i,,]
     }
 
     ########  Target parameter (p x 1)
-    Beta_hat <- colMeans(IF_mat)
+
+    tmp |> mutate(
+        Beta = purrr::map2(term1, term2, `+`),
+
+    )
+
+    Beta_hat <- term1[,rep(1, length(alpha))] + term2
     # estimation of beta in E[Y(t)] = s[beta %*% B(t)] # s(\cdot): identity link
 
     ########  IF-based variance estimation
@@ -656,7 +543,11 @@ function(object, time, alpha,
     # }
     # Var_beta <- (1/N_hv^2)*rowSums(Var_array, dims=2) # estimation of variance for beta
 
-    Var_beta <- tcrossprod(t(IF_mat) - Beta_hat)
+    # Var_beta <- tcrossprod(t(IF_mat) - Beta_hat)/(N_hv^2)
+
+    Var_beta <- array(sapply(seq_along(alpha), \(l)tcrossprod(t(IF[,,l]) - Beta_hat[,l])),
+          dim=c(p,p,length(alpha)))/(N_hv^2)
+
 
 
     ####### The previous part is based on the "alpha" parameter
@@ -665,11 +556,121 @@ function(object, time, alpha,
     #######  Target-time means and IF-based variance estimates
 
     #######   For the given time  #######
-    # B_t <- matrix(spline_fn(time), ncol = p)
+    B_t <- t(sapply(time, spline_fn, knots))
 
-    mean_t  <- Beta_hat %*% B_t # estimation of E[Y(t); alpha]
-    Var_t  <- apply(B_t, 2, \(b)t(b) %*% Var_beta %*% b)
+    mean_t  <- B_t %*% Beta_hat # estimation of E[Y(t); alpha]
+    Var_t  <-
+        sapply(seq_along(alpha), \(l){
+            apply(B_t, 1, \(b)t(b) %*% Var_beta[,,l] %*% b)
+        })
         # t(B_t)%*%Var_beta%*%B_t # estimation of Var(Y(t); alpha)
 
-    return(data.frame(alpha, time, mean_t, Var_t))
+    return(tibble(
+        expand.grid(time=time, alpha=alpha),
+        mean = as.vector(mean_t),
+        var  = as.vector(Var_t)))
 }
+
+estimate_influence_term_2 <-
+function(object, expected_value, alpha, spline, a, b, resolution, var.map, ...){
+
+    eval.times <- seq(a,b,length.out=resolution)
+    B <- spline(eval.times)
+
+    time_mean <- object$outcome_model_centering[[1]]
+    time_sd   <- object$outcome_model_centering[[2]]
+    Δ_time_mean <- object$outcome_model_centering[[3]]
+    Δ_time_sd   <- object$outcome_model_centering[[4]]
+
+    for_one <- function(df_i, ...){
+        outcomes <- c( pull(df_i, !!(object$variables$prev_outcome)),
+                       pull(df_i, tail(!!(object$variables$outcome),1)))
+
+        spline_df_est <-
+            tibble(
+                time = eval.times,
+                period = as.numeric(cut(eval.times, c(-Inf, pull(df_i, !!object$variables$time), Inf))),
+            ) |>
+            mutate(
+                delta_time := time - c(0, df_i$time)[period],
+                norm_time = (time - time_mean)/time_sd,
+                norm_delta_time = (delta_time - Δ_time_mean)/Δ_time_sd,
+                prev_outcome = (!!outcomes)[period],
+                outcome = 0
+            ) |>
+            dplyr::rename(any_of(rlang::set_names(names(object$variables), sapply(object$variables, deparse))))
+
+        Ey = expected_value(spline_df_est)
+
+        crossprod(B, Ey) -
+            crossprod(head(B,1), head(Ey,1))/2 -
+            crossprod(tail(B,1), tail(Ey,1))/2
+    }
+
+    tmp <- object$data |> dplyr::group_by(!!var.map$id) |> dplyr::group_map(for_one)
+
+    return(purrr::reduce(tmp, `+`)*(b-a)/resolution/length(tmp))
+
+    if(F)for(i in 1:N_hv){
+        # print(i)
+        df_i1 = object$data |>
+            filter(visit.number > 1, !!(object$variables$id)==u_hv[i]) |>
+            dplyr::arrange(!!object$variables$time)
+
+        min_time <- min(pull(df_i1, !!object$variables$time))
+        max_time <- max(pull(df_i1, !!object$variables$time))
+
+
+
+        outcomes <- c( pull(df_i1, !!(object$variables$prev_outcome)),
+                       pull(df_i1, tail(!!(object$variables$outcome),1)))
+
+
+        # Construct estimating data frame for splines.
+        # TODO: handling for extra variables in model.
+
+        Time_means_single <-
+            purrr::map(alpha, pcori_conditional_means,
+                       model = object$outcome_model,
+                       new.data = spline_df_est
+            )
+
+        E_Y_past_mat <- Time_means_single |> purrr::map(pull, 'E_Y_past') |>
+            do.call(cbind, args=_)
+
+        # Term2_mat[i, ] <- Weights_term2 %*% E_Y_past_mat
+        Term2[i,,] <- Weights_term2 %*% E_Y_past_mat
+
+        # Compute Influence Function, subject specific. ----------------------------
+        #######   Subject-specific p x 1 influence function  IF(O_i)
+
+        w = which(pull(Visits_df_a, !!object$variables$id) == u_hv[i])
+        Visits_df_a[w,'alpha']
+        IF[i,,]=colSums(Term1_mat_2[w,,drop=FALSE]) + Term2[i,,]
+    }
+
+}
+
+
+if(F){
+    object <- fitted.trt.sim
+    alpha <- c(-0.5, 0, 0.5)
+
+    expected_value <- \(data){matrix(
+                pull(pcori_conditional_means(object$outcome_model, alpha = alpha, new.data = data), 'E_Y_past'),
+                nrow = nrow(data)
+            )}
+
+
+
+
+    spline <- \(x)t(sapply(x, spline_fn, knots = c(59,59,59,59,260,461,461,461,461)))
+
+    a <- 60
+    b <- 460
+    resolution <- 1000
+
+    df_i <- filter(object$data, elig_pid == elig_pid[[1]])
+}
+
+
