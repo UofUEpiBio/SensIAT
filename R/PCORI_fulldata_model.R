@@ -39,8 +39,8 @@ fit_PCORI_fulldata_model <- function(data, trt, ...){
     trt <- rlang::enquo(trt) #< diffuses evaluation for tidy expressions
 
     structure(list(
-        control   = fit_PCORI_within_group_model(filter(data, !(!!trt)), ...),
-        treatment = fit_PCORI_within_group_model(fitler(data,   !!trt  , ...))
+        control   = fit_PCORI_within_group_model(filter(data, !as.logical(!!trt)), ...),
+        treatment = fit_PCORI_within_group_model(filter(data,  as.logical(!!trt) , ...))
     ), class = 'PCORI_fulldata_model')
 }
 
