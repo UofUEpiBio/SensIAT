@@ -83,7 +83,7 @@ fit_PCORI_within_group_model <- function(
     # Then the group.data should includes parameter "End"
     # Dataframe: "data_baseline_hv", "data_visits_hv", "data_survival_hv"
 
-    group.data2 <- filter(group.data, time <= End)
+    group.data2 <- filter(group.data, !!time.var <= End)
 
     # data_formatted <- formatting_fn(df = group.data2,
     #      id_var          = "elig_pid",
@@ -344,7 +344,7 @@ function(object, time, alpha,
         is.null(spline_seq) || missing (integral.resolution)
     )
     spline_fn <- match.fun(spline_fn)
-    self_contained_spline <- \(x)t(sapply(x, spline_fn, knots = c(59,59,59,59,260,461,461,461,461)))
+    self_contained_spline <- \(x)t(sapply(x, spline_fn, knots = knots))
 
     if(is.null(spline_seq)){
         spline_seq <- seq(from=min(knots), to=max(knots), length.out=integral.resolution)
