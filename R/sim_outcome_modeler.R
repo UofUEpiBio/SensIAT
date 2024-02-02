@@ -281,7 +281,7 @@ SIDRnew <- function(X, Y,
                         control = list(tol = abs.tol))
         }
 
-        results <- list(coef = c(1, esti$par[1:(number_p-1)]),
+        results <- list(coefficients = c(1, esti$par[1:(number_p-1)]),
                         bandwidth = exp(esti$par[number_p]),
                         details = esti)
     }else
@@ -428,7 +428,7 @@ SIDRnew <- function(X, Y,
                         fn = Eij3,
                         control = list(tol = abs.tol))
         }else rlang::abort("Invalid optimization method")
-        results <- list(coef = c(1, esti$par[1:(number_p-1)]),
+        results <- list(coefficients = c(1, esti$par[1:(number_p-1)]),
                         bandwidth = bandwidth,
                         details = esti)
     }
@@ -436,6 +436,8 @@ SIDRnew <- function(X, Y,
     return(results)
 }
 
+K2_Biweight_kernel <- function(x, h){15/16*(1-(x/h)^2)^2 * (abs(x) <= h)}
+K4_Biweight_kernel <- function(x, h){105/64*(1-3*((x/h)^2))*(1-(x/h)^2)^2 * (abs(x) <= h) }
 
 NW_new <- function(Xb, Y, xb, y, h, kernel = "K2_Biweight"){
 
@@ -469,9 +471,8 @@ Cond_mean_fn_single2 <-
             , ...  #< for passing kernel to NW_new
             ){
 
-        #######
+
         y <- sort(unique(Y))
-        #######
 
         # conditional distribution
         #start <- Sys.time()
@@ -493,7 +494,11 @@ Cond_mean_fn_single2 <-
 
         E_Y_past <- E_Yexp_alphaY/E_exp_alphaY
 
-        return(list(E_Y_past,E_exp_alphaY))
+        return(list(
+            E_Y_past = E_Y_past,
+            E_exp_alphaY = E_exp_alphaY,
+            E_Yexp_alphaY = E_Yexp_alphaY
+        ))
 
     }
 
@@ -514,18 +519,40 @@ function(
         is.numeric(alpha)
     )
     if(length(alpha) > 1){
-        return(purrr::map_dfr(alpha, `pcori_conditional_means.PCORI::Single-index-outcome-model`,
-                              model = model, new.data = new.data, ...))
+        return(
+            purrr::map_dfr(
+                alpha,
+                `pcori_conditional_means.PCORI::Single-index-outcome-model`,
+                model = model, new.data = new.data,
+                ...
+            )
+        )
     }
+    if (nrow(new.data)==0) return(mutate(
+        new.data,
+        alpha = alpha,
+        E_Y_past = numeric(0),
+        E_exp_alphaY = numeric(0),
+        E_Yexp_alphaY = numeric(0)
+    ))
 
     Xi <- model.matrix(terms(model), model$data)
     Yi <- model.response(model.frame(model))
     Xi_new <- model.matrix(terms(model), data=new.data)
 
+    if(nrow(Xi_new)==0) return(mutate(
+        new.data,
+        alpha = alpha,
+        E_Y_past = NA_real_,
+        E_exp_alphaY = NA_real_,
+        E_Yexp_alphaY = NA_real_
+    ))
+
     E_Y_past <- numeric(nrow(Xi_new))
     E_exp_alphaY <- numeric(nrow(Xi_new))
+    E_Yexp_alphaY <- numeric(nrow(Xi_new))
 
-    for(k in 1:nrow(new.data)){
+    for(k in 1:nrow(Xi_new)){
         # df_k <- new.data[k, ]
         # x = model.matrix(terms(model), data = df_k)
         temp <- Cond_mean_fn_single2(alpha,
@@ -537,9 +564,11 @@ function(
                                      kernel = attr(model, 'kernel')
         )
 
-        E_Y_past[k] <- temp[[1]]
-        E_exp_alphaY[k] <- temp[[2]]
+        E_Y_past[k] <- temp$E_Y_past
+        E_exp_alphaY[k] <- temp$E_exp_alphaY
+        E_Yexp_alphaY[k] <- temp$E_Yexp_alphaY
+
     }
 
-    tibble(new.data, alpha, E_Y_past, E_exp_alphaY)
+    tibble(new.data, alpha, E_Y_past, E_exp_alphaY, E_Yexp_alphaY)
 }

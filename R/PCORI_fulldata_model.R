@@ -23,14 +23,14 @@
 #' fitted.arc.nb.model <-
 #'     fit_PCORI_fulldata_model(
 #'         data = ARC_data,
-#'         Trt = trt=='home_visits',
+#'         trt = Trt=='home_visits',
 #'         # Passed to group model
 #'         outcome_modeler = pcori_nb_outcome_modeler  #< not yet defined.
 #'     )
 #' fitted.arc.sim.model <-
 #'     fit_PCORI_fulldata_model(
 #'         data = ARC_data,
-#'         Trt = trt=='home_visits',
+#'         trt = Trt=='home_visits',
 #'         # Passed to group model
 #'         outcome_modeler = PCORI_sim_outcome_modeler  #< not yet defined.
 #'     )
@@ -40,7 +40,7 @@ fit_PCORI_fulldata_model <- function(data, trt, ...){
 
     structure(list(
         control   = fit_PCORI_within_group_model(filter(data, !as.logical(!!trt)), ...),
-        treatment = fit_PCORI_within_group_model(filter(data,  as.logical(!!trt) , ...))
+        treatment = fit_PCORI_within_group_model(filter(data,  as.logical(!!trt)), ...)
     ), class = 'PCORI_fulldata_model')
 }
 
