@@ -16,10 +16,12 @@ Imports:
     MASS,
     orthogonalsplinebasis,
     purrr,
+    rlang,
     splines,
     stats,
     survival,
-    tibble
+    tibble,
+    tidyr
 Suggests: 
     dfoptim,
     testthat (>= 3.0.0),

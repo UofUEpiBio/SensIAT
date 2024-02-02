@@ -61,9 +61,9 @@ fit_PCORI_within_group_model <- function(
         End = max({{time.var}}, na.rm = TRUE) + 1,
         ...
 ){
-    id.var <- rlang::ensym(id.var)
-    outcome.var <- rlang::ensym(outcome.var)
-    time.var <- rlang::ensym(time.var)
+    id.var <- ensym(id.var)
+    outcome.var <- ensym(outcome.var)
+    time.var <- ensym(time.var)
 
     outcome_modeler <- match.fun(outcome_modeler)
     End <- rlang::eval_tidy({{End}}, data = group.data, env =parent.frame())
@@ -100,8 +100,8 @@ fit_PCORI_within_group_model <- function(
     # data_visits_hv <- data_formatted[[2]]
     # data_survival_hv <- data_formatted[[3]]
 
-    u_hv <- group.data2 |> select(!!id.var) |> dplyr::distinct() |> pull()
-    N <- pull(dplyr::summarize(group.data2, n_distinct(!!id.var)))
+    u_hv <- group.data2 |> select(!!id.var) |> distinct() |> pull()
+    N <- pull(summarize(group.data2, n_distinct(!!id.var)))
     # N <- dim(data_baseline_hv)[1]
 
 
@@ -111,27 +111,27 @@ fit_PCORI_within_group_model <- function(
 
     model.data <-
         rlang::inject(!!outcome.var ~ !!id.var + !!time.var + !!rlang::f_rhs(intensity.covariates)) |>
-        model.frame(data=dplyr::filter(group.data, (!!time.var) < !!End)) |>
-        dplyr::arrange(!!id.var, !!time.var) |>
-        dplyr::group_by(!!id.var) |>
-        dplyr::mutate(
+        model.frame(data=filter(group.data, (!!time.var) < !!End)) |>
+        arrange(!!id.var, !!time.var) |>
+        group_by(!!id.var) |>
+        mutate(
             visit.number = seq_along(!!time.var)
         ) |>
-        dplyr::ungroup() |>
-        tidyr::complete(!!id.var, visit.number, fill = tibble::lst(!!time.var := !!End)) |>
-        dplyr::group_by(!!id.var) |>
-        dplyr::arrange(!!id.var, visit.number) |>
-        dplyr::mutate(
-            !!vars$prev_outcome    := dplyr::lag(!!outcome.var, order_by = !!time.var),
-            !!vars$prev_time       := dplyr::lag(!!time.var, order_by =  !!time.var, default = 0),
-            !!vars$delta_time      := !!time.var - dplyr::lag(!!time.var, order_by =  !!time.var, default = 0),
-            dplyr::across(all_of(time.var), dplyr::coalesce, !!End)
+        ungroup() |>
+        complete(!!id.var, visit.number, fill = tibble::lst(!!time.var := !!End)) |>
+        group_by(!!id.var) |>
+        arrange(!!id.var, visit.number) |>
+        mutate(
+            !!vars$prev_outcome    := lag(!!outcome.var, order_by = !!time.var),
+            !!vars$prev_time       := lag(!!time.var, order_by =  !!time.var, default = 0),
+            !!vars$delta_time      := !!time.var - lag(!!time.var, order_by =  !!time.var, default = 0),
+            across(all_of(time.var), coalesce, !!End)
         ) |>
-        dplyr::ungroup() |>
-        filter(!(visit.number > 1 & is.na(dplyr::lag(!!outcome.var))))
+        ungroup() |>
+        filter(!(visit.number > 1 & is.na(lag(!!outcome.var))))
 
     centering.statistics <-
-        dplyr::summarize( dplyr::ungroup(dplyr::filter(model.data, !!time.var > 0, !is.na(!!outcome.var))),
+        summarize( ungroup(filter(model.data, !!time.var > 0, !is.na(!!outcome.var))),
             "mean({time.var})" := mean(!!time.var),
             "sd({time.var})" := sd(!!time.var),
             "mean({time.var} - lag({time.var}))" := mean(!!vars$delta_time),
@@ -172,11 +172,11 @@ fit_PCORI_within_group_model <- function(
                    cumhaz = data_surv$cumhaz,
                    strata = factor(rep(names(strata), strata), levels = names(strata))
                    ) |>
-            dplyr::group_by(strata) |>
-            dplyr::mutate(hazard = cumhaz - dplyr::lag(cumhaz, default=0, order_by = time))
+            group_by(strata) |>
+            mutate(hazard = cumhaz - lag(cumhaz, default=0, order_by = time))
         base_intens1 <- cumhaz.data |>
-            dplyr::group_by(strata) |>
-            dplyr::group_map(rlang::inject(~purrr::map_dbl(seq.int(!!End), lambda0_fn, b=intensity.bandwidth, surv = .x)))
+            group_by(strata) |>
+            group_map(rlang::inject(~purrr::map_dbl(seq.int(!!End), lambda0_fn, b=intensity.bandwidth, surv = .x)))
 
         tmp <- outer(data_surv$time, seq.int(End), `-`)
         increment <- cumhaz.data$hazard
@@ -246,8 +246,8 @@ fit_PCORI_within_group_model <- function(
         # Xi <- as.matrix(Xi)
         # Yi <- as.matrix(data_visits_hv1$Asthma_control, ncol = 1)
 
-        Xi <- model.matrix(outcome.formula, data = dplyr::filter(model.data, !!time.var > 0, !is.na(!!outcome.var)))
-        Yi <- model.response(model.frame(outcome.formula, data = dplyr::filter(model.data, !!time.var > 0, !is.na(!!outcome.var)))) |>
+        Xi <- model.matrix(outcome.formula, data = filter(model.data, !!time.var > 0, !is.na(!!outcome.var)))
+        Yi <- model.response(model.frame(outcome.formula, data = filter(model.data, !!time.var > 0, !is.na(!!outcome.var)))) |>
                 as.matrix(ncol=1)
 
         # Andrew [@halpo]: add these functions into the R package
@@ -255,7 +255,7 @@ fit_PCORI_within_group_model <- function(
         # SDR1 <- cumuSIR_new(X = Xi, Y = Yi)
         # Outcome_model <- SIDRnew(X = Xi, Y = Yi, initial = SDR1$basis[, 1], kernel = "dnorm", method = "nmk")
     }
-    outcome.model <- outcome_modeler(outcome.formula, data = dplyr::filter(model.data, !!time.var > 0, !is.na(!!outcome.var)))
+    outcome.model <- outcome_modeler(outcome.formula, data = filter(model.data, !!time.var > 0, !is.na(!!outcome.var)))
 
     structure(list(
         intensity_model = intensity.model,
@@ -379,8 +379,8 @@ function(object, time, alpha,
     # baseline_lambda <-
     #     estimate_baseline_intensity(object$intensity_model, object$data, intensity.bandwidth)
     Visits_df <- object$data |>
-        dplyr::ungroup() |>
-        dplyr::filter(!!a <= !!object$variables$time,
+        ungroup() |>
+        filter(!!a <= !!object$variables$time,
                       !!object$variables$time <= !!b)
     Visits_df$baseline_lambda <-
         estimate_baseline_intensity(object$intensity_model, Visits_df, intensity.bandwidth)
@@ -411,14 +411,13 @@ function(object, time, alpha,
     #         })
     #     )
 
-    data <- object$data |>
-        dplyr::semi_join(Visits_df, join_by(object$variables$id)) |>
-        dplyr::left_join
+    use.data <- object$data |>
+        semi_join(Visits_df, join_by(object$variables$id)) |>
+        left_join(select(Visits_df, !!object$variables$id, visit.number, baseline_lambda),
+                  join_by(!!object$variables$id, visit.number))
     # Compute value of the influence function: -----------------------------
     influence <- purrr::map_dfr(alpha, function(alpha){
-
-        dplyr::full_join(object$data,
-                         select(Visits_df, !!object$variables$id, visit.number, baseline_lambda)) |>
+        use.data |>
             group_by(!!object$variables$id) |>
             group_modify(
                 compute_influence_for_one_alpha_and_one_patient,
@@ -500,7 +499,7 @@ function(
                 (!!(object$variables$outcome)-E_Y_past)/
                 (baseline_lambda*Exp_gamma* exp(-alpha*!!(object$variables$outcome))*E_exp_alphaY)
         ) |>
-        dplyr::summarize(
+        summarize(
             term1 =
                 list(crossprod(evaluate(base, .data$time), .data$Term1_unweighted)),
         ) |>
@@ -562,7 +561,7 @@ function(object, expected_value, alpha, spline, a, b, resolution, var.map, ...){
                 prev_outcome = (!!outcomes)[period],
                 outcome = 0
             ) |>
-            dplyr::rename(any_of(rlang::set_names(names(object$variables), sapply(object$variables, deparse))))
+            rename(any_of(rlang::set_names(names(object$variables), sapply(object$variables, deparse))))
 
         Ey = expected_value(spline_df_est, alpha = alpha)
 
@@ -573,7 +572,7 @@ function(object, expected_value, alpha, spline, a, b, resolution, var.map, ...){
         )
     }
 
-    tmp <- object$data |> dplyr::group_by(!!var.map$id) |> dplyr::group_modify(for_one, alpha = alpha)
+    tmp <- object$data |> group_by(!!var.map$id) |> group_modify(for_one, alpha = alpha)
 
     return(mutate(tmp, alpha = alpha))
     # return(purrr::reduce(tmp, `+`)*(b-a)/resolution/length(tmp))
@@ -582,7 +581,7 @@ function(object, expected_value, alpha, spline, a, b, resolution, var.map, ...){
         # print(i)
         df_i1 = object$data |>
             filter(visit.number > 1, !!(object$variables$id)==u_hv[i]) |>
-            dplyr::arrange(!!object$variables$time)
+            arrange(!!object$variables$time)
 
         min_time <- min(pull(df_i1, !!object$variables$time))
         max_time <- max(pull(df_i1, !!object$variables$time))
@@ -597,12 +596,12 @@ function(object, expected_value, alpha, spline, a, b, resolution, var.map, ...){
         # TODO: handling for extra variables in model.
 
         Time_means_single <-
-            purrr::map(alpha, pcori_conditional_means,
+            map(alpha, pcori_conditional_means,
                        model = object$outcome_model,
                        new.data = spline_df_est
             )
 
-        E_Y_past_mat <- Time_means_single |> purrr::map(pull, 'E_Y_past') |>
+        E_Y_past_mat <- Time_means_single |> map(pull, 'E_Y_past') |>
             do.call(cbind, args=_)
 
         # Term2_mat[i, ] <- Weights_term2 %*% E_Y_past_mat
