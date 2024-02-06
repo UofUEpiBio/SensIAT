@@ -13,7 +13,7 @@ function(
     }
 
     new.time <- mf[[1]][,2]
-    new.strata <- mf[[attr(terms(intensity.model), 'specials')$strata]]
+    new.strata <- mf[[attr(terms(intensity.model), 'specials')$strata]] |> as.character()
 
 
     ############  Estimated baseline intensities for each stratum ############
@@ -30,10 +30,10 @@ function(
     cumhaz.data <-
         tibble(time = data_surv$time,
                cumhaz = data_surv$cumhaz,
-               strata = factor(rep(names(strata), strata), levels = levels(new.strata))
+               strata = rep(names(strata), strata)
         ) |>
-        dplyr::group_by(strata) |>
-        dplyr::mutate(hazard = cumhaz - dplyr::lag(cumhaz, default=0, order_by = time))
+        group_by(strata) |>
+        mutate(hazard = cumhaz - dplyr::lag(cumhaz, default=0, order_by = time))
 
     if(is.null(bandwidth))
         bandwidth <- dpill(cumhaz.data$time, cumhaz.data$hazard)
@@ -45,7 +45,7 @@ function(
 }
 
 if(F){
-
+    estimate_baseline_intensity(object$intensity_model, df_i, kernel = dnorm)
 
 
 }

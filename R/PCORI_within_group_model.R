@@ -66,7 +66,8 @@ fit_PCORI_within_group_model <- function(
     time.var <- ensym(time.var)
 
     outcome_modeler <- match.fun(outcome_modeler)
-    End <- rlang::eval_tidy({{End}}, data = group.data, env =parent.frame())
+    End <- rlang::enexpr(End)
+    End <- rlang::eval_tidy(End, data = group.data, env =parent.frame())
 
     vars <- list(
         id = id.var,
@@ -329,6 +330,14 @@ fit_PCORI_within_group_model <- function(
 #'         time.var = time,
 #'         End = 830
 #'     )
+#' time.pw <- system.time({
+#' pred.pw <- predict(fitted.trt.sim, time = c(90, 180),
+#'     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+#'     intensity.bandwidth = 30,
+#'     knots=c(60,60,60,60,260,460,460,460,460),
+#'     integration.method = 'piecewise'
+#' )
+#' })
 #' time.num <- system.time({
 #' pred.num <- predict(fitted.trt.sim, time = c(90, 180),
 #'     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
@@ -358,7 +367,7 @@ function(object, time, alpha,
          knots,
          intensity.bandwidth = NULL,
          integral.resolution = 1000,
-         integration.method = c("linear", "numerical")
+         integration.method = c("linear", "numerical", "piecewise")
          ){
     assert_that(
         is(object, 'PCORI_within_group_model'),
@@ -373,51 +382,9 @@ function(object, time, alpha,
     base <- OBasis(knots)
     self_contained_spline <- \(x)evaluate(base, x)
 
-    #######   Get each subject's baseline intensity at each of their own visit times  #######
-    ####  assessments in the inference period [a,b]
-
-    # baseline_lambda <-
-    #     estimate_baseline_intensity(object$intensity_model, object$data, intensity.bandwidth)
-    Visits_df <- object$data |>
-        ungroup() |>
-        filter(!!a <= !!object$variables$time,
-                      !!object$variables$time <= !!b)
-    Visits_df$baseline_lambda <-
-        estimate_baseline_intensity(object$intensity_model, Visits_df, intensity.bandwidth)
-
-    #######   For the given alpha  #######
-    # gamma <- coef(object$intensity_model)
-    # Visits_df_a <-
-    #     Visits_df |>
-    #     mutate(
-    #         Exp_gamma = exp(gamma*!!object$variables$prev_outcome)
-    #     ) |>
-    #     pcori_conditional_means(
-    #         object$outcome_model, alpha, new.data = _
-    #     ) |>
-    #     mutate(
-    #         Term1_unweighted =
-    #             (!!(object$variables$outcome)-E_Y_past)/
-    #             (baseline_lambda*Exp_gamma* exp(-alpha*!!(object$variables$outcome))*E_exp_alphaY),
-    #         Term1_weighted = purrr::map2(!!object$variables$time, Term1_unweighted, \(time, UNW){
-    #             spline_fn(time, knots) * UNW
-    #         })
-    #     )
-    # term1 <- Visits_df_a |>
-    #     group_by(alpha, !!object$variables$id) |>
-    #     summarize(
-    #         purrr::map2(!!object$variables$time, Term1_unweighted, \(time, UNW){
-    #             crossprod(evaluate(base, time), UNW)
-    #         })
-    #     )
-
-    use.data <- object$data |>
-        semi_join(Visits_df, join_by(object$variables$id)) |>
-        left_join(select(Visits_df, !!object$variables$id, visit.number, baseline_lambda),
-                  join_by(!!object$variables$id, visit.number))
     # Compute value of the influence function: -----------------------------
     influence <- purrr::map_dfr(alpha, function(alpha){
-        use.data |>
+        object$data |>
             group_by(!!object$variables$id) |>
             group_modify(
                 compute_influence_for_one_alpha_and_one_patient,
@@ -457,7 +424,7 @@ function(
     alpha,
     object,
     base,
-    integration.method = c('numerical', 'linear'),
+    integration.method = c('piecewise', 'numerical', 'linear'),
     ...,
     numerical.ingtegration.resolution = 1000
 ){
@@ -473,6 +440,8 @@ function(
     # id <- unique(pull(df_i, !!object$variables$id))
     # if (getOption('PCORI::do_arg_checks', TRUE))
     #     assert_that(rlang::is_atomic(id))
+    df_i[!is.na(pull(df_i, object$variables$prev_outcome)), 'baseline_lambda'] <-
+        estimate_baseline_intensity(object$intensity_model, df_i[!is.na(pull(df_i, object$variables$prev_outcome)), ])
 
     df.in.range <- df_i |>
         filter(
@@ -505,7 +474,12 @@ function(
         ) |>
         pull(term1) |> unlist()
     term2 <-
-        if (integration.method == 'numerical') {
+        if (integration.method == 'piecewise') {
+            numerically_integrate_influence_term_2_for_one_alpha_and_one_patient_piecewise(
+                df_i, object=object, alpha=alpha, base=base,
+                ...
+            ) |> as.vector()
+        } else if (integration.method == 'numerical') {
             numerically_integrate_influence_term_2_for_one_alpha_and_one_patient(
                 df_i, object, alpha, base,
                 resolution = numerical.ingtegration.resolution
@@ -524,11 +498,18 @@ function(
 }
 if(F){
     compute_influence_for_one_alpha_and_one_patient(
-        df_i, 0, object, base = obase, integration.method = 'numerical') |>
-        pull(influence)
+        df_i, 0, object, base = base, integration.method = 'piecewise', resolution.within.period = 250) |>
+        pull(term2)
     compute_influence_for_one_alpha_and_one_patient(
-        df_i, 0, object, base = obase, integration.method = 'linear') |>
-        pull(influence)
+        df_i, 0, object, base = base, integration.method = 'numerical') |>
+        pull(term2)
+    compute_influence_for_one_alpha_and_one_patient(
+        df_i, 0, object, base = base, integration.method = 'linear') |>
+        pull(term2)
+    compute_influence_for_one_alpha_and_one_patient(
+        df_i <- object$data |> filter(elig_pid == unique(elig_pid)[6])
+        , 0, object, base = base, integration.method = 'linear') |>
+        pull(term1)
 }
 
 

@@ -11,7 +11,6 @@ fit_PCORI_within_group_model(
   outcome.var,
   time.var,
   intensity.covariates = ~1,
-  intensity.bandwidth,
   outcome.covariates = ~-1,
   End = max({
      {
@@ -23,7 +22,7 @@ fit_PCORI_within_group_model(
 }
 \arguments{
 \item{group.data}{The data for the group that is being analyzed.
-Preferrably passed in as a single tibble that internally is
+Preferably passed in as a single tibble that internally is
 subsetted/filtered as needed.}
 
 \item{outcome_modeler}{A separate function that may be swapped out to switch

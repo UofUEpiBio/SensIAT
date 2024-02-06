@@ -4,7 +4,13 @@
 \alias{PCORI_sim_outcome_modeler}
 \title{Outcome Modeler for PCORI Single Index Model.}
 \usage{
-PCORI_sim_outcome_modeler(formula, data, kernel = "dnorm", method = "nmk", ...)
+PCORI_sim_outcome_modeler(
+  formula,
+  data,
+  kernel = "K2_Biweight",
+  method = "nmk",
+  ...
+)
 }
 \arguments{
 \item{formula}{The outcome model formula}
