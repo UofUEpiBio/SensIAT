@@ -135,14 +135,14 @@ fit_PCORI_within_group_model <- function(
         summarize( ungroup(filter(model.data, !!time.var > 0, !is.na(!!outcome.var))),
             "mean({time.var})" := mean(!!time.var),
             "sd({time.var})" := sd(!!time.var),
-            "mean({time.var} - lag({time.var}))" := mean(!!vars$delta_time),
-            "sd({time.var} - lag({time.var}))" := sd(!!vars$delta_time)
+            "mean({vars$delta_time}))" := mean(!!vars$delta_time),
+            "sd({vars$delta_time}))" := sd(!!vars$delta_time)
         )
 
     model.data <- model.data |>
         mutate(
-            !!vars$norm_time := (!!time.var - !!pull(centering.statistics, 1))/!!pull(centering.statistics, 2),
-            !!vars$norm_delta_time := (!!time.var - !!pull(centering.statistics, 3))/!!pull(centering.statistics, 4)
+            !!vars$norm_time := (!!vars$time - !!pull(centering.statistics, 1))/!!pull(centering.statistics, 2),
+            !!vars$norm_delta_time := (!!vars$delta_time - !!pull(centering.statistics, 3))/!!pull(centering.statistics, 4)
         )
     ###########################   Model 1: Intensity model  ######################
     intensity.model <-
