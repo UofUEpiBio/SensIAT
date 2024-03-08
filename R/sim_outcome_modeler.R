@@ -12,7 +12,7 @@ PCORI_sim_outcome_modeler <- function(formula, data, kernel = "K2_Biweight", met
   mf <- model.frame(formula, data = data)
   Xi <- model.matrix(formula, data = mf)
 
-  Yi <-model.response(mf)
+  Yi <- model.response(mf)
 
   SDR1 <- cumuSIR_new(X = Xi, Y = Yi)
   structure(
