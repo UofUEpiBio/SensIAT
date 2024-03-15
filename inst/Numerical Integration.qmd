@@ -7,10 +7,10 @@ format:
         self-contained: true
 editor: visual
 ---
+
 ```{r}
 devtools::load_all('.')
 ```
-
 
 ## Introduction
 
@@ -101,6 +101,7 @@ expected_value <- \(data, ...){
         nrow = nrow(data)
     )}
 ```
+
 ```{r}
 
 data <- object$outcome_model$data
@@ -195,7 +196,8 @@ joined.old.and.new |> filter(log10(estimates_diff) >-10)
 
 ```
 
-## Numerical Approximation 
+## Numerical Approximation
+
 ```{r}
 impute_patient_df <- function(eval.times, df_i, object, right=TRUE){
     outcomes <- pull(df_i, !!(object$variables$outcome))
@@ -297,15 +299,13 @@ $$
 V^{-1}B^1(b)\frac{    \sum_{j=1}^N Y_j e^{\alpha Y_j}\kappa(\beta X_j - \beta x_i(b)|h))}{    \sum_{j=1}^N e^{\alpha Y_j}\kappa(\beta X_j - \beta x_i(b)|h))} - V^{-1}B^1(a)\frac{    \sum_{j=1}^N Y_j e^{\alpha Y_j}\kappa(\beta X_j - \beta x_i(a)|h))}{    \sum_{j=1}^N e^{\alpha Y_j}\kappa(\beta X_j - \beta x_i(a)|h))}
 $$
 
-Where $B^1(t) = \int_a^t B(t^\star) dt^\star$. and note that $V=\int_a^b B(t) dt = B^1(b)$. So this expression can further reduce to simply:
-$$
+Where $B^1(t) = \int_a^t B(t^\star) dt^\star$. and note that $V=\int_a^b B(t) dt = B^1(b)$. So this expression can further reduce to simply: $$
 \frac{    \sum_{j=1}^N Y_j e^{\alpha Y_j}\kappa(X_j\beta - x_i(b)\beta|h))}{    \sum_{j=1}^N e^{\alpha Y_j}\kappa(\beta X_j - \beta x_i(b)|h))}
 $$
 
 ```{r}
 K2_Biweight_kernel <- function(x, h){15/16*(1-(x/h)^2)^2 * (abs(x) <= h)}
 ```
-
 
 ```{r}
 compute_influence_term2_integrals <- 
@@ -418,8 +418,7 @@ $$
 \int_{t=a}^b V^{-1}B(t)\hat{E}[Y(t)|\bar{O}(t)_i]dt
 $$
 
-This section will test the case for the numerical integration with the special case that the expected value is identically 1.  Which should reduce to an vector of length $p$.
-
+This section will test the case for the numerical integration with the special case that the expected value is identically 1. Which should reduce to an vector of length $p$.
 
 ```{r}
 special.case.1 <- 
@@ -451,9 +450,6 @@ object$data |>
 # object$data |> filter(time == 68)
 ```
 
-
-
-
 If $\hat E(Y|\bar O_i(t), t_l < t \leq t+{l+1}) \approx C_0 + C_1 t$ Then
 
 $$
@@ -469,23 +465,20 @@ $$
 \\
 &=& \left[B_\perp^1(t)\left(C_0 + C_1 t\right) - C_1 B_\perp^2(t))\right]_{t_l}^{t_{l+1}}
 \end{array}
-$$
-with $B_\perp^1(t) = \int_a^t B_\perp(t^\prime) dt^\prime$ and  $B_\perp^2(t) = \int_a^t B_\perp^1(t^\prime) dt^\prime$.
-
+$$ with $B_\perp^1(t) = \int_a^t B_\perp(t^\prime) dt^\prime$ and $B_\perp^2(t) = \int_a^t B_\perp^1(t^\prime) dt^\prime$.
 
 $$
 \left[B_\perp^1(t)\left(C_0 + C_1 t\right) - C_1 B_\perp^2(t)dt\right]_{t_l}^{t_{l+1}} = 
 B_\perp^1(t_{l+1})\left(C_0 + C_1 t_{l+1}\right) - C_1 B_\perp^2(t_{l+1}) -
 B_\perp^1(t_{l})\left(C_0 + C_1 t_{l}\right) + C_1 B_\perp^2(t_{l})
-$$
-$$
+$$ $$
 C_1 = \frac{\lim_{t\to t_l^-}\hat E(Y|\bar O_i(t_{l+1}))-\hat E(Y|\bar O_i(t_{l}))}{t_{l+1}-t_l}
-$$
-$$
+$$ $$
 C_0 = \hat E(Y|\bar O_i(t_{l+1})) - C_1 t_{l+1}
 $$
 
 for one case
+
 ```{r}
     df_i <- object$data |> filter(elig_pid == 19002)
 
@@ -543,8 +536,6 @@ for one case
     })
 ```
 
-
-
 ```{r}
 tmp <- 
     impute_patient_df(a:b, df_i, object) %>% 
@@ -575,11 +566,11 @@ ggplot(data=tmp |> mutate(across(period, as.factor))
 ```
 
 numerically integrate again
+
 ```{r}
 B <- evaluate(obase, a:b)
 crossprod(B, tmp$Ey)
 ```
-
 
 ```{r}
 plot(obase)
@@ -587,15 +578,8 @@ plot(B1)
 plot(B2)
 ```
 
-
-
-
-
-
-
-
-
 as a function
+
 ```{r}
 compute_influence_term_2_linearly <- function(df_i, alpha, object, base){
     a <- min(base@knots)
@@ -662,6 +646,7 @@ term2[[1]]
 ```
 
 ## investigating linearity based on bandwidth
+
 ```{r}
 plot_by_bandwidth <- function(bandwidth){
     eval.points <- a:b
@@ -681,10 +666,9 @@ plot_by_bandwidth <- function(bandwidth){
         geom_line()
 }
 ```
+
 ```{r}
 plot_by_bandwidth(5)
 plot_by_bandwidth(30)
 plot_by_bandwidth(100)
 ```
-
-

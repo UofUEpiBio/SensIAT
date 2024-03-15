@@ -112,7 +112,7 @@ fit_PCORI_within_group_model <- function(
 
     model.data <-
         rlang::inject(!!outcome.var ~ !!id.var + !!time.var + !!rlang::f_rhs(intensity.covariates)) |>
-        model.frame(data=filter(group.data, (!!time.var) < !!End), na.action = na.pass) |>
+        model.frame(data=filter(group.data, (!!time.var) <= !!End), na.action = na.pass) |>
         arrange(!!id.var, !!time.var) |>
         group_by(!!id.var) |>
         mutate(

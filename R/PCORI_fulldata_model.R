@@ -64,7 +64,7 @@ fit_PCORI_fulldata_model <- function(data, trt, ...){
 `predict.PCORI_fulldata_model` <-
     function(object, time, alpha){
 
-        control.predicted    <- predict(object$control  , time, alpah)
+        control.predicted    <- predict(object$control  , time, alpha)
         treatment.predicted  <- predict(object$treatment, time, alpha)
 
         full_join(
