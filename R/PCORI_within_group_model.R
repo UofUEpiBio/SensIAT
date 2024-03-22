@@ -367,7 +367,8 @@ function(object, time, alpha,
          knots,
          intensity.bandwidth = NULL,
          integral.resolution = 1000,
-         integration.method = c("linear", "numerical", "piecewise")
+         integration.method = c("linear", "numerical", "piecewise", 'quadv'),
+         ...
          ){
     assert_that(
         is(object, 'PCORI_within_group_model'),
@@ -393,6 +394,7 @@ function(object, time, alpha,
                 base=base,
                 integration.method = integration.method,
                 numerical.ingtegration.resolution = integral.resolution,
+                ...,
                 .keep=TRUE
             )
     })
@@ -424,7 +426,7 @@ function(
     alpha,
     object,
     base,
-    integration.method = c('piecewise', 'numerical', 'linear'),
+    integration.method = c('piecewise', 'numerical', 'linear', 'quadv'),
     ...,
     numerical.ingtegration.resolution = 1000
 ){
@@ -487,6 +489,8 @@ function(
         } else if (integration.method == 'linear') {
             compute_influence_term_2_linearly(df_i, alpha=alpha, object=object, base=base) |>
                 pull(term2) |> unlist() |> as.vector()
+        } else if (integration.method == 'quadv') {
+            compute_influence_term_2_quadv(df_i, alpha=alpha, object=object, base=base)
         }
     influence <- term1 + term2
     tibble(

@@ -15,6 +15,7 @@ Imports:
     KernSmooth,
     MASS,
     orthogonalsplinebasis,
+    pracma,
     purrr,
     rlang,
     splines,
