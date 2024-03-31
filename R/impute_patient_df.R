@@ -11,7 +11,7 @@ impute_patient_df <- function(eval.times, df_i, object, right=TRUE){
     delta_time = eval.times - orig.time[period]
     norm_time  = (eval.times - time_mean)/time_sd
     norm_delta_time = (delta_time - Δ_time_mean)/Δ_time_sd
-    prev_outcome = (!!outcomes)[period]
+    prev_outcome = outcomes[period]
 
 
     tibble(

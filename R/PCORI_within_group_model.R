@@ -420,6 +420,9 @@ function(object, time, alpha,
             var_t = purrr::map(Var_beta, ~B_t %*% .x %*% t(B_t))
         )
 }
+
+
+
 compute_influence_for_one_alpha_and_one_patient <-
 function(
     df_i,
@@ -450,7 +453,7 @@ function(
             !!min(base@knots) <= !!object$variables$time,
             !!object$variables$time <= !!max(base@knots)
         )
-    if(nrow(df.in.range) == 0) return(tibble())
+    # if(nrow(df.in.range) == 0) return(tibble())
     # baseline_lambda <- suppressWarnings(
     #     estimate_baseline_intensity(object$intensity_model, df_i, intensity.bandwidth)
     # )
@@ -459,8 +462,9 @@ function(
             Exp_gamma = exp((!!coef(object$intensity_model))*!!object$variables$prev_outcome),
         ) |>
         filter(
-            !!min(base@knots) <= !!object$variables$time,
-            !!object$variables$time <= !!max(base@knots)
+            visit.number > 1
+        #     !!min(base@knots) <= !!object$variables$time,
+        #     !!object$variables$time <= !!max(base@knots)
         ) |>
         pcori_conditional_means(
             object$outcome_model, alpha, new.data = _
