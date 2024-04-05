@@ -1,46 +1,46 @@
-compute_influence_term_2_quadv <- function(df_i, alpha, object, base, ...){
+compute_influence_term_2_quadv <-
+function(
+    df_i,
+    expected_value,
+    base,
+    variables,
+    ...,
+    tol=.Machine$double.eps^(1/4)
+){
     assert_that(
         is.data.frame(df_i),
-        is.numeric(alpha),
-        is(object, 'PCORI_within_group_model'),
-        is(base, 'SplineBasis')
+        is.function(expected_value),
+        is(base, 'OrthogonalSplineBasis')
     )
-    expected_value <- \(data, ...){
-        matrix(
-            object$outcome_model |>
-                pcori_conditional_means(..., new.data = data) |>
-                pull('E_Y_past'),
-            nrow = nrow(data)
-        )}
-    a <- min(base@knots)
-    b <- max(base@knots)
-    obase <- orthogonalize(base)
+
+    a <- base@knots[[base@order]]
+    b <- tail(base@knots, base@order)[[1]]
 
     patient.df <- df_i |>
         filter(
-            !!a <= !!object$variables$time,
-            !!object$variables$time <= !!b
+            !!a <= !!variables$time,
+            !!variables$time <= !!b
         )
 
     periods <-
         tibble(
-            lower=c(a, pull(patient.df, object$variables$time)),
-            upper=c(pull(patient.df, object$variables$time), b)
+            lower=c(a, pull(patient.df, variables$time)),
+            upper=c(pull(patient.df, variables$time), b)
         )
 
     period.integrals <-
-        pmap(periods, \(lower,upper, ...){
+        pmap(periods, \(lower,upper){
             pracma::quadv(\(time){
                 imputed.data <-
                     if_else(
                         time == lower,
-                        impute_patient_df(time, df_i, object, right = FALSE),
-                        impute_patient_df(time, df_i, object, right = TRUE)
+                        impute_patient_df(time, df_i, variables=variables, ..., right = FALSE),
+                        impute_patient_df(time, df_i, variables=variables, ..., right = TRUE)
                     )
-                ev <- expected_value(imputed.data, alpha = alpha)[,]
-                B <- evaluate(obase, time)
+                ev <- expected_value(imputed.data)[,]
+                B <- evaluate(base, time)
                 return(B*ev)
-            }, lower, upper, tol=.Machine$double.eps^(1/4))
+            }, lower, upper, tol=tol)
         })
 
 

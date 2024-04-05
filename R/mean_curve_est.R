@@ -97,26 +97,6 @@ function(
         do.var = TRUE
         ) {
 
-        # Visits_df_a=visits
-
-        # E_Y_past=rep(NA,K)
-        # E_exp_alphaY=rep(NA,K)
-        #
-        # Exp_gamma=rep(NA,K)
-
-
-        # for(k in 1:K){
-        #     df_k            = Visits_df_a[k,]
-        #     Exp_gamma[k]    = exp(gamma*df_k$Prev_outcome)
-        #     mu_k            = predict.glm(Outcome_model,newdata=df_k,type="response")
-        #     temp            = Cond_mean_fn(mu=mu_k, theta=Outcome_model$theta, alpha=alpha)
-        #     E_Y_past[k]     = temp[[1]]
-        #     E_exp_alphaY[k] = temp[[2]]
-        # }
-        # Visits_df_a=mutate(Visits_df_a,Exp_gamma,E_Y_past,E_exp_alphaY)
-        # Visits_df_a=mutate(Visits_df_a,Term1_unweighted=(Asthma_control-E_Y_past)/
-        #                        (baseline_lambda*Exp_gamma*exp(-alpha*Asthma_control)*E_exp_alphaY) )
-
         Exp_gamma = exp(gamma * Visits_df$Prev_outcome)
         mu_k = predict.glm(Outcome_model, newdata = Visits_df, type='response')
         temp = purrr::map(mu_k, Cond_mean_fn, theta = Outcome_model$theta, alpha = alpha)

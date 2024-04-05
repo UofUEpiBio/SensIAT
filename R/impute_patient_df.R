@@ -1,11 +1,11 @@
-impute_patient_df <- function(eval.times, df_i, object, right=TRUE){
-    outcomes <- pull(df_i, !!(object$variables$outcome))
-    orig.time <- pull(df_i, !!object$variables$time)
+impute_patient_df <- function(eval.times, df_i, variables, centering, right=TRUE){
+    outcomes <- pull(df_i, !!(variables$outcome))
+    orig.time <- pull(df_i, !!variables$time)
 
-    time_mean <- object$outcome_model_centering[[1]]
-    time_sd   <- object$outcome_model_centering[[2]]
-    Δ_time_mean <- object$outcome_model_centering[[3]]
-    Δ_time_sd   <- object$outcome_model_centering[[4]]
+    time_mean <- centering[[1]]
+    time_sd   <- centering[[2]]
+    Δ_time_mean <- centering[[3]]
+    Δ_time_sd   <- centering[[4]]
 
     period <- as.numeric(cut(eval.times, c(orig.time, Inf), right = right))
     delta_time = eval.times - orig.time[period]
@@ -26,8 +26,8 @@ impute_patient_df <- function(eval.times, df_i, object, right=TRUE){
         dplyr::rename(
             any_of(
                 rlang::set_names(
-                    names(object$variables),
-                    sapply(object$variables, deparse)
+                    names(variables),
+                    sapply(variables, deparse)
                 )
             )
         )

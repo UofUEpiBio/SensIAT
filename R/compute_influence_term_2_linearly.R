@@ -9,9 +9,9 @@
 #' The integral is computed on the assumption
 #'
 #' @param df_i data frame for one individual, should include all observations including baseline.
-#' @param alpha sensitivity parameter
-#' @param object `PCORI_within_group_model` object with model data.
+#' @param expected_value The function to compute the expected value of the outcome model.
 #' @param base a [Spline Basis][SplineBasis] object.
+#' @inheritDotParams ... passed to impute_patient_df
 #'
 #' @return
 #' A data frame with columns `alpha`, and `influence_term_2`.
@@ -20,20 +20,19 @@
 #' @export
 #'
 #' @examples
-compute_influence_term_2_linearly <- function(df_i, alpha, object, base){
+compute_influence_term_2_linearly <-
+function(
+    df_i,
+    expected_value,
+    base,
+    variables,
+    ...
+){
     assert_that(
         is.data.frame(df_i),
-        is.numeric(alpha),
-        is(object, 'PCORI_within_group_model'),
         is(base, 'SplineBasis')
     )
-    expected_value <- \(data, ...){
-        matrix(
-            object$outcome_model |>
-                pcori_conditional_means(..., new.data = data) |>
-                pull('E_Y_past'),
-            nrow = nrow(data)
-        )}
+
 
     a <- min(base@knots)
     b <- max(base@knots)
@@ -45,14 +44,14 @@ compute_influence_term_2_linearly <- function(df_i, alpha, object, base){
 
     patient.df <- df_i |>
         filter(
-            !!a <= !!object$variables$time,
-            !!object$variables$time <= !!b
+            !!a <= !!variables$time,
+            !!variables$time <= !!b
         )
 
-    times <- c(a, pull(patient.df, object$variables$time), b)
+    times <- c(a, pull(patient.df, variables$time), b)
 
-    left <- impute_patient_df(head(times, -1), df_i, object, right = FALSE) |> expected_value(alpha)
-    right <- impute_patient_df(tail(times, -1), df_i, object) |> expected_value(alpha)
+    left <- impute_patient_df(head(times, -1), df_i, variables = variables, ..., right = FALSE) |> expected_value(alpha)
+    right <- impute_patient_df(tail(times, -1), df_i, variables = variables, ...) |> expected_value(alpha)
 
     dt <- diff(times)
 
