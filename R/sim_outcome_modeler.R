@@ -538,7 +538,9 @@ function(
 
     Xi <- model.matrix(terms(model), model$data)
     Yi <- model.response(model.frame(model))
-    Xi_new <- model.matrix(rlang::new_formula(NULL, rlang::f_rhs(terms(model))), data=new.data)
+    for(var in setdiff(all.vars(terms(model)), tbl_vars(new.data)))
+        new.data[[var]] <- NA
+    Xi_new <- model.matrix(terms(model), data=new.data)
 
     if(nrow(Xi_new)==0) return(mutate(
         new.data,

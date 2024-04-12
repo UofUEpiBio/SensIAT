@@ -51,6 +51,7 @@
 #'         knots = c(60,60,60,60,260,460,460,460,460),
 #'         control = pcori_control('numeric')
 #'     )
+#' time.pw <- system.time({
 #' fitted.trt.sim.pw <-
 #'     fit_PCORI_within_group_model(
 #'         group.data = filter(ARC_data, Trt=='home_visits'),
@@ -63,6 +64,7 @@
 #'         knots = c(60,60,60,60,260,460,460,460,460),
 #'         control = pcori_control('piecewise')
 #'     )
+#' })
 #' fitted.trt.sim.quadv <-
 #'     fit_PCORI_within_group_model(
 #'         group.data = filter(ARC_data, Trt=='home_visits'),
@@ -222,7 +224,10 @@ fit_PCORI_within_group_model <- function(
         End = End,
         influence = influence,
         coefficients = Beta$estimate,
-        coefficient_variance = Beta$variance
+        coefficient_variance = Beta$variance,
+        control = control,
+        base=base
+
     ), class = "PCORI_within_group_model")
 }
 

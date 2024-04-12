@@ -42,16 +42,12 @@ function(
     resolution.within.period = 50
 ){
     df_i |>
-        filter(
-            ( !!min(base@knots) <= !!variables$time
-            & !!variables$time <= !!max(base@knots)
-            ) | ( !!min(base@knots) <= !!variables$prev_time
-            & !!variables$prev_time <= !!max(base@knots)
-            )
-        ) |>
         transmute(
             a = pmax(!!variables$prev_time, !!min(base@knots)),
             b = pmin(!!variables$time     , !!max(base@knots))
+        ) |>
+        filter(
+            !!min(base@knots) <= a, a<b, b <= !!max(base@knots)
         ) |>
         pmap(
             numerically_integrate_influence_term_2_for_one_alpha_and_one_patient,

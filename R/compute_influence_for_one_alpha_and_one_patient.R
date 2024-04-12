@@ -77,7 +77,7 @@ function(
                 df_i, expected_value, base=base,
                 variables = variables, ...
             ) |>
-                pull(term2) |> unlist() |> as.vector()
+                unlist() |> as.vector()
         } else if (control$integration.method == 'quadv') {
             compute_influence_term_2_quadv(
                 df_i, expected_value, base=base,

@@ -73,7 +73,7 @@ function(
     eB1 <- evaluate(B1, times)
     eB2 <- evaluate(B2, times)
 
-    influence_term_2 <- map(seq_along(alpha), function(i){
+    map(seq_along(alpha), function(i){
         pmap(
             list(
                 c0 = C0[,i],
@@ -86,6 +86,4 @@ function(
                     c1*(evaluate(B2, t2) - evaluate(B2, t1))
             }) |> reduce(`+`)
     })
-
-    tibble(alpha, term2 = influence_term_2)
 }
