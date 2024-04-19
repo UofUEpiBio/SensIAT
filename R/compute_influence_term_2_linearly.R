@@ -73,17 +73,17 @@ function(
     eB1 <- evaluate(B1, times)
     eB2 <- evaluate(B2, times)
 
-    map(seq_along(alpha), function(i){
-        pmap(
-            list(
-                c0 = C0[,i],
-                c1 = C1[,i],
-                t1 = head(times, -1),
-                t2 = tail(times, -1)
-            ),
-            function(c0, c1, t1, t2){
-                (c0+c1*t2)*evaluate(B1,t2) - (c0+c1*t1)*evaluate(B1,t1) -
-                    c1*(evaluate(B2, t2) - evaluate(B2, t1))
-            }) |> reduce(`+`)
-    })
+
+    pmap(
+        list(
+            c0 = C0[,1],
+            c1 = C1[,1],
+            t1 = head(times, -1),
+            t2 = tail(times, -1)
+        ),
+        function(c0, c1, t1, t2){
+            (c0+c1*t2)*evaluate(B1,t2) - (c0+c1*t1)*evaluate(B1,t1) -
+                c1*(evaluate(B2, t2) - evaluate(B2, t1))
+        }) |> reduce(`+`)
+
 }
