@@ -22,10 +22,11 @@ function(
             !!variables$time <= !!b
         )
 
+    times <- unique(c(a, pull(patient.df, variables$time), b))
     periods <-
         tibble(
-            lower=c(a, pull(patient.df, variables$time)),
-            upper=c(pull(patient.df, variables$time), b)
+            lower=head(times, -1),
+            upper=tail(times, -1)
         )
 
     period.integrals <-

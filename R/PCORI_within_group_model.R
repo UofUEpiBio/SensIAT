@@ -180,8 +180,8 @@ fit_PCORI_within_group_model <- function(
     outcome.model <- outcome_modeler(outcome.formula, data = filter(model.data, !!time.var > 0, !is.na(!!outcome.var)))
 
 
-    base <- OBasis(knots)
-    self_contained_spline <- \(x)evaluate(base, x)
+    base <- SplineBasis(knots)
+    V_inverse <- solve(GramMatrix(base))
 
     # Compute value of the influence function: -----------------------------
     influence <- purrr::map_dfr(alpha, function(alpha){
@@ -210,13 +210,14 @@ fit_PCORI_within_group_model <- function(
             IF = list(influence |> reduce(rbind) |> `rownames<-`(NULL))
         ) |>
         mutate(
-            estimate = purrr::map(IF, colMeans),
-            variance = purrr::map2(IF, estimate, ~tcrossprod(t(.x) - .y)/(nrow(.x)^2))
+            IF_ortho = purrr::map(IF, \(IF){IF %*% V_inverse}),
+            estimate = purrr::map(IF_ortho, colMeans),
+            variance = purrr::map2(IF_ortho, estimate, ~tcrossprod(t(.x) - .y)/(nrow(.x)^2))
         )
+
 
     structure(list(
         intensity_model = intensity.model,
-        # baseline_intensity = base_intens,
         outcome.model = outcome.model,
         outcome.model.centering = centering.statistics,
         data = model.data,
@@ -226,8 +227,8 @@ fit_PCORI_within_group_model <- function(
         coefficients = Beta$estimate,
         coefficient_variance = Beta$variance,
         control = control,
-        base=base
-
+        base=base,
+        V_inverse = V_inverse
     ), class = "PCORI_within_group_model")
 }
 
@@ -368,8 +369,7 @@ function(object, time, alpha,
     integration.method = match.arg(integration.method)
     a <- min(knots)
     b <- max(knots)
-    base <- OBasis(knots)
-    self_contained_spline <- \(x)evaluate(base, x)
+    base <- SplineBasis(knots)
 
     # Compute value of the influence function: -----------------------------
     influence <- purrr::map_dfr(alpha, function(alpha){

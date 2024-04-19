@@ -15,7 +15,7 @@ function(
             rlang::is_atomic(alpha), is.numeric(alpha),
             # is(object, 'PCORI_within_group_model'),
             is.data.frame(df_i),
-            is(base, "OrthogonalSplineBasis"),
+            is(base, "SplineBasis"),
             is.list(control)
         )
 
@@ -45,11 +45,9 @@ function(
                 (!!(variables$outcome)-E_Y_past)/
                 (baseline_lambda*Exp_gamma* exp(-alpha*!!(variables$outcome))*E_exp_alphaY)
         ) |>
-        summarize(
-            term1 =
-                list(crossprod(evaluate(base, .data$time), .data$Term1_unweighted)),
-        ) |>
-        pull(term1) |> unlist()
+        with(
+            as.vector(crossprod(evaluate(base, time), Term1_unweighted))
+        )
 
     expected_value <- \(data, ...){
         matrix(
@@ -88,8 +86,8 @@ function(
     influence <- term1 + term2
     tibble(
         alpha,
-        term1 = list(term1),
-        term2 = list(term2),
-        influence = list(influence)
+        term1 = list(unname(term1)),
+        term2 = list(unname(term2)),
+        influence = list(unname(influence))
     )
 }
