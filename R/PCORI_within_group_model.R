@@ -233,6 +233,19 @@ fit_PCORI_within_group_model <- function(
 }
 
 
+#' Control Parameters for
+#'
+#' @param integration.method
+#' @param intensity.bandwidth
+#' @param resolution
+#' @param resolution.within.period
+#' @param tol
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
 pcori_control <-
 function(
     integration.method = c('quadv', "linear", "numerical", "piecewise"),

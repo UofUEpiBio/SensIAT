@@ -20,7 +20,12 @@ function(
         )
 
     df_i[!is.na(pull(df_i, variables$prev_outcome)), 'baseline_lambda'] <-
-        estimate_baseline_intensity(intensity.model, df_i[!is.na(pull(df_i, variables$prev_outcome)), ])
+        estimate_baseline_intensity(
+            intensity.model,
+            df_i[!is.na(pull(df_i, variables$prev_outcome)), ],
+            bandwidth = control$intensity.bandwidth,
+            variables = variables
+        )
 
     df.in.range <- df_i |>
         filter(
@@ -28,7 +33,7 @@ function(
             !!variables$time <= !!max(base@knots)
         )
 
-    term1 <- if(nrow(df.in.range) == 0) rep(0, ncol(base)) else
+    term1_unweighted <- if(nrow(df.in.range) == 0) matrix(numeric(0), nrow=0, ncol=rep(0, ncol(base))) else
         df_i |>
         mutate(
             Exp_gamma = exp((!!coef(intensity.model))*!!variables$prev_outcome),
@@ -44,9 +49,10 @@ function(
             Term1_unweighted =
                 (!!(variables$outcome)-E_Y_past)/
                 (baseline_lambda*Exp_gamma* exp(-alpha*!!(variables$outcome))*E_exp_alphaY)
-        ) |>
-        with(
-            as.vector(crossprod(evaluate(base, time), Term1_unweighted))
+        )
+
+    term1 <- with(term1_unweighted,
+            evaluate(base, time) * Term1_unweighted
         )
 
     expected_value <- \(data, ...){
@@ -83,7 +89,7 @@ function(
                 variables = variables, ...
             )
         }
-    influence <- term1 + term2
+    influence <- colSums(term1) + term2
     tibble(
         alpha,
         term1 = list(unname(term1)),
