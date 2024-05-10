@@ -106,6 +106,6 @@ function(
         term2 = list(unname(term2)),
         term2_ortho = list(unname(term2_ortho)),
         influence = list(unname(influence)),
-        influence_ortho = list(unname(influence_ortho)),
+        influence_ortho = list(unname(influence_ortho))
     )
 }
