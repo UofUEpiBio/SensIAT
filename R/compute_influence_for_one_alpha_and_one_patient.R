@@ -33,27 +33,31 @@ function(
             !!variables$time <= !!max(base@knots)
         )
 
-    term1_unweighted <- if(nrow(df.in.range) == 0) matrix(numeric(0), nrow=0, ncol=rep(0, ncol(base))) else
-        df_i |>
-        mutate(
-            Exp_gamma = exp((!!coef(intensity.model))*!!variables$prev_outcome),
-        ) |>
-        filter(
-            !!min(base@knots) <= !!variables$time,
-            !!variables$time <= !!max(base@knots)
-        ) |>
-        pcori_conditional_means(
-            outcome.model, alpha, new.data = _
-        ) |>
-        mutate(
-            Term1_unweighted =
-                (!!(variables$outcome)-E_Y_past)/
-                (baseline_lambda*Exp_gamma* exp(-alpha*!!(variables$outcome))*E_exp_alphaY)
-        )
+    term1 <- if(nrow(df.in.range) == 0) {
+            term1_unweighted <- NULL
+            matrix(numeric(0), nrow=0, ncol=ncol(base))
+        } else {
+            term1_unweighted <- df_i |>
+            mutate(
+                Exp_gamma = exp((!!coef(intensity.model))*!!variables$prev_outcome),
+            ) |>
+            filter(
+                !!min(base@knots) <= !!variables$time,
+                !!variables$time <= !!max(base@knots)
+            ) |>
+            pcori_conditional_means(
+                outcome.model, alpha, new.data = _
+            ) |>
+            mutate(
+                Term1_unweighted =
+                    (!!(variables$outcome)-E_Y_past)/
+                    (baseline_lambda*Exp_gamma* exp(-alpha*!!(variables$outcome))*E_exp_alphaY)
+            )
+            with(term1_unweighted,
+                 evaluate(base, time) * Term1_unweighted
+            )
+        }
 
-    term1 <- with(term1_unweighted,
-            evaluate(base, time) * Term1_unweighted
-        )
 
     expected_value <- \(data, ...){
         matrix(
@@ -90,10 +94,18 @@ function(
             )
         }
     influence <- colSums(term1) + term2
+    V_inverse <- solve(GramMatrix(base))
+    term1_ortho = term1 %*% V_inverse
+    term2_ortho = term2 %*% V_inverse
+    influence_ortho = influence %*% V_inverse
     tibble(
         alpha,
+        term1_unweighted = list(term1_unweighted),
         term1 = list(unname(term1)),
+        term1_ortho = list(unname(term1_ortho)),
         term2 = list(unname(term2)),
-        influence = list(unname(influence))
+        term2_ortho = list(unname(term2_ortho)),
+        influence = list(unname(influence)),
+        influence_ortho = list(unname(influence_ortho)),
     )
 }

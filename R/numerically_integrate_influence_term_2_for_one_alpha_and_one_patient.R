@@ -10,7 +10,7 @@ function(
     ...
 ){
     eval.times <- seq(a, b, length.out = resolution)
-    B <- evaluate(orthogonalize(base), eval.times)
+    B <- evaluate(base, eval.times)
     spline_df_est <-
         bind_rows(
             impute_patient_df(head(eval.times,  1), df_i, variables=variables, ..., right = FALSE),
