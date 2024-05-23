@@ -35,10 +35,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// pcoriaccel_NW
+[[nodiscard]] NumericMatrix pcoriaccel_NW(NumericVector Xb, NumericVector Y, NumericVector xb, NumericVector y_seq, double h, String kernel);
+RcppExport SEXP _pcoriRPackage_pcoriaccel_NW(SEXP XbSEXP, SEXP YSEXP, SEXP xbSEXP, SEXP y_seqSEXP, SEXP hSEXP, SEXP kernelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type Xb(XbSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type xb(xbSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y_seq(y_seqSEXP);
+    Rcpp::traits::input_parameter< double >::type h(hSEXP);
+    Rcpp::traits::input_parameter< String >::type kernel(kernelSEXP);
+    rcpp_result_gen = Rcpp::wrap(pcoriaccel_NW(Xb, Y, xb, y_seq, h, kernel));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_pcoriRPackage_pcoriaccel_hello", (DL_FUNC) &_pcoriRPackage_pcoriaccel_hello, 0},
     {"_pcoriRPackage_pcoriaccel_NW_basic", (DL_FUNC) &_pcoriRPackage_pcoriaccel_NW_basic, 5},
+    {"_pcoriRPackage_pcoriaccel_NW", (DL_FUNC) &_pcoriRPackage_pcoriaccel_NW, 6},
     {NULL, NULL, 0}
 };
 

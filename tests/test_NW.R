@@ -53,8 +53,22 @@ n_xb <- length(xb)
 
 
 # Compute the estimated empirical distribution function for the given xb
-Fhat  <- NW_test            ( Xb,Y, xb, y, h=0.6 )
-Fhat2 <- pcoriaccel_NW_basic (Xb,Y, xb, y, h=0.6 )
+
+t0 <- Sys.time()
+
+#Fhat  <- NW_test            ( Xb,Y, xb, y, h=0.6 )
+#Fhat  <- NW_test            ( Xb,Y, xb, y, h=0.6, "dnorm"       )
+Fhat  <- NW_test            ( Xb,Y, xb, y, h=0.6, "K2_Biweight" )
+#Fhat  <- NW_test            ( Xb,Y, xb, y, h=0.6, "K4_Biweight" )
+
+t1 <- Sys.time()
+
+#Fhat2 <- pcoriaccel_NW_basic( Xb,Y, xb, y, h=0.6 )
+#Fhat2 <- pcoriaccel_NW( Xb,Y, xb, y, h=0.6, "dnorm"       )
+Fhat2 <- pcoriaccel_NW( Xb,Y, xb, y, h=0.6, "K2_Biweight" )
+#Fhat2 <- pcoriaccel_NW( Xb,Y, xb, y, h=0.6, "K4_Biweight" )
+
+t2 <- Sys.time()
 
 
 
@@ -75,8 +89,13 @@ all( Fhat2-1 <= .Machine$double.eps )
 
 
 
-# save data for results
+# Save data for results
 save( Fhat,Fhat2, file="tests/test_NW_output.RData" )
 
+# Print output for quick checking
 print( Fhat , digits=3, width=200 )
 print( Fhat2, digits=3, width=200 )
+
+# Print time difference for a rough feel for speedup
+print( t1 - t0 )
+print( t2 - t1 )
