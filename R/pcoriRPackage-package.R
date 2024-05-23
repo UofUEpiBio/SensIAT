@@ -21,6 +21,7 @@
 #' @importFrom purrr map_dfr
 #' @importFrom purrr pmap
 #' @importFrom purrr reduce
+#' @importFrom Rcpp sourceCpp
 #' @importFrom rlang ensym
 #' @importFrom rlang eval_tidy
 #' @importFrom splines ns
@@ -49,5 +50,6 @@
 #' @importFrom tidyr complete
 #' @importFrom utils head
 #' @importFrom utils tail
+#' @useDynLib pcoriRPackage, .registration = TRUE
 ## usethis namespace: end
 NULL

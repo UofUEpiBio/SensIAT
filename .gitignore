@@ -3,28 +3,37 @@
 .Rapp.history
 # Session Data files
 .RData
+tests/*_output.RData
 # User-specific files
 .Ruserdata
+# R Environment Variables
+.Renviron
+# Project and IDE files
+pcoriRPackage.Rproj
+.vscode/
+# RStudio files
+.Rproj.user/
+# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
+.httr-oauth
+
+# knitr and R markdown default cache directories
+*_cache/
+/cache/
+
 # Example code in package build process
 *-Ex.R
 # Output files from R CMD build
 /*.tar.gz
 # Output files from R CMD check
 /*.Rcheck/
-# RStudio files
-.Rproj.user/
-# produced vignettes
-vignettes/*.html
-vignettes/*.pdf
-# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
-.httr-oauth
-# knitr and R markdown default cache directories
-*_cache/
-/cache/
 # Temporary files created by R markdown
 *.utf8.md
 *.knit.md
-# R Environment Variables
-.Renviron
-# Project file
-pcoriRPackage.Rproj
+# Built files for C++ plugin
+src/*.o
+src/*.so
+src/*.dll
+
+# produced vignettes
+vignettes/*.html
+vignettes/*.pdf
