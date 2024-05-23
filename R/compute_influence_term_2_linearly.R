@@ -1,9 +1,9 @@
 #' Compute Second Influence Term Assuming Piece-wise Linearity
 #'
 #' Compute the second term of the influence function. defined as
-#' $$
+#' \deqn{
 #' \int_{t=a}^b V^{-1}B(t)\hat{E}[Y(t)|\bar{O}(t)_i]dt
-#' $$
+#' }
 #'
 #' The limits of the integral are inferred from the knots of `base`.
 #' The integral is computed on the assumption
@@ -11,15 +11,11 @@
 #' @param df_i data frame for one individual, should include all observations including baseline.
 #' @param expected_value The function to compute the expected value of the outcome model.
 #' @param base a [Spline Basis][SplineBasis] object.
-#' @inheritDotParams ... passed to impute_patient_df
+#' @param ... passed to [impute_patient_df].
 #'
 #' @return
 #' A data frame with columns `alpha`, and `influence_term_2`.
 #' The latter a list column with each element a vector.
-#'
-#' @export
-#'
-#' @examples
 compute_influence_term_2_linearly <-
 function(
     df_i,

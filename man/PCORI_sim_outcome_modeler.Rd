@@ -20,7 +20,7 @@ PCORI_sim_outcome_modeler(
 \item{...}{Currently ignored, included for future compatibility.}
 }
 \value{
-TODO
+Object of class \code{PCORI::Single-index-outcome-model} which contains the outcome model portion.
 }
 \description{
 Outcome Modeler for PCORI Single Index Model.

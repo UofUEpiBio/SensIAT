@@ -7,9 +7,11 @@
 fit_PCORI_within_group_model(
   group.data,
   outcome_modeler,
+  knots,
   id.var,
   outcome.var,
   time.var,
+  alpha = 0,
   intensity.covariates = ~1,
   outcome.covariates = ~-1,
   End = max({
@@ -17,6 +19,7 @@ fit_PCORI_within_group_model(
          time.var
      }
  }, na.rm = TRUE) + 1,
+  control = pcori_control(),
   ...
 )
 }
@@ -29,8 +32,24 @@ subsetted/filtered as needed.}
 between negative-binomial, single index model, or another we will
 dream up in the future.}
 
+\item{knots}{knot locations for defining the spline basis.}
+
+\item{id.var}{The variable that identifies the patient.}
+
+\item{outcome.var}{The variable that contains the outcome.}
+
+\item{time.var}{The variable that contains the time.}
+
+\item{alpha}{The sensitivity parameter.}
+
+\item{intensity.covariates}{= ~1 The extra covariates for the intensity model.}
+
+\item{outcome.covariates}{= ~-1 The extra covariates for the outcome model.  The default removes the intercept term.}
+
 \item{End}{The end time for this data analysis, we need to set the default value as the
 max value of the time}
+
+\item{control}{control parameters for fitting the model.}
 
 \item{...}{add parameters as needed or use this to pass forward into the
 outcome_modeler.}
@@ -62,15 +81,43 @@ fitted.trt.nb <-
         outcome_modeler = glm.nb
     )
 
-fitted.trt.sim <-
+fitted.trt.sim.numeric <-
     fit_PCORI_within_group_model(
         group.data = filter(ARC_data, Trt=='home_visits'),
         outcome_modeler = PCORI_sim_outcome_modeler,
+        alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
         id.var = elig_pid,
         outcome.var = Asthma_control,
         time.var = time,
-        intensity.bandwidth = 30,
-        End = 830
+        End = 830,
+        knots = c(60,60,60,60,260,460,460,460,460),
+        control = pcori_control('numeric')
+    )
+time.pw <- system.time({
+fitted.trt.sim.pw <-
+    fit_PCORI_within_group_model(
+        group.data = filter(ARC_data, Trt=='home_visits'),
+        outcome_modeler = PCORI_sim_outcome_modeler,
+        alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+        id.var = elig_pid,
+        outcome.var = Asthma_control,
+        time.var = time,
+        End = 830,
+        knots = c(60,60,60,60,260,460,460,460,460),
+        control = pcori_control('piecewise')
+    )
+})
+fitted.trt.sim.quadv <-
+    fit_PCORI_within_group_model(
+        group.data = filter(ARC_data, Trt=='home_visits'),
+        outcome_modeler = PCORI_sim_outcome_modeler,
+        alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+        id.var = elig_pid,
+        outcome.var = Asthma_control,
+        time.var = time,
+        End = 830,
+        knots = c(60,60,60,60,260,460,460,460,460),
+        control = pcori_control('quadv')
     )
 
 }

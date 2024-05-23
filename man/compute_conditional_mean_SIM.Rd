@@ -7,13 +7,23 @@
 compute_conditional_mean_SIM(alpha, X, Y, x, beta, bandwidth)
 }
 \arguments{
-\item{bandwidth}{}
+\item{alpha}{The sensitivity parameter value.}
+
+\item{X}{The design matrix.}
+
+\item{Y}{The outcome.}
+
+\item{x}{The covariate vector for the observation of interest.}
+
+\item{beta}{The coefficient vector.}
+
+\item{bandwidth}{The bandwidth for the kernel.}
 }
 \value{
 List with elements
 \itemize{
-\item \code{E(y)} and
-\item \code{E(exp(alpha*y))}
+\item \eqn{E(y)} and
+\item \eqn{E(exp(alpha*y))}
 }
 }
 \description{

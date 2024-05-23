@@ -9,15 +9,22 @@
 #' @param group.data The data for the group that is being analyzed.
 #'          Preferably passed in as a single tibble that internally is
 #'          subsetted/filtered as needed.
-#' @param End The end time for this data analysis, we need to set the default value as the
-#'           max value of the time
-#' @param kernel
-#' @param nmk
 #' @param outcome_modeler A separate function that may be swapped out to switch
 #'          between negative-binomial, single index model, or another we will
 #'          dream up in the future.
+#' @param knots knot locations for defining the spline basis.
+#' @param id.var The variable that identifies the patient.
+#' @param outcome.var The variable that contains the outcome.
+#' @param time.var The variable that contains the time.
+#' @param alpha The sensitivity parameter.
+#' @param intensity.covariates = ~1 The extra covariates for the intensity model.
+#' @param outcome.covariates = ~-1 The extra covariates for the outcome model.  The default removes the intercept term.
+#' @param End The end time for this data analysis, we need to set the default value as the
+#'           max value of the time
+#' @param control control parameters for fitting the model.
 #' @param ... add parameters as needed or use this to pass forward into the
 #'          outcome_modeler.
+#'
 #'
 #' @return
 #'      Should return everything needed to define the fit of the model.
@@ -233,19 +240,22 @@ fit_PCORI_within_group_model <- function(
 }
 
 
-#' Control Parameters for
+#' Control Parameters for Fitting the PCORI Within Group Model
 #'
-#' @param integration.method
-#' @param intensity.bandwidth
-#' @param resolution
-#' @param resolution.within.period
-#' @param tol
-#' @param ...
+#' @param integration.method        Method for integration when computing the second influence term.
+#' @param intensity.bandwidth       The bandwidth for the intensity model.
+#' @param resolution                The number of points to use for numerical integration.
+#' @param resolution.within.period  The number of points to use for numerical integration within a period.
+#' @param tol                       The tolerance for numerical integration.
+#' @param ...                       Currently ignored.
 #'
-#' @return
+#' @return a list of control parameters.
 #' @export
 #'
 #' @examples
+#' pcori_control("piecewise", intensity.bandwidth = 30, resolution.within.period = 50)
+#' pcori_control("numerical", intensity.bandwidth = 30, resolution = 1000)
+#' pcori_control("quad", intensity.bandwidth = 30, tol = 1e-6)
 pcori_control <-
 function(
     integration.method = c('quadv', "linear", "numerical", "piecewise"),

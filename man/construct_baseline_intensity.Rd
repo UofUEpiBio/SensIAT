@@ -13,7 +13,7 @@ construct_baseline_intensity(visits.data, spline_seq)
 \item{spline_seq}{The spline sequence.}
 }
 \value{
-The \code{visists.data} filtered to those time points that fall within the
+The \code{visits.data} filtered to those time points that fall within the
 spline_seq range with an added column \code{baseline_lambda} the subject's
 baseline intensity at each of their own visit times.
 }

@@ -9,11 +9,12 @@
 #' @param t time
 #' @param knots spline knots.
 #'
-#' @return
+#' @return vector of spline basis functions evaluated at `t`.
 #'
 #' @export
 #'
 #' @examples
+#' spline_fn(260, c(59,59,59,59,260,461,461,461,461))
 spline_fn <- function(t, knots=Knots){
 
     L=length(knots)

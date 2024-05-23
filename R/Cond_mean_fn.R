@@ -19,8 +19,6 @@
 #' size `theta`.
 #'
 #' @export
-#'
-#' @examples
 Cond_mean_fn <- function(mu,theta,alpha){
 
     pmf_fn=function(z){

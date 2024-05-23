@@ -46,7 +46,7 @@ A list of three \href{data.frame}{data frames} with class \code{arc}:
 \itemize{
 \item baseline visits,
 \item post-baseline visits, and
-\item a \href{data.frame}{data frame} for use with the \href{package:survival}{\code{survival}}
+\item a \href{data.frame}{data frame} for use with the \code{\link[=package:survival]{survival}} package.
 package, which has rows indicationg censoring for subjects with fewer than
 4 post-baseline assessments.
 }

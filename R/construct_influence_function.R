@@ -4,7 +4,7 @@
 #'      `Visits` component.
 #' @param spline_seq The spline sequence.
 #'
-#' @return The `visists.data` filtered to those time points that fall within the
+#' @return The `visits.data` filtered to those time points that fall within the
 #'      spline_seq range with an added column `baseline_lambda` the subject's
 #'      baseline intensity at each of their own visit times.
 #' @export
@@ -52,32 +52,4 @@ function(visits.data, spline_seq){
     }
 
     mutate(Visits_df, baseline_lambda)
-}
-
-
-#' Construct Influence Function
-#'
-#' For a given sensitivity parameter $\alpha$, first estimate $\beta$,
-#' then estimate $Y(t)$.
-#'
-#' In the output `Term1_unweighted` is the estimator for
-#' \deqn{
-#'   \frac{
-#'      Y_i(t_k)-\hat{E}[Y(t_k)|\overline{O}(t_k)_i]
-#'   }{
-#'      \hat{\rho}(t_k,Y_i(t_k),\overline{O}(t_k)_i)
-#'   }.
-#' }
-#'
-#' @param alpha
-#'
-#' @return
-#' @export
-#'
-#' @examples
-construct_influence_function <-
-function(alpha){
-
-
-
 }

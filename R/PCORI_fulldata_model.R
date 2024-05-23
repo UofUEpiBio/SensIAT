@@ -9,7 +9,6 @@
 #' @param data the full data set.
 #' @param trt  an expression that determine what is treated as the treatment.
 #'              Everything not treatment is considered control.
-#' @param End
 #' @param ... Passed on to fit_within_group_model.
 #'
 #' @return a list with class `PCORI-fulldata-fitted-model` with two components,
@@ -59,8 +58,6 @@ fit_PCORI_fulldata_model <- function(data, trt, ...){
 #' @return a tibble/data.frame with the following components.
 #'  * `time`, the time point
 #' @export
-#'
-#' @examples
 `predict.PCORI_fulldata_model` <-
     function(object, time, alpha){
 

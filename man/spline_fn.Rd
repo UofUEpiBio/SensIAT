@@ -11,7 +11,13 @@ spline_fn(t, knots = Knots)
 
 \item{knots}{spline knots.}
 }
+\value{
+vector of spline basis functions evaluated at \code{t}.
+}
 \description{
 Computes the cubic spline basis \eqn{B(t)=(B_1(t), \dots, B_p(t))}
 for a given day, \code{t}, using a given set of knots.
+}
+\examples{
+spline_fn(260, c(59,59,59,59,260,461,461,461,461))
 }

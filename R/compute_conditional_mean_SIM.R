@@ -5,21 +5,18 @@
 
 #' Compute conditional mean for single index model
 #'
-#' @param alpha
-#' @param X
-#' @param Y
-#' @param x
-#' @param beta
-#' @param bandwidth
+#' @param alpha The sensitivity parameter value.
+#' @param X     The design matrix.
+#' @param Y     The outcome.
+#' @param x     The covariate vector for the observation of interest.
+#' @param beta  The coefficient vector.
+#' @param bandwidth The bandwidth for the kernel.
 #'
 #' @return List with elements
 #'
-#'   * `E(y)` and
-#'   * `E(exp(alpha*y))`
-#'
-#' @export
-#'
-#' @examples
+#'   * \eqn{E(y)} and
+#'   * \eqn{E(exp(alpha*y))}
+
 compute_conditional_mean_SIM <-
 function(alpha, X, Y, x, beta, bandwidth){
 

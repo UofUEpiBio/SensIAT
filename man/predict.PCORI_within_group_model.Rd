@@ -11,7 +11,8 @@
   knots,
   intensity.bandwidth = NULL,
   integral.resolution = 1000,
-  integration.method = c("linear", "numerical")
+  integration.method = c("linear", "numerical", "piecewise", "quadv"),
+  ...
 )
 }
 \arguments{
@@ -78,6 +79,14 @@ fitted.trt.sim <-
         time.var = time,
         End = 830
     )
+time.pw <- system.time({
+pred.pw <- predict(fitted.trt.sim, time = c(90, 180),
+    alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+    intensity.bandwidth = 30,
+    knots=c(60,60,60,60,260,460,460,460,460),
+    integration.method = 'piecewise'
+)
+})
 time.num <- system.time({
 pred.num <- predict(fitted.trt.sim, time = c(90, 180),
     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),

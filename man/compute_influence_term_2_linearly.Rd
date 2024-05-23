@@ -4,16 +4,16 @@
 \alias{compute_influence_term_2_linearly}
 \title{Compute Second Influence Term Assuming Piece-wise Linearity}
 \usage{
-compute_influence_term_2_linearly(df_i, alpha, object, base)
+compute_influence_term_2_linearly(df_i, expected_value, base, variables, ...)
 }
 \arguments{
 \item{df_i}{data frame for one individual, should include all observations including baseline.}
 
-\item{alpha}{sensitivity parameter}
-
-\item{object}{\code{PCORI_within_group_model} object with model data.}
+\item{expected_value}{The function to compute the expected value of the outcome model.}
 
 \item{base}{a \link[=SplineBasis]{Spline Basis} object.}
+
+\item{...}{passed to \link{impute_patient_df}.}
 }
 \value{
 A data frame with columns \code{alpha}, and \code{influence_term_2}.
@@ -21,9 +21,9 @@ The latter a list column with each element a vector.
 }
 \description{
 Compute the second term of the influence function. defined as
-$$
-\int_{t=a}^b V^{-1}B(t)\hat{E}\link[=Y(t)|\\bar{O}(t)_i]{Y(t)|\bar{O}(t)_i}dt
-$$
+\deqn{
+\int_{t=a}^b V^{-1}B(t)\hat{E}[Y(t)|\bar{O}(t)_i]dt
+}
 }
 \details{
 The limits of the integral are inferred from the knots of \code{base}.

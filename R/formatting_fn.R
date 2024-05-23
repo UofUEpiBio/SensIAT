@@ -21,7 +21,7 @@
 #'
 #' * baseline visits,
 #' * post-baseline visits, and
-#' * a [data frame](data.frame) for use with the [`survival`](package:survival)
+#' * a [data frame](data.frame) for use with the [`survival`][package:survival] package.
 #'   package, which has rows indicationg censoring for subjects with fewer than
 #'   4 post-baseline assessments.
 #'

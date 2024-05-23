@@ -17,8 +17,6 @@
 #'
 #' @return The `new.data` frame with additional columns `E_Y_past`, and `E_exp_alphaY` appended.
 #' @export
-#'
-#' @examples
 pcori_conditional_means <-
 function(
     model,

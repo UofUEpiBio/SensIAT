@@ -4,10 +4,8 @@
 #' @param data The data to fit the outcome model to.
 #' @param ... Currently ignored, included for future compatibility.
 #'
-#' @return TODO
+#' @return Object of class `PCORI::Single-index-outcome-model` which contains the outcome model portion.
 #' @export
-#'
-#' @examples
 PCORI_sim_outcome_modeler <- function(formula, data, kernel = "K2_Biweight", method = "nmk", ...){
   mf <- model.frame(formula, data = data)
   Xi <- model.matrix(formula, data = mf)
@@ -91,24 +89,6 @@ cumuSIR_new <- function(X, Y, eps = 1e-7)
 
 
 ##### This function defined by MingYueh
-#' Multi-index distribution regression
-#'
-#' @param X
-#' @param Y
-#' @param Y.CP
-#' @param initial
-#' @param kernel It could be any of
-#' `K2_Biweight`, `dnorm`, `K4_Biweight`, `K2_Biweight`, or `K4_Biweight`
-#' @param bandwidth
-#' @param wi.boot
-#' @param fun.
-#' @param method
-#' @param optim_method It could be any of
-#' `Nelder-Mead`, `BFGS`, `CG`, `L-BFGS-B`, or `Brent`
-#' @param abs.tol
-#'
-#' @export
-#'
 SIDRnew <- function(X, Y,
                     Y.CP = NULL,
                     initial = NULL,
@@ -439,7 +419,8 @@ SIDRnew <- function(X, Y,
 K2_Biweight_kernel <- function(x, h){15/16*(1-(x/h)^2)^2 * (abs(x) <= h)}
 K4_Biweight_kernel <- function(x, h){105/64*(1-3*((x/h)^2))*(1-(x/h)^2)^2 * (abs(x) <= h) }
 
-NW_new <- function(Xb, Y, xb, y, h, kernel = "K2_Biweight"){
+NW_new <-
+function(Xb, Y, xb, y, h, kernel = "K2_Biweight"){
 
     if(kernel == "dnorm"){
         K <- function(x, h){dnorm(x/h, 0, 1)} # Gaussian
