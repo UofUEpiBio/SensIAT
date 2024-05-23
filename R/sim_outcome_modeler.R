@@ -449,7 +449,7 @@ Cond_mean_fn_single2 <-
             , x     #< vector of covariates for the observation of interest
             , beta
             , bandwidth
-            , ...  #< for passing kernel to NW_new
+            , ...  #< for passing kernel forward
             ){
 
 
@@ -457,10 +457,11 @@ Cond_mean_fn_single2 <-
 
         # conditional distribution
         #start <- Sys.time()
-        Fhat <- NW_new(Xb = X %*% beta, Y = Y,
-                       xb = x %*% beta, y = y,
-                       h = bandwidth,
-                       ...)
+        Fhat <- pcoriaccel_NW(
+            Xb = X %*% beta, Y = Y,
+            xb = x %*% beta, y = y,
+            h = bandwidth,
+            ...)
         #end <- Sys.time()
         #end - start
 
