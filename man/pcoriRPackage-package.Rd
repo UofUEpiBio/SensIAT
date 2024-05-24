@@ -11,5 +11,10 @@ What the package does (one paragraph).
 \author{
 \strong{Maintainer}: Andrew Redd \email{andrew.redd@hsc.utah.edu} (\href{https://orcid.org/0000-0002-6149-2438}{ORCID})
 
+Other contributors:
+\itemize{
+  \item Agatha Mallett \email{agatha@geometrian.com} [contributor]
+}
+
 }
 \keyword{internal}

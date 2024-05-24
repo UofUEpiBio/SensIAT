@@ -10,7 +10,7 @@ function(
     assert_that(
         is.data.frame(df_i),
         is.function(expected_value),
-        is(base, 'OrthogonalSplineBasis')
+        is(base, 'SplineBasis')
     )
 
     a <- base@knots[[base@order]]
