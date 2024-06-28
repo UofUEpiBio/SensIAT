@@ -4,7 +4,7 @@
 #' @param data The data to fit the outcome model to.
 #' @param ... Currently ignored, included for future compatibility.
 #'
-#' @return Object of class `PCORI::Single-index-outcome-model` which contains the outcome model portion.
+#' @return Object of class `PCORI::Negative-binomial-model` which contains the outcome model portion.
 #' @export
 PCORI_nb_outcome_modeler <- function(formula, 
                                      data, 
@@ -58,36 +58,30 @@ PCORI_nb_outcome_modeler <- function(formula,
 
 Cond_mean_fn_nb <-
     function( alpha #< sensitivity parameter
-            , X     #< Matrix of covariates for all observations, including the spline basis as well as other covariates such as lag(time) and lag(outcome)
             , Y     #< Outcome vector for all observations
-            , x     #< vector of covariates for the observation of interest
-            , beta
-            , bandwidth
+            , mu    # predict.glm(nb_model, newdata=df_k, type="response")
+            , theta # nb_model$theta
             , ...  #< for passing kernel forward
             ){
-
-
+        
+        # Get empirical range of Y
         y <- sort(unique(Y))
-
-        # conditional distribution
-        #start <- Sys.time()
-        Fhat <- pcoriaccel_NW(
-            Xb = X %*% beta, Y = Y,
-            xb = x %*% beta, y = y,
-            h = bandwidth,
-            ...)
-        #end <- Sys.time()
-        #end - start
-
-        # density function
-        Fhat1 <- c(0, Fhat[1:(length(y) - 1)])
-        pmf <- Fhat - Fhat1
-
-        # Question: Are we assuming Y is finite with support range_y or are we approximating an integral here?
+        
+        pmf_fn <- function(z){ 
+          f_z=dnbinom(z, size=theta, prob=theta/(theta + mu))
+          return(f_z)
+        }
+        
+        #####  calculate cdf at y
+        pmf <- matrix(sapply(y, pmf_fn), ncol=1)
+        
+        const <- sum(pmf)
+        pmf <- pmf/const
+        
         E_exp_alphaY <- sum( exp(alpha*y)*pmf )
-
+        
         E_Yexp_alphaY <- sum( y*exp(alpha*y)*pmf )
-
+        
         E_Y_past <- E_Yexp_alphaY/E_exp_alphaY
 
         return(list(
@@ -119,7 +113,8 @@ function(
             purrr::map_dfr(
                 alpha,
                 `pcori_conditional_means.PCORI::Negative-binomial-model`,
-                model = model, new.data = new.data,
+                model = model, 
+                new.data = new.data,
                 ...
             )
         )
@@ -132,7 +127,7 @@ function(
         E_Yexp_alphaY = numeric(0)
     ))
 
-    Xi <- model.matrix(terms(model), model$data)
+    # Xi <- model.matrix(terms(model), model$data)
     Yi <- model.response(model.frame(model))
     for(var in setdiff(all.vars(terms(model)), tbl_vars(new.data)))
         new.data[[var]] <- NA
@@ -151,16 +146,16 @@ function(
     E_Yexp_alphaY <- numeric(nrow(Xi_new))
 
     for(k in 1:nrow(Xi_new)){
-        # df_k <- new.data[k, ]
-        # x = model.matrix(terms(model), data = df_k)
+        df_k <- new.data[k, ]
+        
+        mu_i <- predict.glm(model, 
+                            newdata=df_k,
+                            type="response")
+      
         temp <- Cond_mean_fn_nb(alpha,
-                                     # X = Xi,
-                                     # Y = Yi,
-                                     # x = Xi_new[k,,drop=FALSE],
-                                     # beta = model$coef,
-                                     # bandwidth = model$bandwidth,
-                                     # kernel = attr(model, 'kernel'
-                                                   )
+                                Y = Yi,     #< Outcome vector for all observations
+                                mu = mu_i,    # predict.glm(nb_model, newdata=df_k, type="response")
+                                theta = model$theta # nb_model$theta
         )
 
         E_Y_past[k] <- temp$E_Y_past
