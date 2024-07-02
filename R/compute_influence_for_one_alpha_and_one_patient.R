@@ -53,8 +53,10 @@ function(
                     (!!(variables$outcome)-E_Y_past)/
                     (baseline_lambda*Exp_gamma* exp(-alpha*!!(variables$outcome))*E_exp_alphaY)
             )
-            with(term1_unweighted,
-                 evaluate(base, time) * Term1_unweighted
+            rlang::inject(
+                with(term1_unweighted,
+                    evaluate(base, !!variables$time) * Term1_unweighted
+                )
             )
         }
 
