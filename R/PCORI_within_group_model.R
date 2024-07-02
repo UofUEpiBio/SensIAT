@@ -144,15 +144,14 @@ fit_PCORI_within_group_model <- function(
             !!vars$delta_time      := !!time.var - lag(!!time.var, order_by =  !!time.var, default = 0),
             across(all_of(time.var), coalesce, !!End)
         ) |>
-        ungroup() |>
-        filter(!(visit.number > 1 & is.na(lag(!!outcome.var))))
+        ungroup()
 
     centering.statistics <-
         summarize( ungroup(filter(model.data, !!time.var > 0, !is.na(!!outcome.var))),
             "mean({time.var})" := mean(!!time.var),
             "sd({time.var})" := sd(!!time.var),
             "mean({vars$delta_time}))" := mean(!!vars$delta_time),
-            "sd({vars$delta_time}))" := sd(!!vars$delta_time)
+            "sd({vars$delta_time})" := sd(!!vars$delta_time)
         )
 
     model.data <- model.data |>

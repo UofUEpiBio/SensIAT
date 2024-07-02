@@ -5,7 +5,7 @@
 #'
 #' @return hello string
 pcoriaccel_hello <- function() {
-    .Call('_pcoriRPackage_pcoriaccel_hello', PACKAGE = 'pcoriRPackage')
+    .Call(`_pcoriRPackage_pcoriaccel_hello`)
 }
 
 #' Runs a *basic* implementation of the "NW" function with the "K2_Biweight" kernel, just as a
@@ -18,7 +18,19 @@ pcoriaccel_hello <- function() {
 #' @param h scalar bandwidth of kernel
 #' @return Matrix fyxb
 pcoriaccel_NW_basic <- function(Xb, Y, xb, y_seq, h) {
-    .Call('_pcoriRPackage_pcoriaccel_NW_basic', PACKAGE = 'pcoriRPackage', Xb, Y, xb, y_seq, h)
+    .Call(`_pcoriRPackage_pcoriaccel_NW_basic`, Xb, Y, xb, y_seq, h)
+}
+
+#' Estimate the PMF directly with the K2_Biweight kernel.
+#'
+#' @param Xb vector (expected to be about 500 elements)
+#' @param Y vector (same size as Xb)
+#' @param xb vector
+#' @param y_seq vector
+#' @param h scalar bandwidth of kernel
+#' @return estimated PMF
+pcoriaccel_estimate_pmf <- function(X, Y, xi, y_seq, h) {
+    .Call(`_pcoriRPackage_pcoriaccel_estimate_pmf`, X, Y, xi, y_seq, h)
 }
 
 #' Runs an optimized implementation of the "NW" function.
@@ -30,6 +42,6 @@ pcoriaccel_NW_basic <- function(Xb, Y, xb, y_seq, h) {
 #' @param h scalar bandwidth of kernel
 #' @return Matrix fyxb
 pcoriaccel_NW <- function(Xb, Y, xb, y_seq, h, kernel = "K2_Biweight") {
-    .Call('_pcoriRPackage_pcoriaccel_NW', PACKAGE = 'pcoriRPackage', Xb, Y, xb, y_seq, h, kernel)
+    .Call(`_pcoriRPackage_pcoriaccel_NW`, Xb, Y, xb, y_seq, h, kernel)
 }
 

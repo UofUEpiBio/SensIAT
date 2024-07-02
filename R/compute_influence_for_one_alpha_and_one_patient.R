@@ -87,10 +87,13 @@ function(
             ) |>
                 unlist() |> as.vector()
         } else if (control$integration.method == 'quadv') {
-            compute_influence_term_2_quadv(
+            compute_influence_term_2_quadv_sim(
                 df_i, expected_value, base=base,
+                outcome.model = outcome.model,
                 tol = control$tol,
-                variables = variables, ...
+                variables = variables,
+                alpha = alpha,
+                ...
             )
         }
     influence <- colSums(term1) + term2

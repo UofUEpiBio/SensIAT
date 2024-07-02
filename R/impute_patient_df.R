@@ -7,7 +7,7 @@ impute_patient_df <- function(eval.times, df_i, variables, centering, right=TRUE
     Δ_time_mean <- centering[[3]]
     Δ_time_sd   <- centering[[4]]
 
-    period <- as.numeric(cut(eval.times, c(orig.time, Inf), right = right))
+    period <- as.numeric(cut(eval.times, c(unique(orig.time), Inf), right = right))
     delta_time = eval.times - orig.time[period]
     norm_time  = (eval.times - time_mean)/time_sd
     norm_delta_time = (delta_time - Δ_time_mean)/Δ_time_sd

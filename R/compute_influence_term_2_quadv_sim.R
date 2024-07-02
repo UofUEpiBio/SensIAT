@@ -28,31 +28,32 @@ function(
     Xb <- Xi %*% beta
 
     period.integrals <-
-        map2(head(times, -1), tail(times, -1), \(lower,upper){
+        purrr::map2(head(times, -1), tail(times, -1), \(lower,upper){
             lower_df <- impute_patient_df(lower, df_i,
                                           variables = variables,
                                           centering = centering,
                                           right = FALSE)
             upper_df <- impute_patient_df(upper, df_i,
-                                          variables=object$variables,
+                                          variables=variables,
                                           centering = centering,
                                           right = TRUE)
 
-            xb_lower <- model.matrix(terms(object$outcome.model), data=lower_df) %*% object$outcome.model$coef
-            xb_upper <- model.matrix(terms(object$outcome.model), data=upper_df) %*% object$outcome.model$coef
+            xb_lower <- model.matrix(terms(outcome.model), data=lower_df) %*% outcome.model$coef
+            xb_upper <- model.matrix(terms(outcome.model), data=upper_df) %*% outcome.model$coef
 
             pracma::quadv(\(time, Xb, Yi, xb_lower, xb_upper, y){
                 a <- (time - lower)/(upper-lower)
 
                 xb_time <- (1-a)*xb_lower + a*xb_upper
 
-                Fhat <- pcoriaccel_NW(
-                    Xb = Xb, Y = Yi,
-                    xb = xb_time, y = y,
-                    h = outcome.model$bandwidth,
-                    ...)
-                pmf <- diff(c(0, Fhat))
+                pmf <- pcoriaccel_estimate_pmf(Xb, Yi, xb_time, y, outcome.model$bandwidth)
 
+                # Fhat <- pcoriaccel_NW(
+                #     Xb = Xb, Y = Yi,
+                #     xb = xb_time, y = y,
+                #     h = outcome.model$bandwidth,
+                #     ...)
+                # pmf <- diff(c(0, Fhat))
                 E_exp_alphaY  <- sum(   exp(alpha*y)*pmf )
                 E_Yexp_alphaY <- sum( y*exp(alpha*y)*pmf )
                 ev <- E_Yexp_alphaY/E_exp_alphaY
