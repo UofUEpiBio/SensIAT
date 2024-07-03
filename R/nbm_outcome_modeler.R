@@ -59,24 +59,27 @@ PCORI_nb_outcome_modeler <- function(formula,
 Cond_mean_fn_nb <-
     function( alpha #< sensitivity parameter
             , Y     #< Outcome vector for all observations
-            , mu    # predict.glm(nb_model, newdata=df_k, type="response")
-            , theta # nb_model$theta
+            , mu    # predict.glm(model, newdata=df_k, type="response")
+            , theta # model$theta
             , ...  #< for passing kernel forward
             ){
         
         # Get empirical range of Y
         y <- sort(unique(Y))
         
-        pmf_fn <- function(z){ 
-          f_z=dnbinom(z, size=theta, prob=theta/(theta + mu))
-          return(f_z)
-        }
+        # pmf_fn <- function(z){ 
+        #   f_z = dnbinom(z, size = theta, prob = theta/(theta + mu))
+        #   return(f_z)
+        # }
+        # pmf <- matrix(sapply(y, pmf_fn), ncol=1)
         
         #####  calculate cdf at y
-        pmf <- matrix(sapply(y, pmf_fn), ncol=1)
+        pmf <- matrix(dnbinom(y, size = theta, prob = theta/(theta + mu)), ncol=1)
         
-        const <- sum(pmf)
-        pmf <- pmf/const
+        dnbinom(y, size = theta, prob = theta/(theta + mu))
+        # qnbinom(1-1e-2, size = theta, prob = theta/(theta + mu))
+        # const <- sum(pmf) 
+        # pmf <- pmf / const  
         
         E_exp_alphaY <- sum( exp(alpha*y)*pmf )
         
@@ -146,10 +149,11 @@ function(
     E_Yexp_alphaY <- numeric(nrow(Xi_new))
 
     for(k in 1:nrow(Xi_new)){
+      
         df_k <- new.data[k, ]
         
         mu_i <- predict.glm(model, 
-                            newdata=df_k,
+                            newdata = df_k,
                             type="response")
       
         temp <- Cond_mean_fn_nb(alpha,
