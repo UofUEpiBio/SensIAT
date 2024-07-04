@@ -4,64 +4,75 @@
 #' Runs a *basic* implementation of the "NW" function with the "K2_Biweight" kernel, just as a
 #' proof-of-concept.
 #'
-#' @param Xb vector (expected to be about 500 elements)
-#' @param Y vector (same size as Xb)
-#' @param xb vector
-#' @param y_seq vector
-#' @param h scalar bandwidth of kernel
+#' @param Xb    a vector (expected to be about 500 elements)
+#' @param Y     a vector (same size as Xb)
+#' @param xb    a vector
+#' @param y_seq a vector
+#' @param h     a scalar, the bandwidth of kernel
+#'
 #' @return Matrix fyxb
+#'
+#' @export
 pcoriaccel_NW_basic <- function(Xb, Y, xb, y_seq, h) {
     .Call(`_pcoriRPackage_pcoriaccel_NW_basic`, Xb, Y, xb, y_seq, h)
 }
 
 #' Runs an optimized implementation of the "NW" function.
 #'
-#' @param Xb vector (expected to be about 500 elements)
-#' @param Y vector (same size as Xb)
-#' @param xb vector
-#' @param y_seq vector
-#' @param h scalar bandwidth of kernel
+#' @param Xb    a vector (expected to be about 500 elements)
+#' @param Y     a vector (same size as Xb)
+#' @param xb    a vector
+#' @param y_seq a vector
+#' @param h     a scalar, the bandwidth of kernel
+#'
 #' @return Matrix fyxb
+#'
+#' @export
 pcoriaccel_NW <- function(Xb, Y, xb, y_seq, h, kernel = "K2_Biweight") {
     .Call(`_pcoriRPackage_pcoriaccel_NW`, Xb, Y, xb, y_seq, h, kernel)
 }
 
 #' Returns a string, just as a basic check that the C++ plugin library is working.
 #' @return hello string
+#' @export
 pcoriaccel_hello <- function() {
     .Call(`_pcoriRPackage_pcoriaccel_hello`)
 }
 
 #' Multiplies two matrices.  If the first argument is a vector, it is interpreted as a row vector.
 #' Otherwise, if the second argument is a vector, it is interpreted as a column vector.
-#' @param matrA
-#' @param matrB
+#' @param matrA first matrix
+#' @param matrB second matrix
 #' @return matrA * matrB
+#' @export
 pcoriaccel_mmul <- function(matrA, matrB) {
     .Call(`_pcoriRPackage_pcoriaccel_mmul`, matrA, matrB)
 }
 
 #' Inner product (dot product) of two vectors.
-#' @param vecA
-#' @param vecB
+#' @param vecA first vector
+#' @param vecB second vector
 #' @return vecAᵀ * vecB = vecA • vecB
+#' @export
 pcoriaccel_inner <- function(vecA, vecB) {
     .Call(`_pcoriRPackage_pcoriaccel_inner`, vecA, vecB)
 }
 
 #' Outer product of two vectors.
-#' @param vecA
-#' @param vecB
+#' @param vecA first vector
+#' @param vecB second vector
 #' @return vecA * vecBᵀ = vecA ⊗ vecB
 #' @examples
 #' pcoriaccel_outer( c(1,2,3,4,5), c(2,4,6) )
+#' @export
 pcoriaccel_outer <- function(vecA, vecB) {
     .Call(`_pcoriRPackage_pcoriaccel_outer`, vecA, vecB)
 }
 
 #' Returns the unique elements of a vector, sorted in ascending order.
-#' @param vec
+#' @param vec the vector
 #' @return sort(unique(vec))
+#' @export
 pcoriaccel_sorted_unique <- function(vec) {
     .Call(`_pcoriRPackage_pcoriaccel_sorted_unique`, vec)
 }
@@ -73,8 +84,7 @@ pcoriaccel_sorted_unique <- function(vec) {
 #' @param Y              Vector of all outcomes (same length as a column of `X`)
 #' @param times          Vector of observation times for individual
 #' @param individual_X   Matrix of covariates for individual rows correspond to times prepared for
-NULL
-
+#'                       inferences for integration.
 #' @param x_slope        Vector indicating how
 #' @param alpha          Vector of sensitivity parameters
 #' @param beta           Coefficients of the outcome model
@@ -85,31 +95,34 @@ NULL
 #'
 #' @return integration result
 #'
+#' @export
 pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix <- function(X, Y, times, individual_X, x_slope, alpha, beta, spline_basis, bandwidth, tol = 0.0001220703) {
     .Call(`_pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix`, X, Y, times, individual_X, x_slope, alpha, beta, spline_basis, bandwidth, tol)
 }
 
 #' Estimate the PMF directly with the K2_Biweight kernel.
 #'
-#' @param Xb vector (expected to be about 500 elements)
-#' @param Y vector (same size as Xb)
-#' @param xi vector
-#' @param y_seq vector
-#' @param h scalar bandwidth of kernel
+#' @param Xb    a vector (expected to be about 500 elements)
+#' @param Y     a vector (same size as Xb)
+#' @param xi    a scalar
+#' @param y_seq a vector
+#' @param h     a scalar, the bandwidth of kernel
 #'
 #' @return estimated PMF
 #'
+#' @export
 pcoriaccel_estimate_pmf <- function(X, Y, xi, y_seq, h) {
     .Call(`_pcoriRPackage_pcoriaccel_estimate_pmf`, X, Y, xi, y_seq, h)
 }
 
 #' Rcpp version of `evaluate_basis(⋯)` function
 #'
-#' @param spline_basis   Spline basis, S4 class `orthogonalsplinebasis::SplineBasis`
-#' @param x              Evaluation point
+#' @param spline_basis   The spline basis, S4 class `orthogonalsplinebasis::SplineBasis`
+#' @param x              The point to evaluate
 #'
 #' @return Vector fyxb
 #'
+#' @export
 pcoriaccel_evaluate_basis <- function(spline_basis, x) {
     .Call(`_pcoriRPackage_pcoriaccel_evaluate_basis`, spline_basis, x)
 }

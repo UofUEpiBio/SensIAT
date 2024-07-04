@@ -7,12 +7,15 @@
 //' Runs a *basic* implementation of the "NW" function with the "K2_Biweight" kernel, just as a
 //' proof-of-concept.
 //'
-//' @param Xb vector (expected to be about 500 elements)
-//' @param Y vector (same size as Xb)
-//' @param xb vector
-//' @param y_seq vector
-//' @param h scalar bandwidth of kernel
+//' @param Xb    a vector (expected to be about 500 elements)
+//' @param Y     a vector (same size as Xb)
+//' @param xb    a vector
+//' @param y_seq a vector
+//' @param h     a scalar, the bandwidth of kernel
+//'
 //' @return Matrix fyxb
+//'
+//' @export
 // [[Rcpp::export]]
 [[nodiscard]] NumericMatrix pcoriaccel_NW_basic(
 	NumericVector Xb, NumericVector Y,
@@ -182,12 +185,15 @@ NumericMatrix _pcoriaccel_NW(
 
 //' Runs an optimized implementation of the "NW" function.
 //'
-//' @param Xb vector (expected to be about 500 elements)
-//' @param Y vector (same size as Xb)
-//' @param xb vector
-//' @param y_seq vector
-//' @param h scalar bandwidth of kernel
+//' @param Xb    a vector (expected to be about 500 elements)
+//' @param Y     a vector (same size as Xb)
+//' @param xb    a vector
+//' @param y_seq a vector
+//' @param h     a scalar, the bandwidth of kernel
+//'
 //' @return Matrix fyxb
+//'
+//' @export
 // [[Rcpp::export]]
 [[nodiscard]] NumericMatrix pcoriaccel_NW(
 	NumericVector Xb, NumericVector Y, //Same length, about 500

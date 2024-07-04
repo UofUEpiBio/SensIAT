@@ -30,11 +30,12 @@ class SplineBasis final
 
 //' Rcpp version of `evaluate_basis(⋯)` function
 //'
-//' @param spline_basis   Spline basis, S4 class `orthogonalsplinebasis::SplineBasis`
-//' @param x              Evaluation point
+//' @param spline_basis   The spline basis, S4 class `orthogonalsplinebasis::SplineBasis`
+//' @param x              The point to evaluate
 //'
 //' @return Vector fyxb
 //'
+//' @export
 // [[Rcpp::export]]
 [[nodiscard]] NumericVector pcoriaccel_evaluate_basis(
 	S4 spline_basis, double x

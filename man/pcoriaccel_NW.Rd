@@ -7,15 +7,15 @@
 pcoriaccel_NW(Xb, Y, xb, y_seq, h, kernel = "K2_Biweight")
 }
 \arguments{
-\item{Xb}{vector (expected to be about 500 elements)}
+\item{Xb}{a vector (expected to be about 500 elements)}
 
-\item{Y}{vector (same size as Xb)}
+\item{Y}{a vector (same size as Xb)}
 
-\item{xb}{vector}
+\item{xb}{a vector}
 
-\item{y_seq}{vector}
+\item{y_seq}{a vector}
 
-\item{h}{scalar bandwidth of kernel}
+\item{h}{a scalar, the bandwidth of kernel}
 }
 \value{
 Matrix fyxb

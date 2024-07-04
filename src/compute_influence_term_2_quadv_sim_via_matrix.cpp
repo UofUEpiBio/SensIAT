@@ -14,7 +14,7 @@
 //' @param Y              Vector of all outcomes (same length as a column of `X`)
 //' @param times          Vector of observation times for individual
 //' @param individual_X   Matrix of covariates for individual rows correspond to times prepared for
-//                        inferences for integration.
+//'                       inferences for integration.
 //' @param x_slope        Vector indicating how
 //' @param alpha          Vector of sensitivity parameters
 //' @param beta           Coefficients of the outcome model
@@ -25,6 +25,7 @@
 //'
 //' @return integration result
 //'
+//' @export
 // [[Rcpp::export]]
 [[nodiscard]] NumericMatrix pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix(
 	NumericMatrix X,            // e.g. num[1:453,1:5]

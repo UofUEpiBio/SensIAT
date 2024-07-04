@@ -11,11 +11,20 @@ R Package for PCORI project
 
 Installation of required dependencies:
 ```R
-install.packages(c( "assertthat", "dplyr", "inline", "orthogonalsplinebasis", "pracma", "purrr", "Rcpp", "rlang", "roxygen2", "tibble", "tidyr", "tidyverse" ))
+install.packages(c( "assertthat", "devtools", "dplyr", "inline", "orthogonalsplinebasis", "pracma", "purrr", "Rcpp", "rlang", "roxygen2", "tibble", "tidyr", "tidyverse" ))
 ```
 On Windows, you will also need [RTools](https://cran.r-project.org/bin/windows/Rtools/).
 
 To build and install, from the project root directory, do:
 ```sh
 R CMD INSTALL .
+```
+
+
+
+## Development Notes
+
+Regenerating documentation, including "NAMESPACE":
+```R
+devtools::document()
 ```

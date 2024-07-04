@@ -120,6 +120,7 @@ inline NumericMatrix& operator+=( NumericMatrix& matrA, NumericMatrix const& mat
 
 //' Returns a string, just as a basic check that the C++ plugin library is working.
 //' @return hello string
+//' @export
 // [[Rcpp::export]]
 [[nodiscard]] String pcoriaccel_hello();
 
@@ -128,29 +129,33 @@ inline NumericMatrix& operator+=( NumericMatrix& matrA, NumericMatrix const& mat
 [[nodiscard]] NumericVector mmul( NumericMatrix matr   , NumericVector col_vec );
 //' Multiplies two matrices.  If the first argument is a vector, it is interpreted as a row vector.
 //' Otherwise, if the second argument is a vector, it is interpreted as a column vector.
-//' @param matrA
-//' @param matrB
+//' @param matrA first matrix
+//' @param matrB second matrix
 //' @return matrA * matrB
+//' @export
 // [[Rcpp::export]]
 [[nodiscard]] SEXP pcoriaccel_mmul( SEXP matrA, SEXP matrB );
 
 //' Inner product (dot product) of two vectors.
-//' @param vecA
-//' @param vecB
+//' @param vecA first vector
+//' @param vecB second vector
 //' @return vecAᵀ * vecB = vecA • vecB
+//' @export
 // [[Rcpp::export]]
 [[nodiscard]] double pcoriaccel_inner( NumericVector vecA, NumericVector vecB );
 //' Outer product of two vectors.
-//' @param vecA
-//' @param vecB
+//' @param vecA first vector
+//' @param vecB second vector
 //' @return vecA * vecBᵀ = vecA ⊗ vecB
 //' @examples
 //' pcoriaccel_outer( c(1,2,3,4,5), c(2,4,6) )
+//' @export
 // [[Rcpp::export]]
 [[nodiscard]] NumericMatrix pcoriaccel_outer( NumericVector vecA, NumericVector vecB );
 
 //' Returns the unique elements of a vector, sorted in ascending order.
-//' @param vec
+//' @param vec the vector
 //' @return sort(unique(vec))
+//' @export
 // [[Rcpp::export]]
 [[nodiscard]] NumericVector pcoriaccel_sorted_unique( NumericVector vec );
