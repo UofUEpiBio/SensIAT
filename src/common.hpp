@@ -1,0 +1,156 @@
+#pragma once
+
+#include <cmath>
+
+#include <algorithm>
+#include <format>
+#include <ranges>
+#include <set>
+#include <vector>
+
+#include <Rcpp.h>
+
+
+
+using namespace Rcpp;
+
+
+
+/*
+When the R-facing API changes, regenerate by running (from root dir):
+	library("Rcpp")
+	compileAttributes("../")
+
+	R -e 'library("Rcpp");compileAttributes("../")' should work, but doesn't do anything???
+
+Quick testing individual files (from "src/" dir):
+	sourceCpp("common.cpp")
+	sourceCpp("compute_influence_term_2_quadv_sim_via_matrix.cpp")
+	sourceCpp("estimate_pmf.cpp")
+	sourceCpp("integrate.cpp")
+	sourceCpp("NW.cpp")
+	sourceCpp("spline_basis.cpp")
+
+Build package (from root dir):
+	R CMD INSTALL .
+
+Set directory:
+	setwd("⟨path⟩")
+*/
+
+
+
+constexpr double RT_TWOPI_RECIP =  0.398942280401432677; // (2π)⁻¹⸍²
+constexpr double NEG_HALF_LOG2E = -0.7213475204444817  ; // -½ log₂e
+
+
+
+template<> struct std::formatter< std::vector<double>, char >
+{
+	template<class ParseCtx> [[nodiscard]] constexpr
+	ParseCtx::iterator parse( ParseCtx& ctx ) { return ctx.begin(); }
+
+	template<class FmtCtx>
+	FmtCtx::iterator format( std::vector<double> const& vec, FmtCtx& ctx ) const
+	{
+		if ( vec.empty() ) return std::format_to( ctx.out(), "{{}}" );
+		std::string tmp = "{ ";
+		for ( double elem : vec ) tmp+=std::format("{}, ",elem);
+		tmp[tmp.length()-2]=' '; tmp[tmp.length()-1]='}';
+		return std::format_to( ctx.out(), "{}", tmp );
+	}
+};
+
+template<class... Args> inline
+void print( std::format_string<Args...> fmt, Args&&... args ) noexcept
+{
+	Rcout << std::format( fmt, std::forward<Args>(args)... );
+}
+
+template<class T> [[nodiscard]] constexpr
+T sq( T val ) noexcept { return val*val; }
+
+
+
+inline NumericMatrix& operator*=( NumericMatrix& matr, double val ) noexcept
+{
+	for ( double& elem : matr ) elem*=val;
+	return matr;
+}
+inline NumericMatrix& operator/=( NumericMatrix& matr, double val ) noexcept
+{
+	for ( double& elem : matr ) elem/=val;
+	return matr;
+}
+inline NumericMatrix& operator-=( NumericMatrix& matrA, NumericMatrix const& matrB )
+{
+	if ( matrA.nrow()!=matrB.nrow() || matrA.ncol()!=matrB.ncol() ) [[unlikely]] stop("Matrix dimension mismatch!");
+	for ( int k=0; k<matrA.length(); ++k ) matrA[k]-=matrB[k];
+	return matrA;
+}
+inline NumericMatrix& operator+=( NumericMatrix& matrA, NumericMatrix const& matrB )
+{
+	if ( matrA.nrow()!=matrB.nrow() || matrA.ncol()!=matrB.ncol() ) [[unlikely]] stop("Matrix dimension mismatch!");
+	for ( int k=0; k<matrA.length(); ++k ) matrA[k]+=matrB[k];
+	return matrA;
+}
+
+
+
+[[nodiscard]] constexpr double K_normal   ( double x, double h ) noexcept
+{
+	//https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/Normal
+	x /= h;
+	return RT_TWOPI_RECIP * std::exp( -0.5 * sq(x) );
+}
+[[nodiscard]] constexpr double K_biweight2( double x, double h ) noexcept
+{
+	if ( std::abs(x) > h ) return 0.0;
+	x /= h;
+	return (15.0/16.0) * sq(1.0-sq(x));
+}
+[[nodiscard]] constexpr double K_biweight4( double x, double h ) noexcept
+{
+	if ( std::abs(x) > h ) return 0.0;
+	double y = sq( x / h );
+	return (105.0/64.0) * (1.0-3.0*y) * sq(1.0-y);
+}
+
+
+
+//' Returns a string, just as a basic check that the C++ plugin library is working.
+//' @return hello string
+// [[Rcpp::export]]
+[[nodiscard]] String pcoriaccel_hello();
+
+[[nodiscard]] NumericMatrix mmul( NumericMatrix matrA  , NumericMatrix matrB   );
+[[nodiscard]] NumericVector mmul( NumericVector row_vec, NumericMatrix matr    );
+[[nodiscard]] NumericVector mmul( NumericMatrix matr   , NumericVector col_vec );
+//' Multiplies two matrices.  If the first argument is a vector, it is interpreted as a row vector.
+//' Otherwise, if the second argument is a vector, it is interpreted as a column vector.
+//' @param matrA
+//' @param matrB
+//' @return matrA * matrB
+// [[Rcpp::export]]
+[[nodiscard]] SEXP pcoriaccel_mmul( SEXP matrA, SEXP matrB );
+
+//' Inner product (dot product) of two vectors.
+//' @param vecA
+//' @param vecB
+//' @return vecAᵀ * vecB = vecA • vecB
+// [[Rcpp::export]]
+[[nodiscard]] double pcoriaccel_inner( NumericVector vecA, NumericVector vecB );
+//' Outer product of two vectors.
+//' @param vecA
+//' @param vecB
+//' @return vecA * vecBᵀ = vecA ⊗ vecB
+//' @examples
+//' pcoriaccel_outer( c(1,2,3,4,5), c(2,4,6) )
+// [[Rcpp::export]]
+[[nodiscard]] NumericMatrix pcoriaccel_outer( NumericVector vecA, NumericVector vecB );
+
+//' Returns the unique elements of a vector, sorted in ascending order.
+//' @param vec
+//' @return sort(unique(vec))
+// [[Rcpp::export]]
+[[nodiscard]] NumericVector pcoriaccel_sorted_unique( NumericVector vec );

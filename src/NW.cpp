@@ -1,62 +1,8 @@
-#include <cmath>
-#include <vector>
+// [[Rcpp::plugins(cpp20)]]
 
-#include <Rcpp.h>
-
+#include "common.hpp"
 
 
-using namespace Rcpp;
-
-
-
-/*
-When the R-facing API changes, regenerate by running, from R in the project root directory:
-
-	library("Rcpp")
-	compileAttributes(".")
-
-	R -e 'library("Rcpp");compileAttributes(".")' #should work but doesn't?
-*/
-
-
-
-constexpr double RT_TWOPI_RECIP =  0.398942280401432677;
-constexpr double NEG_HALF_LOG2E = -0.7213475204444817  ; // -½ log₂e
-
-template<class T> [[nodiscard]] constexpr
-T sq( T val ) noexcept { return val*val; }
-
-
-
-//' Returns a string, just as a basic check that the C++ plugin library is working.
-//'
-//' @return hello string
-// [[Rcpp::export]]
-[[nodiscard]] String pcoriaccel_hello() noexcept
-{
-	return String("Hello from the PCORI Acceleration C++ sub-library!");
-}
-
-
-
-[[nodiscard]] constexpr double K_normal( double x, double h ) noexcept
-{
-	//https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/Normal
-	x /= h;
-	return RT_TWOPI_RECIP * std::exp( -0.5 * sq(x) );
-}
-[[nodiscard]] constexpr double K_biweight2( double x, double h ) noexcept
-{
-	if ( std::abs(x) > h ) return 0.0;
-	x /= h;
-	return (15.0/16.0) * sq(1.0-sq(x));
-}
-[[nodiscard]] constexpr double K_biweight4( double x, double h ) noexcept
-{
-	if ( std::abs(x) > h ) return 0.0;
-	double y = sq( x / h );
-	return (105.0/64.0) * (1.0-3.0*y) * sq(1.0-y);
-}
 
 //' Runs a *basic* implementation of the "NW" function with the "K2_Biweight" kernel, just as a
 //' proof-of-concept.
@@ -73,7 +19,7 @@ T sq( T val ) noexcept { return val*val; }
 	NumericVector xb,
 	NumericVector y_seq,
 	double h
-) noexcept {
+) {
 	//auto K = K_normal;
 	auto K = K_biweight2;
 	//auto K = K_biweight4;
@@ -132,68 +78,6 @@ T sq( T val ) noexcept { return val*val; }
 	}
 
 	return fyxb;
-}
-
-//' Estimate the PMF directly with the K2_Biweight kernel.
-//'
-//' @param Xb vector (expected to be about 500 elements)
-//' @param Y vector (same size as Xb)
-//' @param xb vector
-//' @param y_seq vector
-//' @param h scalar bandwidth of kernel
-//' @return estimated PMF
-// [[Rcpp::export]]
-[[nodiscard]] NumericVector pcoriaccel_estimate_pmf(
-        NumericVector X,
-        NumericVector Y,
-        double xi,
-        NumericVector y_seq,
-        double h
-) noexcept {
-    //auto K = K_normal;
-    auto K = K_biweight2;
-    //auto K = K_biweight4;
-
-    /*
-     Compute kernel applied to each pair of Xbⱼ and xᵢ
-
-     Kxb[j,i] = K( Xb[j]-xb[i], h )
-
-     Equivalent to `outer( Xb,xb, \(a,b){K(a-b,h)} )`
-     */
-    NumericVector Kxb = NumericVector(X.length());
-    for ( int j=0; j<Kxb.length(); ++j )
-    {
-        Kxb( j) = K( X[j]-xi, h );
-    }
-
-    // estimated_pmf[j] = sum_k K(Xb[k]-xi,h) * 1(Y[k] == y_seq[j]) / sum_k K(Xb[k]-xi,h)
-    NumericVector estimated_pmf = NumericVector( y_seq.length() );
-    double denom = 0.0;
-    for ( int j=0; j<Kxb.length(); ++j )
-    {
-        denom += Kxb(j);
-
-        auto i = std::find( y_seq.begin(), y_seq.end(), Y[j] );
-
-        estimated_pmf(std::distance(y_seq.begin(),i)) += Kxb(j);
-    }
-
-    if ( denom == 0.0 ) [[unlikely]]
-    {
-        for ( int i=0; i<estimated_pmf.length(); ++i )
-        {
-            estimated_pmf(i) = 0.0;
-        }
-    }
-    else
-    {
-        for ( int i=0; i<estimated_pmf.length(); ++i )
-        {
-            estimated_pmf(i) /= denom;
-        }
-    }
-    return estimated_pmf;
 }
 
 template< class Tfloat, int kernel > [[nodiscard]] inline static
