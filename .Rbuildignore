@@ -2,3 +2,5 @@ Makefile
 \.github
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^README\.Rmd$
+roadmap.md

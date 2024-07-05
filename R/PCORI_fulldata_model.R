@@ -75,4 +75,4 @@ fit_PCORI_fulldata_model <- function(data, trt, ...){
                 var_effect = var_treatment + var_control
             )
     }
-
+globalVariables(c('mean_effect', 'mean_treatment', 'mean_control', 'var_effect', 'var_treatment', 'var_control'))

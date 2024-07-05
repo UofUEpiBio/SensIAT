@@ -34,6 +34,6 @@ Suggests:
     tinytest
 Config/testthat/edition: 3
 Depends: 
-    R (>= 4.2.3)
+    R (>= 4.2.0)
 LazyData: true
 LinkingTo: Rcpp

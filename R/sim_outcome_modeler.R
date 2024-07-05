@@ -55,7 +55,7 @@ PCORI_sim_outcome_modeler <- function(formula, data, kernel = "K2_Biweight", met
         frame <-
 
 
-        predict(object$formula, data = data, ...)
+        predict(object$formula, data = newdata, ...)
 
         if(type == 'terms'){}
     }
@@ -459,7 +459,7 @@ Cond_mean_fn_single2 <-
         #start <- Sys.time()
         Fhat <- pcoriaccel_NW(
             Xb = X %*% beta, Y = Y,
-            xb = x %*% beta, y = y,
+            xb = x %*% beta, y_seq = y,
             h = bandwidth,
             ...)
         #end <- Sys.time()

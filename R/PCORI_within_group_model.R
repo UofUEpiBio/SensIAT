@@ -1,3 +1,6 @@
+globalVariables(c('visit.number', 'term1', 'term2', 'IF', 'IF_ortho',
+                  'estimate', 'Beta_hat', 'Var_beta'))
+
 #' Produce fitted model for group (treatment or control)
 #'
 #' Produces a fitted model that may be used to produce estimates of mean and

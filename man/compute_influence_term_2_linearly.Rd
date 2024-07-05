@@ -4,7 +4,14 @@
 \alias{compute_influence_term_2_linearly}
 \title{Compute Second Influence Term Assuming Piece-wise Linearity}
 \usage{
-compute_influence_term_2_linearly(df_i, expected_value, base, variables, ...)
+compute_influence_term_2_linearly(
+  df_i,
+  expected_value,
+  base,
+  variables,
+  alpha,
+  ...
+)
 }
 \arguments{
 \item{df_i}{data frame for one individual, should include all observations including baseline.}
@@ -12,6 +19,10 @@ compute_influence_term_2_linearly(df_i, expected_value, base, variables, ...)
 \item{expected_value}{The function to compute the expected value of the outcome model.}
 
 \item{base}{a \link[=SplineBasis]{Spline Basis} object.}
+
+\item{variables}{a variables mapping.}
+
+\item{alpha}{the sensitivity parameter.}
 
 \item{...}{passed to \link{impute_patient_df}.}
 }
@@ -29,3 +40,4 @@ Compute the second term of the influence function. defined as
 The limits of the integral are inferred from the knots of \code{base}.
 The integral is computed on the assumption
 }
+\keyword{internal}

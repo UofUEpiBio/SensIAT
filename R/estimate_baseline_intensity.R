@@ -49,9 +49,4 @@ function(
     colSums(kernel(time.diff/bandwidth) * strata.equal * cumhaz.data$hazard)/bandwidth
 }
 
-if(F){
-    estimate_baseline_intensity(object$intensity_model, df_i, kernel = dnorm)
-
-
-}
-
+globalVariables('cumhaz')

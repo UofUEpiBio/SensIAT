@@ -11,17 +11,22 @@
 #' @param df_i data frame for one individual, should include all observations including baseline.
 #' @param expected_value The function to compute the expected value of the outcome model.
 #' @param base a [Spline Basis][SplineBasis] object.
+#' @param variables a variables mapping.
+#' @param alpha the sensitivity parameter.
 #' @param ... passed to [impute_patient_df].
 #'
 #' @return
 #' A data frame with columns `alpha`, and `influence_term_2`.
 #' The latter a list column with each element a vector.
+#'
+#' @keywords internal
 compute_influence_term_2_linearly <-
 function(
     df_i,
     expected_value,
     base,
     variables,
+    alpha,
     ...
 ){
     assert_that(
@@ -53,18 +58,6 @@ function(
 
     C1 = (right-left)/dt
     C0 = right-C1*tail(times, -1)
-    if(F){
-
-        geom_abline(data=tibble(
-            c0 = C0[,2],
-            c1 = C1[,2],
-            period = factor(seq.int(nrow(C1)))
-        ), aes(slope=c1, intercept=c0, col=period, group=period))
-
-        library(ggplot2)
-
-
-    }
 
     eB1 <- evaluate(B1, times)
     eB2 <- evaluate(B2, times)

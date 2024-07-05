@@ -25,13 +25,6 @@ function(
     crossprod(tail(B, -1), tail(Ey, -1) * dt) / 2
 }
 
-
-if(F){
-
-
-
-}
-
 numerically_integrate_influence_term_2_for_one_alpha_and_one_patient_piecewise <-
 function(
     df_i, #< complete patient data
@@ -59,31 +52,5 @@ function(
             resolution = resolution.within.period
         ) |> reduce(`+`)
 }
-if(F){
 
-    numerically_integrate_influence_term_2_for_one_alpha_and_one_patient_piecewise(
-        df_i,
-        object = object,
-        alpha = alpha,
-        base = base
-    )
-
-    library(ARCdata)
-    fitted.trt.sim <-
-        fit_PCORI_within_group_model(
-            group.data = filter(ARC_data, Trt=='home_visits'),
-            outcome_modeler = PCORI_sim_outcome_modeler,
-            id.var = elig_pid,
-            outcome.var = Asthma_control,
-            time.var = time,
-            End = 830
-        )
-    time.pw <- system.time({
-        pred.pw <- predict(fitted.trt.sim, time = c(90, 180),
-                              alpha = c(0),
-                              intensity.bandwidth = 30,
-                              knots=c(60,60,60,60,260,460,460,460,460),
-                              integration.method = 'piecewise'
-        )
-    })
-}
+globalVariables(c('a', 'b'))

@@ -114,3 +114,4 @@ function(
         influence_ortho = list(unname(influence_ortho))
     )
 }
+globalVariables(c('E_Y_past', 'E_exp_alphaY', 'baseline_lambda', 'Exp_gamma'))
