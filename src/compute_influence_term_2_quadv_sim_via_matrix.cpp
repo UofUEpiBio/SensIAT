@@ -15,9 +15,9 @@
 //' @param times          Vector of observation times for individual
 //' @param individual_X   Matrix of covariates for individual rows correspond to times prepared for
 //'                       inferences for integration.
-//' @param x_slope        Vector indicating how
+//' @param x_slope        Vector of numeric(length(beta)) indicating how
 //' @param alpha          Vector of sensitivity parameters
-//' @param beta           Coefficients of the outcome model
+//' @param beta           Vector of coefficients of the outcome model
 //' @param spline_basis   Spline basis object (`orthogonalsplinebasis::SplineBasis`)
 //' @param bandwidth      Bandwidth for the kernel density estimate of the outcome model.
 //' @param tol            Tolerance for integration
@@ -126,8 +126,8 @@
 				double numer=0.0, denom=0.0;
 				for ( int k=0; k<pmf.length(); ++k )
 				{
-					double denom_term = eay(k,i) * pmf[k];          //      exp(αyₖ) * pmfₖ
-					double numer_term = distinct_Y[k] * denom_term; // yₖ * exp(αyₖ) * pmfₖ
+					double denom_term = eay(k,i) * pmf[k];          //    exp(αyₖ) pmfₖ
+					double numer_term = distinct_Y[k] * denom_term; // yₖ exp(αyₖ) pmfₖ
 					numer += numer_term;
 					denom += denom_term;
 				}
@@ -142,7 +142,6 @@
 			//Rcout << ret << "\n";
 			return ret;
 		};
-
 		//Rcout << "Integrand value   ind , time   =   " << period_ind << " , " << lower << ":\n";
 		//fn(lower);
 
@@ -151,7 +150,7 @@
 		period_integrals[period_ind] = integrated;
 	}
 
-	//Sum integrals of periods to get entire integral (use first one as accumulator)
+	//Sum integrals of periods to get entire integral (use first one as accumulator).
 	//	Note by above construction we do have at least two points (one integral period).
 	for ( size_t k=1; k<period_integrals.size(); ++k )
 	{
