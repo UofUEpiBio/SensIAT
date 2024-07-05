@@ -54,8 +54,19 @@ pcoriaccel_mmul <- function(matrA, matrB) {
 #' @param vecB second vector
 #' @return vecAᵀ * vecB = vecA • vecB
 #' @export
-pcoriaccel_inner <- function(vecA, vecB) {
-    .Call(`_pcoriRPackage_pcoriaccel_inner`, vecA, vecB)
+pcoriaccel_inner_prod <- function(vecA, vecB) {
+    .Call(`_pcoriRPackage_pcoriaccel_inner_prod`, vecA, vecB)
+}
+
+#' Outer sum of two vectors.
+#' @param vecA first vector
+#' @param vecB second vector
+#' @return vecA ⊕ vecB
+#' @examples
+#' pcoriaccel_outer_sum( c(1,2,3,4,5), c(2,4,6) )
+#' @export
+pcoriaccel_outer_sum <- function(vecA, vecB) {
+    .Call(`_pcoriRPackage_pcoriaccel_outer_sum`, vecA, vecB)
 }
 
 #' Outer product of two vectors.
@@ -63,10 +74,10 @@ pcoriaccel_inner <- function(vecA, vecB) {
 #' @param vecB second vector
 #' @return vecA * vecBᵀ = vecA ⊗ vecB
 #' @examples
-#' pcoriaccel_outer( c(1,2,3,4,5), c(2,4,6) )
+#' pcoriaccel_outer_prod( c(1,2,3,4,5), c(2,4,6) )
 #' @export
-pcoriaccel_outer <- function(vecA, vecB) {
-    .Call(`_pcoriRPackage_pcoriaccel_outer`, vecA, vecB)
+pcoriaccel_outer_prod <- function(vecA, vecB) {
+    .Call(`_pcoriRPackage_pcoriaccel_outer_prod`, vecA, vecB)
 }
 
 #' Returns the unique elements of a vector, sorted in ascending order.
@@ -85,9 +96,9 @@ pcoriaccel_sorted_unique <- function(vec) {
 #' @param times          Vector of observation times for individual
 #' @param individual_X   Matrix of covariates for individual rows correspond to times prepared for
 #'                       inferences for integration.
-#' @param x_slope        Vector indicating how
+#' @param x_slope        Vector of numeric(length(beta)) indicating how
 #' @param alpha          Vector of sensitivity parameters
-#' @param beta           Coefficients of the outcome model
+#' @param beta           Vector of coefficients of the outcome model
 #' @param spline_basis   Spline basis object (`orthogonalsplinebasis::SplineBasis`)
 #' @param bandwidth      Bandwidth for the kernel density estimate of the outcome model.
 #' @param tol            Tolerance for integration

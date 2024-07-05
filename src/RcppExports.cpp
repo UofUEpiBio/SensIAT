@@ -78,27 +78,39 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// pcoriaccel_inner
-[[nodiscard]] double pcoriaccel_inner(NumericVector vecA, NumericVector vecB);
-RcppExport SEXP _pcoriRPackage_pcoriaccel_inner(SEXP vecASEXP, SEXP vecBSEXP) {
+// pcoriaccel_inner_prod
+[[nodiscard]] double pcoriaccel_inner_prod(NumericVector vecA, NumericVector vecB);
+RcppExport SEXP _pcoriRPackage_pcoriaccel_inner_prod(SEXP vecASEXP, SEXP vecBSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type vecA(vecASEXP);
     Rcpp::traits::input_parameter< NumericVector >::type vecB(vecBSEXP);
-    rcpp_result_gen = Rcpp::wrap(pcoriaccel_inner(vecA, vecB));
+    rcpp_result_gen = Rcpp::wrap(pcoriaccel_inner_prod(vecA, vecB));
     return rcpp_result_gen;
 END_RCPP
 }
-// pcoriaccel_outer
-[[nodiscard]] NumericMatrix pcoriaccel_outer(NumericVector vecA, NumericVector vecB);
-RcppExport SEXP _pcoriRPackage_pcoriaccel_outer(SEXP vecASEXP, SEXP vecBSEXP) {
+// pcoriaccel_outer_sum
+[[nodiscard]] NumericMatrix pcoriaccel_outer_sum(NumericVector vecA, NumericVector vecB);
+RcppExport SEXP _pcoriRPackage_pcoriaccel_outer_sum(SEXP vecASEXP, SEXP vecBSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type vecA(vecASEXP);
     Rcpp::traits::input_parameter< NumericVector >::type vecB(vecBSEXP);
-    rcpp_result_gen = Rcpp::wrap(pcoriaccel_outer(vecA, vecB));
+    rcpp_result_gen = Rcpp::wrap(pcoriaccel_outer_sum(vecA, vecB));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pcoriaccel_outer_prod
+[[nodiscard]] NumericMatrix pcoriaccel_outer_prod(NumericVector vecA, NumericVector vecB);
+RcppExport SEXP _pcoriRPackage_pcoriaccel_outer_prod(SEXP vecASEXP, SEXP vecBSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type vecA(vecASEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type vecB(vecBSEXP);
+    rcpp_result_gen = Rcpp::wrap(pcoriaccel_outer_prod(vecA, vecB));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -167,8 +179,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pcoriRPackage_pcoriaccel_NW", (DL_FUNC) &_pcoriRPackage_pcoriaccel_NW, 6},
     {"_pcoriRPackage_pcoriaccel_hello", (DL_FUNC) &_pcoriRPackage_pcoriaccel_hello, 0},
     {"_pcoriRPackage_pcoriaccel_mmul", (DL_FUNC) &_pcoriRPackage_pcoriaccel_mmul, 2},
-    {"_pcoriRPackage_pcoriaccel_inner", (DL_FUNC) &_pcoriRPackage_pcoriaccel_inner, 2},
-    {"_pcoriRPackage_pcoriaccel_outer", (DL_FUNC) &_pcoriRPackage_pcoriaccel_outer, 2},
+    {"_pcoriRPackage_pcoriaccel_inner_prod", (DL_FUNC) &_pcoriRPackage_pcoriaccel_inner_prod, 2},
+    {"_pcoriRPackage_pcoriaccel_outer_sum", (DL_FUNC) &_pcoriRPackage_pcoriaccel_outer_sum, 2},
+    {"_pcoriRPackage_pcoriaccel_outer_prod", (DL_FUNC) &_pcoriRPackage_pcoriaccel_outer_prod, 2},
     {"_pcoriRPackage_pcoriaccel_sorted_unique", (DL_FUNC) &_pcoriRPackage_pcoriaccel_sorted_unique, 1},
     {"_pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix", (DL_FUNC) &_pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix, 10},
     {"_pcoriRPackage_pcoriaccel_estimate_pmf", (DL_FUNC) &_pcoriRPackage_pcoriaccel_estimate_pmf, 5},

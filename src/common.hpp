@@ -20,8 +20,9 @@ using namespace Rcpp;
 When the R-facing API changes, regenerate by running (from root dir):
 	library("Rcpp")
 	compileAttributes("../")
+	devtools::document()
 
-	R -e 'library("Rcpp");compileAttributes("../")' should work, but doesn't do anything???
+	R -e 'library("Rcpp");compileAttributes("../");devtools::document()' should work, but doesn't do anything???
 
 Quick testing individual files (from "src/" dir):
 	sourceCpp("common.cpp")
@@ -95,6 +96,15 @@ inline NumericMatrix& operator+=( NumericMatrix& matrA, NumericMatrix const& mat
 	return matrA;
 }
 
+inline void exp_elems( NumericMatrix* matr ) noexcept
+{
+	for ( int k=0; k<matr->length(); ++k ) (*matr)[k]=std::exp((*matr)[k]);
+}
+inline void exp_elems( NumericVector* vec ) noexcept
+{
+	for ( int k=0; k<vec->length(); ++k ) (*vec)[k]=std::exp((*vec)[k]);
+}
+
 
 
 [[nodiscard]] constexpr double K_normal   ( double x, double h ) noexcept
@@ -142,16 +152,25 @@ inline NumericMatrix& operator+=( NumericMatrix& matrA, NumericMatrix const& mat
 //' @return vecAᵀ * vecB = vecA • vecB
 //' @export
 // [[Rcpp::export]]
-[[nodiscard]] double pcoriaccel_inner( NumericVector vecA, NumericVector vecB );
+[[nodiscard]] double pcoriaccel_inner_prod( NumericVector vecA, NumericVector vecB );
+//' Outer sum of two vectors.
+//' @param vecA first vector
+//' @param vecB second vector
+//' @return vecA ⊕ vecB
+//' @examples
+//' pcoriaccel_outer_sum( c(1,2,3,4,5), c(2,4,6) )
+//' @export
+// [[Rcpp::export]]
+[[nodiscard]] NumericMatrix pcoriaccel_outer_sum( NumericVector vecA, NumericVector vecB );
 //' Outer product of two vectors.
 //' @param vecA first vector
 //' @param vecB second vector
 //' @return vecA * vecBᵀ = vecA ⊗ vecB
 //' @examples
-//' pcoriaccel_outer( c(1,2,3,4,5), c(2,4,6) )
+//' pcoriaccel_outer_prod( c(1,2,3,4,5), c(2,4,6) )
 //' @export
 // [[Rcpp::export]]
-[[nodiscard]] NumericMatrix pcoriaccel_outer( NumericVector vecA, NumericVector vecB );
+[[nodiscard]] NumericMatrix pcoriaccel_outer_prod( NumericVector vecA, NumericVector vecB );
 
 //' Returns the unique elements of a vector, sorted in ascending order.
 //' @param vec the vector

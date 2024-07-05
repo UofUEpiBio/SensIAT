@@ -96,7 +96,7 @@
 	}
 }
 
-[[nodiscard]] double pcoriaccel_inner( NumericVector vecA, NumericVector vecB )
+[[nodiscard]] double pcoriaccel_inner_prod( NumericVector vecA, NumericVector vecB )
 {
 	if ( vecA.length() != vecB.length() ) [[unlikely]]
 	{
@@ -113,7 +113,17 @@
 	}
 	return dp;
 }
-[[nodiscard]] NumericMatrix pcoriaccel_outer( NumericVector vecA, NumericVector vecB )
+[[nodiscard]] NumericMatrix pcoriaccel_outer_sum( NumericVector vecA, NumericVector vecB )
+{
+	NumericMatrix ret(Dimension( vecA.length(), vecB.length() ));
+	for ( int irow=0; irow<vecA.length(); ++irow )
+	for ( int icol=0; icol<vecB.length(); ++icol )
+	{
+		ret(irow,icol) = vecA[irow] + vecB[icol];
+	}
+	return ret;
+}
+[[nodiscard]] NumericMatrix pcoriaccel_outer_prod( NumericVector vecA, NumericVector vecB )
 {
 	NumericMatrix ret(Dimension( vecA.length(), vecB.length() ));
 	for ( int irow=0; irow<vecA.length(); ++irow )

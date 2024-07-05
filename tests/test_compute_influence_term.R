@@ -187,6 +187,7 @@ ids  <- integration_data[["(id)"  ]]
 
 # Just picking an ID to use for testing and development any id works.
 # All ids will need to be done.
+set.seed(42)
 id    <- sample( unique(ids), 1 )
 times <- time[ ids == id ]
 

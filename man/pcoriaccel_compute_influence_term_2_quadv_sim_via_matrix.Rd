@@ -28,11 +28,11 @@ pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix(
 \item{individual_X}{Matrix of covariates for individual rows correspond to times prepared for
 inferences for integration.}
 
-\item{x_slope}{Vector indicating how}
+\item{x_slope}{Vector of numeric(length(beta)) indicating how}
 
 \item{alpha}{Vector of sensitivity parameters}
 
-\item{beta}{Coefficients of the outcome model}
+\item{beta}{Vector of coefficients of the outcome model}
 
 \item{spline_basis}{Spline basis object (\code{orthogonalsplinebasis::SplineBasis})}
 

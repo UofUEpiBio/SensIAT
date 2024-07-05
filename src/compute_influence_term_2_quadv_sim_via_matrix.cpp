@@ -85,6 +85,9 @@
 	//Compute globally used terms
 	NumericVector distinct_Y = pcoriaccel_sorted_unique(Y); // e.g. num[1:35]
 	NumericVector Xb = mmul( X, beta );                     // e.g. num[1:453,1]
+	//	exp(αⱼyᵢ)
+	NumericMatrix exp_alpha_y = pcoriaccel_outer_prod( alpha, distinct_Y );
+	exp_elems(&exp_alpha_y);
 
 	//Compute integrals for each period
 	std::vector< IntegrateResult<NumericMatrix> > period_integrals( period_times.size() - 1 );
@@ -117,29 +120,27 @@
 
 			//Compute the expected value of the outcome at the given time point, given the
 			//	sensitivity parameter `alpha` (e.g. num[1:35,1:3]).
-			NumericMatrix eay = pcoriaccel_outer( distinct_Y, alpha );
-			for ( double& elem : eay ) elem=std::exp(elem);
-			//	numerator   = transpose( distinct_Y.elems * eay.elems ) * pmf
-			//	denominator = transpose(                    eay       ) * pmf
-			NumericVector ev( eay.ncol() );
-			for ( int i=0; i<eay.ncol(); ++i )
+			//	numerator   = transpose( distinct_Y.elems * exp_alpha_y.elems ) * pmf
+			//	denominator = transpose(                    exp_alpha_y       ) * pmf
+			NumericVector ev( exp_alpha_y.nrow() );
+			for ( int j=0; j<exp_alpha_y.nrow(); ++j )
 			{
 				double numer=0.0, denom=0.0;
-				for ( int k=0; k<pmf.length(); ++k )
+				for ( int i=0; i<pmf.length(); ++i )
 				{
-					double denom_term = eay(k,i) * pmf[k];          //    exp(αyₖ) pmfₖ
-					double numer_term = distinct_Y[k] * denom_term; // yₖ exp(αyₖ) pmfₖ
+					double denom_term = exp_alpha_y(j,i) * pmf[i];  //    exp(αⱼyᵢ) pmfᵢ
+					double numer_term = distinct_Y[i] * denom_term; // yᵢ exp(αⱼyᵢ) pmfᵢ
 					numer += numer_term;
 					denom += denom_term;
 				}
-				ev[i] = numer / denom;
+				ev[j] = numer / denom;
 			}
 
 			//Evaluate the spline basis functions at the given time point.
 			NumericVector B = basis.evaluate(t);
 
 			//Returned value is a length(alpha) by ncol(B) matrix.
-			NumericMatrix ret = pcoriaccel_outer( ev, B );
+			NumericMatrix ret = pcoriaccel_outer_prod( ev, B );
 			//Rcout << ret << "\n";
 			return ret;
 		};
