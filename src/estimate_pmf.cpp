@@ -21,32 +21,25 @@
 
 	Equivalent to `outer( Xb,xb, \(a,b){K(a-b,h)} )`
 	*/
-	NumericVector Kxb = NumericVector(X.length());
-	for ( int j=0; j<Kxb.length(); ++j )
-	{
-		Kxb(j) = K( X[j]-xi, h );
-	}
 
-	// est_pmf[j] = sum_k K(Xb[k]-xi,h) * 1(Y[k] == y_seq[j]) / sum_k K(Xb[k]-xi,h)
-	NumericVector est_pmf = NumericVector( y_seq.length() );
+	// pmf_est[j] = sum_k K(Xb[k]-xi,h) * 1(Y[k] == y_seq[j]) / sum_k K(Xb[k]-xi,h)
+	NumericVector pmf_est = NumericVector( y_seq.length() );
 	double denom = 0.0;
-	for ( int j=0; j<Kxb.length(); ++j )
+	for ( int j=0; j<X.length(); ++j )
 	{
-		denom += Kxb(j);
+		double Kxb_j = K( X[j]-xi, h );
 
-		auto i = std::find( y_seq.begin(), y_seq.end(), Y[j] );
+		auto i = std::find( y_seq.cbegin(),y_seq.cend(), Y[j] );
+		pmf_est[ std::distance(y_seq.cbegin(),i) ] += Kxb_j;
 
-		est_pmf(std::distance(y_seq.begin(),i)) += Kxb(j);
+		denom += Kxb_j;
 	}
 
-	if ( denom == 0.0 ) [[unlikely]]
-	{
-		est_pmf.fill(0.0);
-	}
+	if ( denom == 0.0 ) [[unlikely]] pmf_est.fill(0.0);
 	else
 	{
-		for ( double& elem : est_pmf ) elem/=denom;
+		for ( double& elem : pmf_est ) elem/=denom;
 	}
 
-	return est_pmf;
+	return pmf_est;
 }
