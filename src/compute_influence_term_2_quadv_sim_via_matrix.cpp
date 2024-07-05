@@ -102,16 +102,17 @@
 			constants.  All other variables should be last observed values.  All this is encoded in
 			the `x_slope` object.
 			*/
-			NumericVector x_at_time( x_slope.length() );
+			double xt_dot_beta = 0.0;
 			double x_slope_sc = t - times[period_ind];
 			for ( int k=0; k<x_slope.length(); ++k )
 			{
-				x_at_time[k] = individual_X(period_ind,k) + x_slope[k]*x_slope_sc;
+				double xt_k = individual_X(period_ind,k) + x_slope[k]*x_slope_sc;
+				xt_dot_beta += xt_k * beta[k];
 			}
 
 			//Compute the pmf for `Y` at the given time point (e.g. num[1:35]).
 			NumericVector pmf = pcoriaccel_estimate_pmf(
-				Xb,Y, pcoriaccel_inner(x_at_time,beta), distinct_Y, bandwidth
+				Xb,Y, xt_dot_beta, distinct_Y, bandwidth
 			);
 
 			//Compute the expected value of the outcome at the given time point, given the
