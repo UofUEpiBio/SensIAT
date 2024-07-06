@@ -1,9 +1,102 @@
 library("assertthat")
+library("inline")
 library("pcoriRPackage")
+library("Rcpp")
 library("splines")
 library("tidyverse") #`map`
 
 load("testing.object.20240607.RData")
+
+pcoriaccel_estimate_pmf_orig <- rcpp(
+	sig = c(
+		X = "numeric",
+		Y = "numeric",
+		xi = "numeric",
+		y_seq = "numeric",
+		h = "numeric"
+	),
+	body = "return pcoriaccel_estimate_pmf_orig( X,Y, Rcpp::as<double>(xi), y_seq, Rcpp::as<double>(h) );",
+	includes = {c("
+#include <cmath>
+#include <vector>
+#include <string>
+
+constexpr double RT_TWOPI_RECIP =  0.398942280401432677;
+constexpr double NEG_HALF_LOG2E = -0.7213475204444817  ; // -½ log₂e
+
+template<class T> [[nodiscard]] constexpr
+T sq( T val ) noexcept { return val*val; }
+[[nodiscard]] constexpr double K_biweight2( double x, double h ) noexcept
+{
+	if ( std::abs(x) > h ) return 0.0;
+	x /= h;
+	return (15.0/16.0) * sq(1.0-sq(x));
+}
+
+//' Estimate the PMF directly with the K2_Biweight kernel.
+//'
+//' @param Xb vector (expected to be about 500 elements)
+//' @param Y vector (same size as Xb)
+//' @param xb vector
+//' @param y_seq vector
+//' @param h scalar bandwidth of kernel
+//' @return estimated PMF
+// [[Rcpp::export]]
+[[nodiscard]] NumericVector pcoriaccel_estimate_pmf_orig(
+	NumericVector X,
+	NumericVector Y,
+	double xi,
+	NumericVector y_seq,
+	double h
+) noexcept {
+	//auto K = K_normal;
+	auto K = K_biweight2;
+	//auto K = K_biweight4;
+
+	/*
+	Compute kernel applied to each pair of Xbⱼ and xᵢ
+
+	Kxb[j,i] = K( Xb[j]-xb[i], h )
+
+	Equivalent to `outer( Xb,xb, function(a,b){K(a-b,h)} )`
+	*/
+	NumericVector Kxb = NumericVector(X.length());
+	for ( int j=0; j<Kxb.length(); ++j )
+	{
+		Kxb(j) = K( X[j]-xi, h );
+	}
+
+	// estimated_pmf[j] = sum_k K(Xb[k]-xi,h) * 1(Y[k] == y_seq[j]) / sum_k K(Xb[k]-xi,h)
+	NumericVector estimated_pmf = NumericVector( y_seq.length() );
+	double denom = 0.0;
+	for ( int j=0; j<Kxb.length(); ++j )
+	{
+		denom += Kxb(j);
+
+		auto i = std::find( y_seq.begin(), y_seq.end(), Y[j] );
+
+		estimated_pmf(std::distance(y_seq.begin(),i)) += Kxb(j);
+	}
+
+	if ( denom == 0.0 ) [[unlikely]]
+	{
+		for ( int i=0; i<estimated_pmf.length(); ++i )
+		{
+			estimated_pmf(i) = 0.0;
+		}
+	}
+	else
+	{
+		for ( int i=0; i<estimated_pmf.length(); ++i )
+		{
+			estimated_pmf(i) /= denom;
+		}
+	}
+	return estimated_pmf;
+}
+")},
+
+)
 
 compute_influence_term_2_quadv_sim_via_matrix <-
 function(
@@ -61,7 +154,7 @@ function(
 		x_at_time <- individual_X[period_ind,] + x_slope * (time-times[period_ind])
 
 		# compute the pmf for Y at the given time point.
-		pmf <- pcoriaccel_estimate_pmf( Xb,Y, x_at_time%*%beta, distinct.y, h=bandwidth )
+		pmf <- pcoriaccel_estimate_pmf_orig( Xb,Y, x_at_time%*%beta, distinct.y, h=bandwidth )
 
 		# compute the expected value of the outcome at the given time point
 		# given the sensitivity parameter alpha.
@@ -202,14 +295,18 @@ x_slope[5] <- 1/object$outcome.model.centering[[4]]
 
 
 t0 <- Sys.time()
-compute_influence_term_2_quadv_sim_via_matrix(
-	X,Y, times,individual_X,x_slope, alpha,beta, object$base, bandwidth
+ref  = compute_influence_term_2_quadv_sim_via_matrix(
+	X,Y, times,individual_X,x_slope, alpha,beta, object$base, bandwidth, 1e-8
 )
 t1 <- Sys.time()
-pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix(
+test = pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix(
 	X,Y, times,individual_X,x_slope, alpha,beta, object$base, bandwidth
 )
 t2 <- Sys.time()
 
-print( t1 - t0 )
-print( t2 - t1 )
+cat( "Reference result, in time ", t1-t0, ":\n", sep="" )
+print(ref )
+cat( "\nTest result, in time "   , t2-t1, ":\n", sep="" )
+print(test)
+
+cat( "\nSpeedup factor:", as.numeric(t1-t0)/as.numeric(t2-t1) )
