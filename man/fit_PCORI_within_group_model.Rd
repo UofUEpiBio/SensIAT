@@ -70,25 +70,14 @@ treatment or control group.
 }
 \examples{
 
-fitted.trt.nb <-
-    fit_PCORI_within_group_model(
-        group.data = filter(ARC_data, Trt=='home_visits'),
-        id.var = elig_pid,
-        outcome.var = Asthma_control,
-        time.var = time,
-        intensity.bandwidth = 30,
-        End = 830,
-        outcome_modeler = glm.nb
-    )
-
 fitted.trt.sim.numeric <-
     fit_PCORI_within_group_model(
-        group.data = filter(ARC_data, Trt=='home_visits'),
+        group.data = PCORI_example_data,
         outcome_modeler = PCORI_sim_outcome_modeler,
         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-        id.var = elig_pid,
-        outcome.var = Asthma_control,
-        time.var = time,
+        id.var = Subject_ID,
+        outcome.var = Outcome,
+        time.var = Time,
         End = 830,
         knots = c(60,60,60,60,260,460,460,460,460),
         control = pcori_control('numeric')
@@ -96,12 +85,12 @@ fitted.trt.sim.numeric <-
 time.pw <- system.time({
 fitted.trt.sim.pw <-
     fit_PCORI_within_group_model(
-        group.data = filter(ARC_data, Trt=='home_visits'),
+        group.data = PCORI_example_data,
         outcome_modeler = PCORI_sim_outcome_modeler,
         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-        id.var = elig_pid,
-        outcome.var = Asthma_control,
-        time.var = time,
+        id.var = Subject_ID,
+        outcome.var = Outcome,
+        time.var = Time,
         End = 830,
         knots = c(60,60,60,60,260,460,460,460,460),
         control = pcori_control('piecewise')
@@ -109,12 +98,12 @@ fitted.trt.sim.pw <-
 })
 fitted.trt.sim.quadv <-
     fit_PCORI_within_group_model(
-        group.data = filter(ARC_data, Trt=='home_visits'),
+        group.data = PCORI_example_data,
         outcome_modeler = PCORI_sim_outcome_modeler,
         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-        id.var = elig_pid,
-        outcome.var = Asthma_control,
-        time.var = time,
+        id.var = Subject_ID,
+        outcome.var = Outcome,
+        time.var = Time,
         End = 830,
         knots = c(60,60,60,60,260,460,460,460,460),
         control = pcori_control('quadv')

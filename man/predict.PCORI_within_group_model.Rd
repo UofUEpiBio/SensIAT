@@ -56,27 +56,13 @@ Prediction method for \code{PCORI_within_group_model} objects
 }
 \examples{
 
-fitted.trt.nb <-
-    fit_PCORI_within_group_model(
-        group.data = filter(ARC_data, Trt=='home_visits'),
-        id.var = elig_pid,
-        outcome.var = Asthma_control,
-        time.var = time,
-        intensity.bandwidth = 30,
-        End = 830,
-        outcome_modeler = glm.nb
-    )
-predict(fitted.trt.nb, time = c(90, 180), alpha = c(-0.6, -0.3, 0, 0.3, 0.6)
-       , spline_fn, spline_seq=seq(60, 460, by=1), knots=c(59,59,59,59,260,461,461,461,461)
-)
-
 fitted.trt.sim <-
     fit_PCORI_within_group_model(
-        group.data = filter(ARC_data, Trt=='home_visits'),
+        group.data = PCORI_example_data,
         outcome_modeler = PCORI_sim_outcome_modeler,
-        id.var = elig_pid,
-        outcome.var = Asthma_control,
-        time.var = time,
+        id.var = Subject_ID,
+        outcome.var = Outcome,
+        time.var = Time,
         End = 830
     )
 time.pw <- system.time({

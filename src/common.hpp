@@ -19,9 +19,7 @@ using namespace Rcpp;
 
 /*
 When the R-facing API changes, regenerate by running (from root dir):
-	library("Rcpp")
-	compileAttributes(".")
-	devtools::document()
+	library("Rcpp");compileAttributes(".");devtools::document()
 
 	R -e 'library("Rcpp");compileAttributes(".");devtools::document()' should work, but doesn't do anything???
 

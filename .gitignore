@@ -6,6 +6,7 @@
 tests/*_output.RData
 # User-specific files
 .Ruserdata
+.lintr
 # R Environment Variables
 .Renviron
 # Project and IDE files
