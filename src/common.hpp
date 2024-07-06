@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <format>
+#include <limits>
 #include <ranges>
 #include <set>
 #include <vector>
@@ -19,10 +20,10 @@ using namespace Rcpp;
 /*
 When the R-facing API changes, regenerate by running (from root dir):
 	library("Rcpp")
-	compileAttributes("../")
+	compileAttributes(".")
 	devtools::document()
 
-	R -e 'library("Rcpp");compileAttributes("../");devtools::document()' should work, but doesn't do anything???
+	R -e 'library("Rcpp");compileAttributes(".");devtools::document()' should work, but doesn't do anything???
 
 Quick testing individual files (from "src/" dir):
 	sourceCpp("common.cpp")
@@ -71,6 +72,28 @@ void print( std::format_string<Args...> fmt, Args&&... args ) noexcept
 template<class T> [[nodiscard]] constexpr
 T sq( T val ) noexcept { return val*val; }
 
+[[nodiscard]] constexpr double clone( double val ) noexcept { return val; }
+
+template<class T> [[nodiscard]]
+T zero_with_shape_like( T const& shape_example=T() ) noexcept
+{
+	if      constexpr (std::is_same_v< T, double        >) return 0.0;
+	else if constexpr (std::is_same_v< T, NumericVector >)
+	{
+		NumericVector ret = NumericVector( shape_example.length() );
+		ret.fill(0.0);
+		return ret;
+	}
+	else if constexpr (std::is_same_v< T, NumericMatrix >)
+	{
+		NumericMatrix ret = NumericMatrix(Dimension( shape_example.nrow(), shape_example.ncol() ));
+		ret.fill(0.0);
+		return ret;
+	}
+}
+
+void negate_slot( List list, char const* slot_name ) noexcept;
+
 
 
 inline NumericMatrix& operator*=( NumericMatrix& matr, double val ) noexcept
@@ -83,17 +106,51 @@ inline NumericMatrix& operator/=( NumericMatrix& matr, double val ) noexcept
 	for ( double& elem : matr ) elem/=val;
 	return matr;
 }
+inline NumericVector& operator*=( NumericVector& vec, double val ) noexcept
+{
+	for ( double& elem : vec ) elem*=val;
+	return vec;
+}
+inline NumericVector& operator/=( NumericVector& vec, double val ) noexcept
+{
+	for ( double& elem : vec ) elem/=val;
+	return vec;
+}
 inline NumericMatrix& operator-=( NumericMatrix& matrA, NumericMatrix const& matrB )
 {
-	if ( matrA.nrow()!=matrB.nrow() || matrA.ncol()!=matrB.ncol() ) [[unlikely]] stop("Matrix dimension mismatch!");
+	if ( matrA.nrow()!=matrB.nrow() || matrA.ncol()!=matrB.ncol() ) [[unlikely]] stop(std::format(
+		"Matrix dimension mismatch in {} ({}x{} vs. {}x{})!",
+		"subtract", matrA.nrow(),matrA.ncol(), matrB.nrow(),matrB.ncol()
+	));
 	for ( int k=0; k<matrA.length(); ++k ) matrA[k]-=matrB[k];
 	return matrA;
 }
 inline NumericMatrix& operator+=( NumericMatrix& matrA, NumericMatrix const& matrB )
 {
-	if ( matrA.nrow()!=matrB.nrow() || matrA.ncol()!=matrB.ncol() ) [[unlikely]] stop("Matrix dimension mismatch!");
+	if ( matrA.nrow()!=matrB.nrow() || matrA.ncol()!=matrB.ncol() ) [[unlikely]] stop(std::format(
+		"Matrix dimension mismatch in {} ({}x{} vs. {}x{})!",
+		"add", matrA.nrow(),matrA.ncol(), matrB.nrow(),matrB.ncol()
+	));
 	for ( int k=0; k<matrA.length(); ++k ) matrA[k]+=matrB[k];
 	return matrA;
+}
+inline NumericVector& operator-=( NumericVector& vecA, NumericVector const& vecB )
+{
+	if ( vecA.length() != vecB.length() ) [[unlikely]] stop(std::format(
+		"Vector dimension mismatch in {} ({} vs. {})!",
+		"subtract", vecA.length(), vecB.length()
+	));
+	for ( int k=0; k<vecA.length(); ++k ) vecA[k]-=vecB[k];
+	return vecA;
+}
+inline NumericVector& operator+=( NumericVector& vecA, NumericVector const& vecB )
+{
+	if ( vecA.length() != vecB.length() ) [[unlikely]] stop(std::format(
+		"Vector dimension mismatch in {} ({} vs. {})!",
+		"add", vecA.length(), vecB.length()
+	));
+	for ( int k=0; k<vecA.length(); ++k ) vecA[k]+=vecB[k];
+	return vecA;
 }
 
 inline void exp_elems( NumericMatrix* matr ) noexcept
@@ -103,6 +160,41 @@ inline void exp_elems( NumericMatrix* matr ) noexcept
 inline void exp_elems( NumericVector* vec ) noexcept
 {
 	for ( int k=0; k<vec->length(); ++k ) (*vec)[k]=std::exp((*vec)[k]);
+}
+
+template<class T>
+[[nodiscard]] inline bool all_finite( T const& val ) noexcept
+{
+	if constexpr (std::is_same_v< T, double >) return std::isfinite(val);
+	else
+	{
+		for ( int k=0; k<val.length(); ++k ) if ( !std::isfinite(val[k]) ) return false;
+		return true;
+	}
+}
+
+template<class T>
+[[nodiscard]] inline double max_diff( T const& val0, T const& val1 ) noexcept
+{
+	if constexpr (std::is_same_v< T, double >) return val0 - val1;
+	else
+	{
+		double ret = 0.0;
+		for ( int k=0; k<val0.length(); ++k ) ret=std::max( ret, val0[k]-val1[k] );
+		return ret;
+	}
+}
+
+template<class T>
+[[nodiscard]] inline double max_abs_diff( T const& val0, T const& val1 ) noexcept
+{
+	if constexpr (std::is_same_v< T, double >) return std::abs( val0 - val1 );
+	else
+	{
+		double ret = 0.0;
+		for ( int k=0; k<val0.length(); ++k ) ret=std::max( ret, std::abs(val0[k]-val1[k]) );
+		return ret;
+	}
 }
 
 

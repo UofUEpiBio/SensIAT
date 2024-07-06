@@ -160,6 +160,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// pcoriaccel_integrate_simp
+[[nodiscard]] List pcoriaccel_integrate_simp(Function integrand, double lo, double hi, double tol);
+RcppExport SEXP _pcoriRPackage_pcoriaccel_integrate_simp(SEXP integrandSEXP, SEXP loSEXP, SEXP hiSEXP, SEXP tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Function >::type integrand(integrandSEXP);
+    Rcpp::traits::input_parameter< double >::type lo(loSEXP);
+    Rcpp::traits::input_parameter< double >::type hi(hiSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(pcoriaccel_integrate_simp(integrand, lo, hi, tol));
+    return rcpp_result_gen;
+END_RCPP
+}
 // pcoriaccel_evaluate_basis
 [[nodiscard]] NumericVector pcoriaccel_evaluate_basis(S4 spline_basis, double x);
 RcppExport SEXP _pcoriRPackage_pcoriaccel_evaluate_basis(SEXP spline_basisSEXP, SEXP xSEXP) {
@@ -185,6 +199,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pcoriRPackage_pcoriaccel_sorted_unique", (DL_FUNC) &_pcoriRPackage_pcoriaccel_sorted_unique, 1},
     {"_pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix", (DL_FUNC) &_pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix, 10},
     {"_pcoriRPackage_pcoriaccel_estimate_pmf", (DL_FUNC) &_pcoriRPackage_pcoriaccel_estimate_pmf, 5},
+    {"_pcoriRPackage_pcoriaccel_integrate_simp", (DL_FUNC) &_pcoriRPackage_pcoriaccel_integrate_simp, 4},
     {"_pcoriRPackage_pcoriaccel_evaluate_basis", (DL_FUNC) &_pcoriRPackage_pcoriaccel_evaluate_basis, 2},
     {NULL, NULL, 0}
 };

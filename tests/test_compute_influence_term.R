@@ -187,7 +187,7 @@ function(
 		})
 
 	# Sum integrals of periods to get entire integral.
-	map(period.integrals, getElement, 'Q') %>%
+	map(period.integrals, getElement, "Q") %>%
 		reduce(`+`) |>
 		structure(    # this is collecting and carrying forward the convergence information of the period integrals.
 			fcnt       = purrr::map_int( period.integrals, getElement, "fcnt"       ),

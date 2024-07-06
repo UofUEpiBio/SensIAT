@@ -4,6 +4,16 @@
 
 
 
+void negate_slot( List list, char const* slot_name ) noexcept
+{
+	auto slot = list.slot(slot_name);
+	if      ( Rf_isMatrix(slot) ) list.slot(slot_name)=-as<NumericMatrix>(slot);
+	else if ( Rf_isVector(slot) ) list.slot(slot_name)=-as<NumericVector>(slot);
+	else                          list.slot(slot_name)=-as<double       >(slot);
+}
+
+
+
 [[nodiscard]] String pcoriaccel_hello()
 {
 	return String("Hello from the PCORI Acceleration C++ sub-library!");

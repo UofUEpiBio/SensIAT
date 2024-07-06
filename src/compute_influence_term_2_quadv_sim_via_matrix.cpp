@@ -90,7 +90,7 @@
 	exp_elems(&exp_alpha_y);
 
 	//Compute integrals for each period
-	std::vector< IntegrateResult<NumericMatrix> > period_integrals( period_times.size() - 1 );
+	std::vector<List> period_integrals( period_times.size() - 1 );
 	for ( int period_ind=0; period_ind<(int)period_integrals.size(); ++period_ind )
 	{
 		double lower = period_times[ period_ind     ];
@@ -147,17 +147,31 @@
 		//Rcout << "Integrand value   ind , time   =   " << period_ind << " , " << lower << ":\n";
 		//fn(lower);
 
-		auto integrated = integrate_trap( fn, lower,upper );
-		//Rcout << "Integral value   ind , time   =   " << period_ind << " ,( " << lower << " , " << upper << "):\n" << integrated.Q;
+		//auto integrated = integrate_trap( fn, lower,upper );
+		auto integrated = integrate_simp( fn, lower,upper, tol );
+		//Rcout << "Integral value   ind , time   =   " << period_ind << " ,( " << lower << " , " << upper << "):\n" << integrated["Q"];
 		period_integrals[period_ind] = integrated;
 	}
 
 	//Sum integrals of periods to get entire integral (use first one as accumulator).
 	//	Note by above construction we do have at least two points (one integral period).
+	NumericMatrix Q = period_integrals[0]["Q"]; //Note references
 	for ( size_t k=1; k<period_integrals.size(); ++k )
 	{
-		period_integrals[0] += period_integrals[k];
+		Q += as<NumericMatrix>( period_integrals[k]["Q"] );
 	}
+	IntegerVector fcnts      ( period_integrals.size() );
+	NumericVector estim_precs( period_integrals.size() );
+	for ( size_t k=0; k<period_integrals.size(); ++k )
+	{
+		fcnts      [k] = period_integrals[k]["fcnt"      ];
+		estim_precs[k] = period_integrals[k]["estim.prec"];
+	}
+	//period_integrals[0]["fcnt"      ] = fcnts;
+	//period_integrals[0]["estim.prec"] = estim_precs;
+	Q.attr("fcnt"      ) = fcnts      ;
+	Q.attr("estim.prec") = estim_precs;
+	//Rcout << "Result:\n" << Q << "\n";
 
-	return period_integrals[0].Q;
+	return Q;
 }

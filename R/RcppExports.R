@@ -126,6 +126,21 @@ pcoriaccel_estimate_pmf <- function(X, Y, xi, y_seq, h) {
     .Call(`_pcoriRPackage_pcoriaccel_estimate_pmf`, X, Y, xi, y_seq, h)
 }
 
+#' Integrate function using adaptive Simpson quadrature.
+#'
+#' @param integrand   The integrand, must take scalar argument, may return scalar, vector, or matrix.
+#' @param lo          Lower integration bound
+#' @param hi          Upper integration bound
+#' @param tol         Tolerance for integration, default .Machine$double.eps^(1/2)
+#'
+#' @return integration result, list with elements `$Q` (the integral estimate), `$fcnt` (the number
+#' of function evaluations), and `$estim.prec` (a (pessimistic) estimate of the precision).
+#'
+#' @export
+pcoriaccel_integrate_simp <- function(integrand, lo, hi, tol = 1.490116e-08) {
+    .Call(`_pcoriRPackage_pcoriaccel_integrate_simp`, integrand, lo, hi, tol)
+}
+
 #' Rcpp version of `evaluate_basis(⋯)` function
 #'
 #' @param spline_basis   The spline basis, S4 class `orthogonalsplinebasis::SplineBasis`
