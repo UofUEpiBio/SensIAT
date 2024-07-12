@@ -105,9 +105,9 @@ fit_PCORI_within_group_model <- function(
         outcome = outcome.var,
         prev_outcome = rlang::sym(glue::glue("lag({outcome.var})")),
         prev_time = rlang::sym(glue::glue("lag({time.var})")),
-        delta_time = rlang::sym(glue::glue("\u0394({time.var})")),  # \delta({time.var})
+        delta_time = rlang::sym(glue::glue("delta({time.var})")),
         norm_time = rlang::sym(glue::glue("scale({time.var})")),
-        norm_delta_time = rlang::sym(glue::glue("scale(\u0394({time.var}))"))
+        norm_delta_time = rlang::sym(glue::glue("scale(delta({time.var}))"))
     )
 
     group.data2 <- filter(group.data, !!time.var <= End)
