@@ -3,7 +3,6 @@ library("inline")
 library("pcoriRPackage")
 library("Rcpp")
 library("splines")
-library("tidyverse") #`map`
 
 load("testing.object.20240607.RData")
 
@@ -172,7 +171,7 @@ function(
 	#print(integrand(1,lower))
 
 	period.integrals <-
-		map(seq.int(length(period.times)-1), \(period.index){
+		purrr::map(seq.int(length(period.times)-1), \(period.index){
 			# Operating on period index.
 
 			# lower and upper bound of the integral.
@@ -187,7 +186,7 @@ function(
 		})
 
 	# Sum integrals of periods to get entire integral.
-	map(period.integrals, getElement, "Q") %>%
+	purrr::map(period.integrals, getElement, "Q") %>%
 		reduce(`+`) |>
 		structure(    # this is collecting and carrying forward the convergence information of the period integrals.
 			fcnt       = purrr::map_int( period.integrals, getElement, "fcnt"       ),
