@@ -7,6 +7,8 @@
 pcoriaccel_estimate_pmf(X, Y, xi, y_seq, h)
 }
 \arguments{
+\item{X}{a vector (expected to be about 500 elements)}
+
 \item{Y}{a vector (same size as Xb)}
 
 \item{xi}{a scalar}
@@ -14,8 +16,6 @@ pcoriaccel_estimate_pmf(X, Y, xi, y_seq, h)
 \item{y_seq}{a vector}
 
 \item{h}{a scalar, the bandwidth of kernel}
-
-\item{Xb}{a vector (expected to be about 500 elements)}
 }
 \value{
 estimated PMF

@@ -16,7 +16,7 @@ Cond_mean_fn(mu, theta, alpha)
 \value{
 a list containing
 \eqn{\frac{E[ Y exp(\alpha Y) ]}{E[ exp(\alpha Y)]}}{(E[ Y*exp(\alpha Y) ]/(E[exp(\alpha Y)])}
-and $E\link[= exp(\\alpha Y) ]{ exp(\alpha Y) }$
+and \verb{$E[ exp(\\alpha Y) ]$}
 for Y a (truncated version of) a negative binomial having mean \code{mu} and
 size \code{theta}.
 }

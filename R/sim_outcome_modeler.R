@@ -2,6 +2,8 @@
 #'
 #' @param formula The outcome model formula
 #' @param data The data to fit the outcome model to.
+#' @param kernel The kernel to use for the outcome model.
+#' @param method The optimization method to use for the outcome model, either "optim", "nlminb", or "nmk".
 #' @param ... Currently ignored, included for future compatibility.
 #'
 #' @return Object of class `PCORI::Single-index-outcome-model` which contains the outcome model portion.
@@ -93,7 +95,7 @@ SIDRnew <- function(X, Y,
                     Y.CP = NULL,
                     initial = NULL,
                     kernel = "K2_Biweight",
-                    method = "optim",
+                    method = c("optim", "nlminb", "nmk"),
                     optim_method = "BFGS",
                     abs.tol = 1e-4,
                     bandwidth = NULL,
@@ -101,6 +103,8 @@ SIDRnew <- function(X, Y,
 {
     X <- as.matrix(X)
     Y <- as.matrix(Y)
+
+    method <- match.arg(method)
 
     number_n <- dim(X)[1]
     number_p <- dim(X)[2]

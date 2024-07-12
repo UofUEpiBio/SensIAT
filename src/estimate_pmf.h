@@ -6,7 +6,7 @@
 
 //' Estimate the PMF directly with the K2_Biweight kernel.
 //'
-//' @param Xb    a vector (expected to be about 500 elements)
+//' @param X     a vector (expected to be about 500 elements)
 //' @param Y     a vector (same size as Xb)
 //' @param xi    a scalar
 //' @param y_seq a vector

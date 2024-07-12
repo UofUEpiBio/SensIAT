@@ -17,6 +17,10 @@ PCORI_sim_outcome_modeler(
 
 \item{data}{The data to fit the outcome model to.}
 
+\item{kernel}{The kernel to use for the outcome model.}
+
+\item{method}{The optimization method to use for the outcome model, either "optim", "nlminb", or "nmk".}
+
 \item{...}{Currently ignored, included for future compatibility.}
 }
 \value{

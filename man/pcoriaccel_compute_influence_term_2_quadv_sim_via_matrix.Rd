@@ -39,8 +39,6 @@ inferences for integration.}
 \item{bandwidth}{Bandwidth for the kernel density estimate of the outcome model.}
 
 \item{tol}{Tolerance for integration}
-
-\item{...}{Additional arguments passed to the pcoriaccel_NW function, not implemented.}
 }
 \value{
 integration result

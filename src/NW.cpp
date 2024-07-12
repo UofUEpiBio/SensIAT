@@ -190,6 +190,7 @@ NumericMatrix _pcoriaccel_NW(
 //' @param xb    a vector
 //' @param y_seq a vector
 //' @param h     a scalar, the bandwidth of kernel
+//' @param kernel a string, denoting the kernel function to use, either "dnorm", "K2_Biweight", or "K4_Biweight"
 //'
 //' @return Matrix fyxb
 //'

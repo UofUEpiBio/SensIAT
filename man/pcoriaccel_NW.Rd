@@ -16,6 +16,8 @@ pcoriaccel_NW(Xb, Y, xb, y_seq, h, kernel = "K2_Biweight")
 \item{y_seq}{a vector}
 
 \item{h}{a scalar, the bandwidth of kernel}
+
+\item{kernel}{a string, denoting the kernel function to use, either "dnorm", "K2_Biweight", or "K4_Biweight"}
 }
 \value{
 Matrix fyxb

@@ -13,7 +13,7 @@
 #' @param base a [Spline Basis][SplineBasis] object.
 #' @param variables a variables mapping.
 #' @param alpha the sensitivity parameter.
-#' @param ... passed to [impute_patient_df].
+#' @param ... passed on.
 #'
 #' @return
 #' A data frame with columns `alpha`, and `influence_term_2`.

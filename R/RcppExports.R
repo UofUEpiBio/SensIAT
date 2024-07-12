@@ -24,6 +24,7 @@ pcoriaccel_NW_basic <- function(Xb, Y, xb, y_seq, h) {
 #' @param xb    a vector
 #' @param y_seq a vector
 #' @param h     a scalar, the bandwidth of kernel
+#' @param kernel a string, denoting the kernel function to use, either "dnorm", "K2_Biweight", or "K4_Biweight"
 #'
 #' @return Matrix fyxb
 #'
@@ -102,7 +103,6 @@ pcoriaccel_sorted_unique <- function(vec) {
 #' @param spline_basis   Spline basis object (`orthogonalsplinebasis::SplineBasis`)
 #' @param bandwidth      Bandwidth for the kernel density estimate of the outcome model.
 #' @param tol            Tolerance for integration
-#' @param ...            Additional arguments passed to the pcoriaccel_NW function, not implemented.
 #'
 #' @return integration result
 #'
@@ -113,7 +113,7 @@ pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix <- function(X, Y, times
 
 #' Estimate the PMF directly with the K2_Biweight kernel.
 #'
-#' @param Xb    a vector (expected to be about 500 elements)
+#' @param X     a vector (expected to be about 500 elements)
 #' @param Y     a vector (same size as Xb)
 #' @param xi    a scalar
 #' @param y_seq a vector
