@@ -16,6 +16,6 @@ test_that("model.matrix.PCORI::Single-index-outcome-model is invariant to subset
         c('intensity.model', 'outcome.model', 'outcome.model.centering',
           'data', 'variables', 'End', 'influence', 'coefficients',
           'coefficient.variance', 'control', 'base'))
-    expect_is(fitted.trt.sim$outcome_model, 'PCORI::Single-index-outcome-model')
+    expect_s3_class(fitted.trt.sim$outcome.model, 'PCORI::Single-index-outcome-model')
 
 })
