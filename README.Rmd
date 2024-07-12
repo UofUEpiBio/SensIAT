@@ -8,7 +8,7 @@ output: github_document
 
 # pcoriRPackage
 
-R Package for PCORI project
+R Package for PCORI project.
 
 
 
