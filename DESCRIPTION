@@ -30,6 +30,7 @@ Imports:
     utils
 Suggests: 
     dfoptim,
+    inline,
     testthat (>= 3.0.0),
     tinytest
 Config/testthat/edition: 3
