@@ -25,7 +25,7 @@ Compute Conditional Means
 Compute the conditional expectations needed for predictions in the PCORI models.
 Three additional values/expectations are computed:
 \itemize{
-\item $E \big\link[= Y(t) \\exp \\{  \\alpha Y(t) \\}   | A(t)=1, \\bar{O}(t) \\big]{ Y(t) \exp \{  \alpha Y(t) \}   | A(t)=1, \bar{O}(t) \big}$, returned as \code{E_y_past}, and
-\item $E \big\link[= \\exp \\{ \\alpha Y(t) \\} \\  | A(t)=1, \\bar{O}(t) \\big]{ \exp \{ \alpha Y(t) \} \  | A(t)=1, \bar{O}(t) \big}$, returned as \code{E_exp_alphaY}.
+\item \verb{$E \\big[ Y(t) \\exp \\\{  \\alpha Y(t) \\\}   | A(t)=1, \\bar\{O\}(t) \\big]$}, returned as \code{E_y_past}, and
+\item \verb{$E \\big[ \\exp \\\{ \\alpha Y(t) \\\} \\  | A(t)=1, \\bar\{O\}(t) \\big]$}, returned as \code{E_exp_alphaY}.
 }
 }

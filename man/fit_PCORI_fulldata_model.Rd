@@ -29,16 +29,9 @@ bootstrap replication.
 }
 \examples{
 
-fitted.arc.nb.model <-
-    fit_PCORI_fulldata_model(
-        data = ARC_data,
-        trt = Trt=='home_visits',
-        # Passed to group model
-        outcome_modeler = pcori_nb_outcome_modeler  #< not yet defined.
-    )
 fitted.arc.sim.model <-
     fit_PCORI_fulldata_model(
-        data = ARC_data,
+        data = PCORI_example_data,
         trt = Trt=='home_visits',
         # Passed to group model
         outcome_modeler = PCORI_sim_outcome_modeler  #< not yet defined.

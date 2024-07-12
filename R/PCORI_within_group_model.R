@@ -105,9 +105,9 @@ fit_PCORI_within_group_model <- function(
         outcome = outcome.var,
         prev_outcome = rlang::sym(glue::glue("lag({outcome.var})")),
         prev_time = rlang::sym(glue::glue("lag({time.var})")),
-        delta_time = rlang::sym(glue::glue("Δ({time.var})")),
+        delta_time = rlang::sym(glue::glue("\u0394({time.var})")),  # \delta({time.var})
         norm_time = rlang::sym(glue::glue("scale({time.var})")),
-        norm_delta_time = rlang::sym(glue::glue("scale(Δ({time.var}))"))
+        norm_delta_time = rlang::sym(glue::glue("scale(\u0394({time.var}))"))
     )
 
     group.data2 <- filter(group.data, !!time.var <= End)
@@ -134,7 +134,7 @@ fit_PCORI_within_group_model <- function(
             !!vars$prev_outcome    := lag(!!outcome.var, order_by = !!time.var),
             !!vars$prev_time       := lag(!!time.var, order_by =  !!time.var, default = 0),
             !!vars$delta_time      := !!time.var - lag(!!time.var, order_by =  !!time.var, default = 0),
-            across(all_of(time.var), coalesce, !!End)
+            across(all_of(time.var), \(.)coalesce(., !!End))
         ) |>
         ungroup()
 
@@ -158,7 +158,7 @@ fit_PCORI_within_group_model <- function(
                  !!time.var,
                  !is.na(!!outcome.var))~!!vars$prev_outcome+strata(visit.number),
             id = !!id.var,
-            data = filter(model.data, !!time.var > 0)
+            data = filter(model.data, !!vars$time > 0, !is.na(!!vars$prev_outcome))
         ))
 
     # gamma <- Int_model$coefficients # parameter lambda in lambda(t, O(t))
@@ -215,7 +215,7 @@ fit_PCORI_within_group_model <- function(
 
 
     structure(list(
-        intensity_model = intensity.model,
+        intensity.model = intensity.model,
         outcome.model = outcome.model,
         outcome.model.centering = centering.statistics,
         data = model.data,
@@ -223,7 +223,7 @@ fit_PCORI_within_group_model <- function(
         End = End,
         influence = influence,
         coefficients = Beta$estimate,
-        coefficient_variance = Beta$variance,
+        coefficient.variance = Beta$variance,
         control = control,
         base=base,
         V_inverse = V_inverse

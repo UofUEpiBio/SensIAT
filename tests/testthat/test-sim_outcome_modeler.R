@@ -1,24 +1,21 @@
 test_that("model.matrix.PCORI::Single-index-outcome-model is invariant to subsetting", {
     fitted.trt.sim <-
         fit_PCORI_within_group_model(
-            group.data = filter(ARC_data, Trt=='home_visits'),
+            group.data = PCORI_example_data,
             outcome_modeler = PCORI_sim_outcome_modeler,
-            id.var = elig_pid,
-            outcome.var = Asthma_control,
-            time.var = time,
+            id.var = Subject_ID,
+            outcome.var = Outcome,
+            time.var = Time,
             intensity.bandwidth = 30,
+            knots = c(60,60,60,60,260,460,460,460,460),
             End = 830
         )
+    expect_s3_class(fitted.trt.sim, 'PCORI_within_group_model')
+    expect_contains(
+        names(fitted.trt.sim),
+        c('intensity.model', 'outcome.model', 'outcome.model.centering',
+          'data', 'variables', 'End', 'influence', 'coefficients',
+          'coefficient.variance', 'control', 'base'))
+    expect_is(fitted.trt.sim$outcome_model, 'PCORI::Single-index-outcome-model')
 
-    om <- fitted.trt.sim$outcome_model
-
-    terms(om)
-
-    om$frame
-    mf <- model.frame(om)
-
-    a <- model.matrix(om)
-
-
-  expect_equal(2 * 2, 4)
 })

@@ -4,3 +4,4 @@ Makefile
 ^\.Rproj\.user$
 ^README\.Rmd$
 roadmap.md
+^LICENSE\.md$
