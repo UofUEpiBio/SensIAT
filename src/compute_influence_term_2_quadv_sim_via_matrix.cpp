@@ -1,9 +1,9 @@
 // [[Rcpp::plugins(cpp20)]]
 
-//#include "common.hpp"
-#include "estimate_pmf.hpp"
-#include "integrate.hpp"
-#include "spline_basis.hpp"
+//#include "common.h"
+#include "estimate_pmf.h"
+#include "integrate.h"
+#include "spline_basis.h"
 
 
 

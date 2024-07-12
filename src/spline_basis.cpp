@@ -1,6 +1,6 @@
 // [[Rcpp::plugins(cpp20)]]
 
-#include "spline_basis.hpp"
+#include "spline_basis.h"
 
 
 
