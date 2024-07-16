@@ -111,19 +111,18 @@ pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix <- function(X, Y, times
     .Call(`_pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix`, X, Y, times, individual_X, x_slope, alpha, beta, spline_basis, bandwidth, tol)
 }
 
-#' Estimate the PMF directly with the K2_Biweight kernel.
+#' Directly estimate the pmf of Y.
 #'
-#' @param X     a vector (expected to be about 500 elements)
-#' @param Y     a vector (same size as Xb)
-#' @param xi    a scalar
-#' @param y_seq a vector
-#' @param h     a scalar, the bandwidth of kernel
-#'
-#' @return estimated PMF
+#' @param Xb NumericVector of individual linear predictors from the data
+#' @param Y NumericVector of individual responses from the data
+#' @param xi value of the individuals linear predictor at the point of estimation
+#' @param y_seq NumericVector of unique values of Y.
+#' @param h bandwidth of the kernel
+#' @param kernel character string specifying the kernel to use, either "dnorm", "K2_Biweight", or "K4_Biweight"
 #'
 #' @export
-pcoriaccel_estimate_pmf <- function(X, Y, xi, y_seq, h) {
-    .Call(`_pcoriRPackage_pcoriaccel_estimate_pmf`, X, Y, xi, y_seq, h)
+pcoriaccel_estimate_pmf <- function(Xb, Y, xi, y_seq, h, kernel = "K2_Biweight") {
+    .Call(`_pcoriRPackage_pcoriaccel_estimate_pmf`, Xb, Y, xi, y_seq, h, kernel)
 }
 
 #' Integrate function using adaptive Simpson quadrature.

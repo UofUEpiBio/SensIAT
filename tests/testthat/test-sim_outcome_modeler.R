@@ -6,6 +6,9 @@ test_that("model.matrix.PCORI::Single-index-outcome-model is invariant to subset
             id.var = Subject_ID,
             outcome.var = Outcome,
             time.var = Time,
+            control = pcori_control(
+                intensity.bandwidth = 30
+            ),
             intensity.bandwidth = 30,
             knots = c(60,60,60,60,260,460,460,460,460),
             End = 830

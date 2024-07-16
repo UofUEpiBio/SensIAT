@@ -249,7 +249,7 @@ fit_PCORI_within_group_model <- function(
 #' pcori_control("quad", intensity.bandwidth = 30, tol = 1e-6)
 pcori_control <-
 function(
-    integration.method = c('quadv', "linear", "numerical", "piecewise"),
+    integration.method = c('quadvcpp', 'quadv', "linear", "numerical", "piecewise"),
     intensity.bandwidth = NULL,
     resolution = 1000,
     resolution.within.period = 50,

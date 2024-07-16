@@ -5,7 +5,7 @@
 \title{Control Parameters for Fitting the PCORI Within Group Model}
 \usage{
 pcori_control(
-  integration.method = c("quadv", "linear", "numerical", "piecewise"),
+  integration.method = c("quadvcpp", "quadv", "linear", "numerical", "piecewise"),
   intensity.bandwidth = NULL,
   resolution = 1000,
   resolution.within.period = 50,

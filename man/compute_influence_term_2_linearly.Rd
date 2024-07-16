@@ -24,7 +24,7 @@ compute_influence_term_2_linearly(
 
 \item{alpha}{the sensitivity parameter.}
 
-\item{...}{passed to \link{impute_patient_df}.}
+\item{...}{passed on.}
 }
 \value{
 A data frame with columns \code{alpha}, and \code{influence_term_2}.

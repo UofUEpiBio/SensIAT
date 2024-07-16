@@ -2,24 +2,23 @@
 % Please edit documentation in R/RcppExports.R
 \name{pcoriaccel_estimate_pmf}
 \alias{pcoriaccel_estimate_pmf}
-\title{Estimate the PMF directly with the K2_Biweight kernel.}
+\title{Directly estimate the pmf of Y.}
 \usage{
-pcoriaccel_estimate_pmf(X, Y, xi, y_seq, h)
+pcoriaccel_estimate_pmf(Xb, Y, xi, y_seq, h, kernel = "K2_Biweight")
 }
 \arguments{
-\item{X}{a vector (expected to be about 500 elements)}
+\item{Xb}{NumericVector of individual linear predictors from the data}
 
-\item{Y}{a vector (same size as Xb)}
+\item{Y}{NumericVector of individual responses from the data}
 
-\item{xi}{a scalar}
+\item{xi}{value of the individuals linear predictor at the point of estimation}
 
-\item{y_seq}{a vector}
+\item{y_seq}{NumericVector of unique values of Y.}
 
-\item{h}{a scalar, the bandwidth of kernel}
-}
-\value{
-estimated PMF
+\item{h}{bandwidth of the kernel}
+
+\item{kernel}{character string specifying the kernel to use, either "dnorm", "K2_Biweight", or "K4_Biweight"}
 }
 \description{
-Estimate the PMF directly with the K2_Biweight kernel.
+Directly estimate the pmf of Y.
 }

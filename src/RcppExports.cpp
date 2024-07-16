@@ -131,17 +131,18 @@ BEGIN_RCPP
 END_RCPP
 }
 // pcoriaccel_estimate_pmf
-[[nodiscard]] NumericVector pcoriaccel_estimate_pmf(NumericVector X, NumericVector Y, double xi, NumericVector y_seq, double h);
-RcppExport SEXP _pcoriRPackage_pcoriaccel_estimate_pmf(SEXP XSEXP, SEXP YSEXP, SEXP xiSEXP, SEXP y_seqSEXP, SEXP hSEXP) {
+[[nodiscard]] NumericVector pcoriaccel_estimate_pmf(NumericVector Xb, NumericVector Y, double xi, NumericVector y_seq, double h, String kernel);
+RcppExport SEXP _pcoriRPackage_pcoriaccel_estimate_pmf(SEXP XbSEXP, SEXP YSEXP, SEXP xiSEXP, SEXP y_seqSEXP, SEXP hSEXP, SEXP kernelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type X(XSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type Xb(XbSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
     Rcpp::traits::input_parameter< double >::type xi(xiSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type y_seq(y_seqSEXP);
     Rcpp::traits::input_parameter< double >::type h(hSEXP);
-    rcpp_result_gen = Rcpp::wrap(pcoriaccel_estimate_pmf(X, Y, xi, y_seq, h));
+    Rcpp::traits::input_parameter< String >::type kernel(kernelSEXP);
+    rcpp_result_gen = Rcpp::wrap(pcoriaccel_estimate_pmf(Xb, Y, xi, y_seq, h, kernel));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -182,7 +183,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pcoriRPackage_pcoriaccel_outer_prod", (DL_FUNC) &_pcoriRPackage_pcoriaccel_outer_prod, 2},
     {"_pcoriRPackage_pcoriaccel_sorted_unique", (DL_FUNC) &_pcoriRPackage_pcoriaccel_sorted_unique, 1},
     {"_pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix", (DL_FUNC) &_pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix, 10},
-    {"_pcoriRPackage_pcoriaccel_estimate_pmf", (DL_FUNC) &_pcoriRPackage_pcoriaccel_estimate_pmf, 5},
+    {"_pcoriRPackage_pcoriaccel_estimate_pmf", (DL_FUNC) &_pcoriRPackage_pcoriaccel_estimate_pmf, 6},
     {"_pcoriRPackage_pcoriaccel_integrate_simp", (DL_FUNC) &_pcoriRPackage_pcoriaccel_integrate_simp, 4},
     {"_pcoriRPackage_pcoriaccel_evaluate_basis", (DL_FUNC) &_pcoriRPackage_pcoriaccel_evaluate_basis, 2},
     {NULL, NULL, 0}

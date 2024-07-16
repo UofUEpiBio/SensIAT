@@ -195,6 +195,7 @@ template<class T>
 	}
 }
 
+enum KernelType { Kt_normal, Kt_biweight2, Kt_biweight4 };
 
 
 [[nodiscard]] constexpr double K_normal   ( double x, double h ) noexcept

@@ -90,11 +90,13 @@ all( Fhat2-1 <= .Machine$double.eps )
 
 
 # Save data for results
-save( Fhat,Fhat2, file="tests/test_NW_output.RData" )
+# save( Fhat,Fhat2, file="tests/test_NW_output.RData" )
 
 # Print output for quick checking
 print( Fhat , digits=3, width=200 )
 print( Fhat2, digits=3, width=200 )
+print( max(abs(zapsmall(Fhat-Fhat2))))
+
 
 # Print time difference for a rough feel for speedup
 print( t1 - t0 )

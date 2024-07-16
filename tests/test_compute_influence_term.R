@@ -1,101 +1,21 @@
 library("assertthat")
-library("inline")
+requireNamespace("inline")
 library("pcoriRPackage")
 library("Rcpp")
 library("splines")
 
-load("testing.object.20240607.RData")
-
-pcoriaccel_estimate_pmf_orig <- rcpp(
-	sig = c(
-		X = "numeric",
-		Y = "numeric",
-		xi = "numeric",
-		y_seq = "numeric",
-		h = "numeric"
-	),
-	body = "return pcoriaccel_estimate_pmf_orig( X,Y, Rcpp::as<double>(xi), y_seq, Rcpp::as<double>(h) );",
-	includes = {c("
-#include <cmath>
-#include <vector>
-#include <string>
-
-constexpr double RT_TWOPI_RECIP =  0.398942280401432677;
-constexpr double NEG_HALF_LOG2E = -0.7213475204444817  ; // -½ log₂e
-
-template<class T> [[nodiscard]] constexpr
-T sq( T val ) noexcept { return val*val; }
-[[nodiscard]] constexpr double K_biweight2( double x, double h ) noexcept
-{
-	if ( std::abs(x) > h ) return 0.0;
-	x /= h;
-	return (15.0/16.0) * sq(1.0-sq(x));
-}
-
-//' Estimate the PMF directly with the K2_Biweight kernel.
-//'
-//' @param Xb vector (expected to be about 500 elements)
-//' @param Y vector (same size as Xb)
-//' @param xb vector
-//' @param y_seq vector
-//' @param h scalar bandwidth of kernel
-//' @return estimated PMF
-// [[Rcpp::export]]
-[[nodiscard]] NumericVector pcoriaccel_estimate_pmf_orig(
-	NumericVector X,
-	NumericVector Y,
-	double xi,
-	NumericVector y_seq,
-	double h
-) noexcept {
-	//auto K = K_normal;
-	auto K = K_biweight2;
-	//auto K = K_biweight4;
-
-	/*
-	Compute kernel applied to each pair of Xbⱼ and xᵢ
-
-	Kxb[j,i] = K( Xb[j]-xb[i], h )
-
-	Equivalent to `outer( Xb,xb, function(a,b){K(a-b,h)} )`
-	*/
-	NumericVector Kxb = NumericVector(X.length());
-	for ( int j=0; j<Kxb.length(); ++j )
-	{
-		Kxb(j) = K( X[j]-xi, h );
-	}
-
-	// estimated_pmf[j] = sum_k K(Xb[k]-xi,h) * 1(Y[k] == y_seq[j]) / sum_k K(Xb[k]-xi,h)
-	NumericVector estimated_pmf = NumericVector( y_seq.length() );
-	double denom = 0.0;
-	for ( int j=0; j<Kxb.length(); ++j )
-	{
-		denom += Kxb(j);
-
-		auto i = std::find( y_seq.begin(), y_seq.end(), Y[j] );
-
-		estimated_pmf(std::distance(y_seq.begin(),i)) += Kxb(j);
-	}
-
-	if ( denom == 0.0 ) [[unlikely]]
-	{
-		for ( int i=0; i<estimated_pmf.length(); ++i )
-		{
-			estimated_pmf(i) = 0.0;
-		}
-	}
-	else
-	{
-		for ( int i=0; i<estimated_pmf.length(); ++i )
-		{
-			estimated_pmf(i) /= denom;
-		}
-	}
-	return estimated_pmf;
-}
-")},
-
-)
+object <-
+    fit_PCORI_within_group_model(
+        group.data = PCORI_example_data,
+        outcome_modeler = PCORI_sim_outcome_modeler,
+        alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+        id.var = Subject_ID,
+        outcome.var = Outcome,
+        time.var = Time,
+        End = 830,
+        knots = c(60,60,60,60,260,460,460,460,460),
+        control = pcori_control('quadv')
+    )
 
 compute_influence_term_2_quadv_sim_via_matrix <-
 function(
@@ -153,7 +73,7 @@ function(
 		x_at_time <- individual_X[period_ind,] + x_slope * (time-times[period_ind])
 
 		# compute the pmf for Y at the given time point.
-		pmf <- pcoriaccel_estimate_pmf_orig( Xb,Y, x_at_time%*%beta, distinct.y, h=bandwidth )
+		pmf <- pcoriaccel_estimate_pmf( Xb,Y, x_at_time%*%beta, distinct.y, h=bandwidth )
 
 		# compute the expected value of the outcome at the given time point
 		# given the sensitivity parameter alpha.
@@ -163,7 +83,7 @@ function(
 		ev <- numerator/denominator
 
 		# evaluate the spline basis functions at the given time point.
-		B <- evaluate_basis(spline_basis, time)
+		B <- orthogonalsplinebasis::evaluate(spline_basis, time)
 		ret <- ev %*% B # returned value is a length(alpha) by ncol(B) matrix.
 		return(ret)
 	}
@@ -193,57 +113,6 @@ function(
 			estim.prec = purrr::map_dbl( period.integrals, getElement, "estim.prec" )
 		)
 }
-
-evaluate_basis <- function(
-	object, # Spline object which contains Matrices, an array of dimension
-	x
-) {
-	# Extract components of the spline basis.
-	#
-	# /* M is a three dimensional array with dimension(
-	#        * order,
-	#        * length(knots)-order(i.e. number of basis functions),
-	#        * length(knots)-2*order+1( Number of distinct internal intervals created by the knots)
-	# )*/
-	# const NumericArray M = object.slot('Matrices');
-	M     <- object@Matrices
-	# // Vector of spline knots
-	# const NumericVector knots = object.slot('knots');
-	knots <- object@knots
-	# // Order of the spline, one more that the degree of the polynomial
-	# // Could also be derived as dimension(M)[0]
-	# const uint order =    object.slot('order');
-	order <- object@order
-
-	# Early kickout for out of bounds x
-	if ( x<knots[order] || x>knots[length(knots)-order+1] ) return(rep(NA,dim(object)[2]))
-
-	# Find the interval in which x lies
-	if ( x == knots[length(knots)-order+1] )
-		ind <- x <= knots # Special Case when x == upper bound of valid knots.
-	else
-		ind <- x <  knots
-	if( all(ind) || all(!ind) )
-	{
-		if (x == knots[length(knots)-order+1] )
-			return( rep(1,order) %*% matrix(M[,,dim(M)[3]],nrow=order) )
-		else
-			return( rep(0,ncol(object)) )
-	}
-	i <- which(ind)[1] - 1
-	u <- (x-knots[i]) / (knots[i+1]-knots[i])
-	U <- u^(0:(order-1))
-
-	# auto i = order-1;
-	# while(x>knots[i] && i < length(knots)-order-1) ++i;
-	# u = (x-knots[i])/(knots[i+1]-knots[i])
-	# U = NumericVector(u^0, u^1, ..., u^(order-1)
-	# return( U %*% matrix(M[,,i-order+1], nrow=order))
-
-	return( U %*% matrix(M[,,i-order+1],nrow=order) )
-}
-
-
 
 # test the function
 alpha <- c(-0.5, 0, 0.5)

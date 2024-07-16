@@ -97,7 +97,16 @@ function(
                 alpha = alpha,
                 ...
             )
-        }
+        } else if (control$integration.method == 'quadvcpp') {
+            compute_influence_term_2_quadv_cpp_sim(
+                df_i, expected_value, base=base,
+                outcome.model = outcome.model,
+                tol = control$tol,
+                variables = variables,
+                alpha = alpha,
+                ...
+            )
+        } else rlang::abort('Unknown integration method')
     influence <- colSums(term1) + term2
     V_inverse <- solve(GramMatrix(base))
     term1_ortho = term1 %*% V_inverse
