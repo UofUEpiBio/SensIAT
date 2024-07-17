@@ -35,5 +35,6 @@ Control Parameters for Fitting the PCORI Within Group Model
 \examples{
 pcori_control("piecewise", intensity.bandwidth = 30, resolution.within.period = 50)
 pcori_control("numerical", intensity.bandwidth = 30, resolution = 1000)
-pcori_control("quad", intensity.bandwidth = 30, tol = 1e-6)
+pcori_control("quadv", intensity.bandwidth = 30, tol = 1e-6)
+pcori_control("quadvcpp", intensity.bandwidth = 30, tol = 1e-6)
 }

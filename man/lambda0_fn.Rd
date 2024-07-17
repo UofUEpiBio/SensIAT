@@ -20,6 +20,6 @@ The kernel-smoothed cumulative intensity at time \code{t}.
 Kernel-smooth a cumulative intensity using an Epanechnikov kernel
 }
 \examples{
-fit <- survival::survfit(Surv(time, status) ~ x, data = survival::aml)
+fit <- survival::survfit(survival::Surv(time, status) ~ x, data = survival::aml)
 sapply(15:45, lambda0_fn, b=10, fit)
 }

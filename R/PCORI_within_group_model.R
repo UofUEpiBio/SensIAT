@@ -246,7 +246,8 @@ fit_PCORI_within_group_model <- function(
 #' @examples
 #' pcori_control("piecewise", intensity.bandwidth = 30, resolution.within.period = 50)
 #' pcori_control("numerical", intensity.bandwidth = 30, resolution = 1000)
-#' pcori_control("quad", intensity.bandwidth = 30, tol = 1e-6)
+#' pcori_control("quadv", intensity.bandwidth = 30, tol = 1e-6)
+#' pcori_control("quadvcpp", intensity.bandwidth = 30, tol = 1e-6)
 pcori_control <-
 function(
     integration.method = c('quadvcpp', 'quadv', "linear", "numerical", "piecewise"),
@@ -274,139 +275,5 @@ function(
 }
 
 
-#' Prediction method for `PCORI_within_group_model` objects
-#'
-#' @param object a `PCORI_within_group_model` object.
-#' @param time The time(s) to evaluate at.
-#' @param alpha The values for the sensitivity parameter to evaluate at.
-#' @param spline_fn Function to to generate the values for the spline functions
-#'      with knots given by `knots`.  Must accept time as the first argument and
-#'      knots as the second.
-#' @param spline_seq The time points used to approximate the integral in term 2
-#'          of the influence function.
-#' @param knots The knots used for the spline function.
-#'          Includes both boundary and internal knots.
-#' @param integration.method Method for integration when computing the second influence term.  See Details.
-#' @param integral.resolution the number of points to use for numerical integration.
-#'
-#'  Evaluate the fitted model, `object`, at each combination of `time` and
-#'  `alpha`.
-#'
-#'
-#' @return A tibble/data.frame with the components: `time`, `alpha`, `mean`, `var`.
-#' where `time` and `alpha` are the combinations of the respective input(s) and
-#' `mean` and `var` are the estimated mean and variance of the response for the
-#' given model.
-#'
-#'  @details
-#'  For `integration.method` when computing the integral in term two of the
-#'  influence function `linear` approximates the expected value as piece-wise
-#'  linear and is much faster, `numerical` uses traditional numerical
-#'  integration.
-#'
-#'
-#'
-#' @export
-#'
-#' @examples
-#'
-#' fitted.trt.sim <-
-#'     fit_PCORI_within_group_model(
-#'         group.data = PCORI_example_data,
-#'         outcome_modeler = PCORI_sim_outcome_modeler,
-#'         id.var = Subject_ID,
-#'         outcome.var = Outcome,
-#'         time.var = Time,
-#'         End = 830
-#'     )
-#' time.pw <- system.time({
-#' pred.pw <- predict(fitted.trt.sim, time = c(90, 180),
-#'     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-#'     intensity.bandwidth = 30,
-#'     knots=c(60,60,60,60,260,460,460,460,460),
-#'     integration.method = 'piecewise'
-#' )
-#' })
-#' time.num <- system.time({
-#' pred.num <- predict(fitted.trt.sim, time = c(90, 180),
-#'     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-#'     intensity.bandwidth = 30,
-#'     knots=c(60,60,60,60,260,460,460,460,460),
-#'     integration.method = 'numerical'
-#' )
-#' })
-#' time.lin <- system.time({
-#' pred.lin <- predict(
-#'     fitted.trt.sim, time = c(90,180),
-#'     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-#'     knots=c(60,60,60,60,260,460,460,460,460),
-#'     integration.method = 'linear'
-#' )
-#' })
-#' pred.num$Beta_hat[[2]]
-#' pred.lin$Beta_hat[[3]]
-#' pred.num$term1[[2]] |> head()
-#' pred.lin$term1[[3]] |> head()
-#' pred.num$term2[[2]] |> head()
-#' pred.lin$term2[[3]] |> head()
-#'
-#'
-`predict.PCORI_within_group_model` <-
-function(object, time, alpha,
-         knots,
-         intensity.bandwidth = NULL,
-         integral.resolution = 1000,
-         integration.method = c("linear", "numerical", "piecewise", 'quadv'),
-         ...
-         ){
-    assert_that(
-        is(object, 'PCORI_within_group_model'),
-        is.numeric(time),
-        is.numeric(alpha),
-        is.numeric(knots),
-        is.count(integral.resolution)
-    )
-    integration.method = match.arg(integration.method)
-    a <- min(knots)
-    b <- max(knots)
-    base <- SplineBasis(knots)
-
-    # Compute value of the influence function: -----------------------------
-    influence <- purrr::map_dfr(alpha, function(alpha){
-        object$data |>
-            group_by(!!object$variables$id) |>
-            group_modify(
-                compute_influence_for_one_alpha_and_one_patient,
-                alpha = alpha,
-                object = object,
-                base=base,
-                integration.method = integration.method,
-                numerical.ingtegration.resolution = integral.resolution,
-                ...,
-                .keep=TRUE
-            )
-    })
-
-
-    B_t <- evaluate(base, time)
-
-    # Results
-    influence |>
-        group_by(alpha) |>
-        summarize(
-            term1 = list(term1 |> reduce(rbind) |> `rownames<-`(NULL)),
-            term2 = list(term2 |> reduce(rbind) |> `rownames<-`(NULL)),
-            IF = list(influence |> reduce(rbind) |> `rownames<-`(NULL))
-        ) |>
-        mutate(
-            Beta_hat = purrr::map(IF, colMeans),
-            Var_beta = purrr::map2(IF, Beta_hat, ~tcrossprod(t(.x) - .y)/(nrow(.x)^2))
-        ) |>
-        mutate(
-            # Time specific estimates.
-            mean_t = purrr::map(Beta_hat, ~B_t %*% .x),
-            var_t = purrr::map(Var_beta, ~B_t %*% .x %*% t(B_t))
-        )
-}
 
 

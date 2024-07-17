@@ -16,7 +16,7 @@
 #' @export
 #'
 #' @examples
-#' fit <- survival::survfit(Surv(time, status) ~ x, data = survival::aml)
+#' fit <- survival::survfit(survival::Surv(time, status) ~ x, data = survival::aml)
 #' sapply(15:45, lambda0_fn, b=10, fit)
 lambda0_fn <- function(t, b, surv) {
 

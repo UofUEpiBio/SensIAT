@@ -27,14 +27,3 @@ Fit the PCORI model for both treatment and control groups.
 This function is agnostic to whether it is being given the original or a
 bootstrap replication.
 }
-\examples{
-
-fitted.arc.sim.model <-
-    fit_PCORI_fulldata_model(
-        data = PCORI_example_data,
-        trt = Trt=='home_visits',
-        # Passed to group model
-        outcome_modeler = PCORI_sim_outcome_modeler  #< not yet defined.
-    )
-
-}

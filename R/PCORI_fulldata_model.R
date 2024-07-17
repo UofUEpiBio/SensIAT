@@ -17,16 +17,6 @@
 #'      function.
 #' @export
 #'
-#' @examples
-#'
-#' fitted.arc.sim.model <-
-#'     fit_PCORI_fulldata_model(
-#'         data = PCORI_example_data,
-#'         trt = Trt=='home_visits',
-#'         # Passed to group model
-#'         outcome_modeler = PCORI_sim_outcome_modeler  #< not yet defined.
-#'     )
-#'
 fit_PCORI_fulldata_model <- function(data, trt, ...){
     trt <- rlang::enquo(trt) #< diffuses evaluation for tidy expressions
 
@@ -36,21 +26,20 @@ fit_PCORI_fulldata_model <- function(data, trt, ...){
     ), class = 'PCORI_fulldata_model')
 }
 
-#' Prediction method for `PCORI_fulldata_model` objects.
-#'
-#' @param object an object of class `PCORI_fulldata_model`
-#' @param time  time points to evaluate at
-#' @param alpha alpha values to evaluate at.
-#'
-#' @description
-#' For each combination of `time` and `alpha` estimate the mean response and
-#' variance for each group as well as estimate the mean treatment effect and
-#' variance.
-#'
-#'
-#' @return a tibble/data.frame with the following components.
-#'  * `time`, the time point
-#' @export
+# Prediction method for `PCORI_fulldata_model` objects.
+#
+# @param object an object of class `PCORI_fulldata_model`
+# @param time  time points to evaluate at
+# @param alpha alpha values to evaluate at.
+#
+# @description
+# For each combination of `time` and `alpha` estimate the mean response and
+# variance for each group as well as estimate the mean treatment effect and
+# variance.
+#
+#
+# @return a tibble/data.frame with the following components.
+#  * `time`, the time point
 `predict.PCORI_fulldata_model` <-
     function(object, time, alpha){
 

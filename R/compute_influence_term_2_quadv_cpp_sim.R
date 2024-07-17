@@ -58,7 +58,7 @@ compute_influence_term_2_quadv_cpp_sim <-
             })
 
 
-        map(period.integrals, getElement, 'Q') %>%
+        map(period.integrals, getElement, 'Q') |>
             reduce(`+`) |>
             structure(
                 fcnt = purrr::map_int(period.integrals, getElement, 'fcnt'),
