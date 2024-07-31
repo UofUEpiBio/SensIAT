@@ -24,7 +24,8 @@ globalVariables(c('visit.number', 'term1', 'term2', 'IF', 'IF_ortho',
 #' @param outcome.covariates = ~-1 The extra covariates for the outcome model.  The default removes the intercept term.
 #' @param End The end time for this data analysis, we need to set the default value as the
 #'           max value of the time
-#' @param control control parameters for fitting the model.
+#' @param integration.tolerance The tolerance for the integration.
+#' @param intensity.bandwidth The bandwidth for the intensity model kernel.
 #' @param ... add parameters as needed or use this to pass forward into the
 #'          outcome_modeler.
 #'
@@ -38,7 +39,7 @@ globalVariables(c('visit.number', 'term1', 'term2', 'IF', 'IF_ortho',
 #'
 #' @examples
 #'
-#' fitted.trt.sim.numeric <-
+#' model <-
 #'     fit_PCORI_within_group_model(
 #'         group.data = PCORI_example_data,
 #'         outcome_modeler = PCORI_sim_outcome_modeler,
@@ -48,33 +49,6 @@ globalVariables(c('visit.number', 'term1', 'term2', 'IF', 'IF_ortho',
 #'         time.var = Time,
 #'         End = 830,
 #'         knots = c(60,60,60,60,260,460,460,460,460),
-#'         control = pcori_control('numeric')
-#'     )
-#' time.pw <- system.time({
-#' fitted.trt.sim.pw <-
-#'     fit_PCORI_within_group_model(
-#'         group.data = PCORI_example_data,
-#'         outcome_modeler = PCORI_sim_outcome_modeler,
-#'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-#'         id.var = Subject_ID,
-#'         outcome.var = Outcome,
-#'         time.var = Time,
-#'         End = 830,
-#'         knots = c(60,60,60,60,260,460,460,460,460),
-#'         control = pcori_control('piecewise')
-#'     )
-#' })
-#' fitted.trt.sim.quadv <-
-#'     fit_PCORI_within_group_model(
-#'         group.data = PCORI_example_data,
-#'         outcome_modeler = PCORI_sim_outcome_modeler,
-#'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-#'         id.var = Subject_ID,
-#'         outcome.var = Outcome,
-#'         time.var = Time,
-#'         End = 830,
-#'         knots = c(60,60,60,60,260,460,460,460,460),
-#'         control = pcori_control('quadv')
 #'     )
 #'
 fit_PCORI_within_group_model <- function(
@@ -88,26 +62,26 @@ fit_PCORI_within_group_model <- function(
         intensity.covariates = ~1,
         outcome.covariates = ~-1,
         End = max({{time.var}}, na.rm = TRUE) + 1,
-        control = pcori_control(),
+        integration.tolerance = .Machine$double.eps^(1/3),
+        intensity.bandwidth = NULL,
         ...
 ){
     id.var <- ensym(id.var)
     outcome.var <- ensym(outcome.var)
     time.var <- ensym(time.var)
 
+    mf <- rlang::inject(!!outcome.var ~ !!id.var + !!time.var + !!rlang::f_rhs(intensity.covariates)) |>
+        model.frame(data=filter(group.data, (!!time.var) <= !!End), na.action = na.pass) |>
+        arrange(!!id.var, !!time.var)
+
     outcome_modeler <- match.fun(outcome_modeler)
     End <- rlang::enexpr(End)
     End <- rlang::eval_tidy(End, data = group.data, env =parent.frame())
 
     vars <- list(
-        id = id.var,
-        time = time.var,
         outcome = outcome.var,
-        prev_outcome = rlang::sym(glue::glue("lag({outcome.var})")),
-        prev_time = rlang::sym(glue::glue("lag({time.var})")),
-        delta_time = rlang::sym(glue::glue("delta({time.var})")),
-        norm_time = rlang::sym(glue::glue("scale({time.var})")),
-        norm_delta_time = rlang::sym(glue::glue("scale(delta({time.var}))"))
+        id = id.var,
+        time = time.var
     )
 
     group.data2 <- filter(group.data, !!time.var <= End)
@@ -116,164 +90,100 @@ fit_PCORI_within_group_model <- function(
     N <- pull(summarize(group.data2, n_distinct(!!id.var)))
 
 
-    ######   Andersen-Gill model stratifying by assessment number
+    ######   Andersen-Gill model stratifying by assessment number ------
 
-    model.data <-
-        rlang::inject(!!outcome.var ~ !!id.var + !!time.var + !!rlang::f_rhs(intensity.covariates)) |>
-        model.frame(data=filter(group.data, (!!time.var) <= !!End), na.action = na.pass) |>
-        arrange(!!id.var, !!time.var) |>
-        group_by(!!id.var) |>
+
+    data_all_with_transforms <- mf |>
+        rename(
+            ..id.. = !!id.var,
+            ..time.. = !!time.var,
+            ..outcome.. = !!outcome.var
+        ) |>
+        group_by(..id..) |>
         mutate(
-            visit.number = seq_along(!!time.var)
+            ..visit.number.. = seq_along(..time..)
         ) |>
         ungroup() |>
-        complete(!!id.var, visit.number, fill = tibble::lst(!!time.var := !!End)) |>
-        group_by(!!id.var) |>
-        arrange(!!id.var, visit.number) |>
+        group_by(..id..) |>
+        arrange(..id.., ..visit.number..) |>
         mutate(
-            !!vars$prev_outcome    := lag(!!outcome.var, order_by = !!time.var),
-            !!vars$prev_time       := lag(!!time.var, order_by =  !!time.var, default = 0),
-            !!vars$delta_time      := !!time.var - lag(!!time.var, order_by =  !!time.var, default = 0),
-            across(all_of(time.var), \(.)coalesce(., !!End))
+            ..prev_outcome..    := lag(..outcome.., order_by = ..time..),
+            ..prev_time..       := lag(..time.., order_by =  ..time.., default = 0),
+            ..delta_time..      := ..time.. - lag(..time.., order_by =  ..time.., default = 0)
         ) |>
         ungroup()
+    followup_data <- data_all_with_transforms |>
+        filter(..time.. > 0, !is.na(..prev_outcome..))
 
-    centering.statistics <-
-        summarize( ungroup(filter(model.data, !!time.var > 0, !is.na(!!outcome.var))),
-            "mean({time.var})" := mean(!!time.var),
-            "sd({time.var})" := sd(!!time.var),
-            "mean({vars$delta_time}))" := mean(!!vars$delta_time),
-            "sd({vars$delta_time})" := sd(!!vars$delta_time)
-        )
-
-    model.data <- model.data |>
-        mutate(
-            !!vars$norm_time := (!!vars$time - !!pull(centering.statistics, 1))/!!pull(centering.statistics, 2),
-            !!vars$norm_delta_time := (!!vars$delta_time - !!pull(centering.statistics, 3))/!!pull(centering.statistics, 4)
-        )
-    ###########################   Model 1: Intensity model  ######################
+    ######   Intensity model  ##################################################
     intensity.model <-
         rlang::inject(coxph(
-            Surv(!!vars$prev_time,
-                 !!time.var,
-                 !is.na(!!outcome.var))~!!vars$prev_outcome+strata(visit.number),
-            id = !!id.var,
-            data = filter(model.data, !!vars$time > 0, !is.na(!!vars$prev_outcome))
+            Surv(..prev_time.., ..time..,  !is.na(..outcome..))
+                ~ ..prev_outcome.. + strata(..visit.number..),
+            id = ..id..,
+            data = followup_data
         ))
 
-    # gamma <- Int_model$coefficients # parameter lambda in lambda(t, O(t))
-    # we need this gamma value
+    baseline_intensity_all =
+        estimate_baseline_intensity(
+            intensity.model = intensity.model,
+            data = followup_data,
+            variables = list(prev_outcome = sym("..prev_outcome..")),
+            bandwidth = intensity.bandwidth
+        )
+    attr(intensity.model, 'bandwidth') <- baseline_intensity_all$bandwidth
+    attr(intensity.model, 'kernel') <- baseline_intensity_all$kernel
 
 
 
-
-    #############  Model 2: Outcome model - single index model   ############
+    ######   Outcome model #####################################################
     outcome.formula <- rlang::inject(
-        !!outcome.var~
-            ns(!!vars$prev_outcome, df=3) +
-            !!vars$norm_time +
-            !!vars$norm_delta_time +
+        ..outcome..~
+            ns(..prev_outcome.., df=3) +
+            scale(..time..) +
+            scale(..delta_time..) +
             !!rlang::f_rhs(outcome.covariates)
     )
-    outcome.model <- outcome_modeler(outcome.formula, data = filter(model.data, !!time.var > 0, !is.na(!!outcome.var)))
-
+    outcome.model <- outcome_modeler(outcome.formula, data = followup_data)
 
     base <- SplineBasis(knots)
     V_inverse <- solve(GramMatrix(base))
 
     # Compute value of the influence function: -----------------------------
-    influence <- purrr::map_dfr(alpha, function(alpha){
-        model.data |>
-            group_by(!!vars$id) |>
-            group_modify(
-                compute_influence_for_one_alpha_and_one_patient,
-                alpha = alpha,
-                variables = vars,
-                intensity.model = intensity.model,
-                outcome.model = outcome.model,
-                base = base,
-                control = control,
-                centering = centering.statistics,
-                ...,
-                .keep=TRUE
-            )
+    influence.terms <- purrr::map(alpha,\(a){
+        compute_influence_terms(
+            data_all_with_transforms,
+            base = base,
+            alpha = a,
+            outcome.model = outcome.model,
+            intensity_coef = coef(intensity.model),
+            baseline_intensity_all = baseline_intensity_all$baseline_intensity,
+            tol = integration.tolerance
+        )
     })
 
     # Results
-    Beta = influence |>
-        group_by(alpha) |>
-        summarize(
-            term1 = list(term1 |> reduce(rbind) |> `rownames<-`(NULL)),
-            term2 = list(term2 |> reduce(rbind) |> `rownames<-`(NULL)),
-            IF = list(influence |> reduce(rbind) |> `rownames<-`(NULL))
-        ) |>
-        mutate(
-            IF_ortho = purrr::map(IF, \(IF){IF %*% V_inverse}),
-            estimate = purrr::map(IF_ortho, colMeans),
-            variance = purrr::map2(IF_ortho, estimate, ~tcrossprod(t(.x) - .y)/(nrow(.x)^2))
-        )
+    Beta = map(influence.terms, \(IT){
+        uncorrected.beta_hat <- (colSums(IT$term1) + colSums(IT$term2))/length(IT$id)
+        estimate <- as.vector(V_inverse %*% uncorrected.beta_hat)
+        variance <- tcrossprod(V_inverse %*% (t(IT$term1 + IT$term2) - uncorrected.beta_hat))/c(length(IT$id)^2)
+        list(estimate = estimate, variance = variance)
+    })
 
 
     structure(list(
         intensity.model = intensity.model,
         outcome.model = outcome.model,
-        outcome.model.centering = centering.statistics,
-        data = model.data,
+        data = mf,
         variables = vars,
         End = End,
-        influence = influence,
-        coefficients = Beta$estimate,
-        coefficient.variance = Beta$variance,
-        control = control,
+        influence = influence.terms,
+        alpha = alpha,
+        coefficients = map(Beta, getElement, 'estimate'),
+        coefficient.variance = map(Beta, getElement, 'variance'),
+        intensity.bandwidth = intensity.bandwidth,
         base=base,
         V_inverse = V_inverse
-    ), class = "PCORI_within_group_model")
+    ), class = "PCORI_within_group_model",
+    call = match.call())
 }
-
-
-#' Control Parameters for Fitting the PCORI Within Group Model
-#'
-#' @param integration.method        Method for integration when computing the second influence term.
-#' @param intensity.bandwidth       The bandwidth for the intensity model.
-#' @param resolution                The number of points to use for numerical integration.
-#' @param resolution.within.period  The number of points to use for numerical integration within a period.
-#' @param tol                       The tolerance for numerical integration.
-#' @param ...                       Currently ignored.
-#'
-#' @return a list of control parameters.
-#' @export
-#'
-#' @examples
-#' pcori_control("piecewise", intensity.bandwidth = 30, resolution.within.period = 50)
-#' pcori_control("numerical", intensity.bandwidth = 30, resolution = 1000)
-#' pcori_control("quadv", intensity.bandwidth = 30, tol = 1e-6)
-#' pcori_control("quadvcpp", intensity.bandwidth = 30, tol = 1e-6)
-pcori_control <-
-function(
-    integration.method = c('quadvcpp', 'quadv', "linear", "numerical", "piecewise"),
-    intensity.bandwidth = NULL,
-    resolution = 1000,
-    resolution.within.period = 50,
-    tol=.Machine$double.eps^(1/4),
-    ...
-){
-    integration.method = match.arg(integration.method)
-    assert_that(
-        is.null(intensity.bandwidth) || is.numeric(intensity.bandwidth),
-        is.count(resolution),
-        is.count(resolution.within.period),
-        rlang::is_scalar_double(tol)
-    )
-    lst(
-        integration.method,
-        intensity.bandwidth,
-        resolution,
-        resolution.within.period,
-        tol,
-        ...
-    )
-}
-
-
-
-

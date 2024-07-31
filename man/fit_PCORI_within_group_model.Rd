@@ -19,7 +19,8 @@ fit_PCORI_within_group_model(
          time.var
      }
  }, na.rm = TRUE) + 1,
-  control = pcori_control(),
+  integration.tolerance = .Machine$double.eps^(1/3),
+  intensity.bandwidth = NULL,
   ...
 )
 }
@@ -49,7 +50,9 @@ dream up in the future.}
 \item{End}{The end time for this data analysis, we need to set the default value as the
 max value of the time}
 
-\item{control}{control parameters for fitting the model.}
+\item{integration.tolerance}{The tolerance for the integration.}
+
+\item{intensity.bandwidth}{The bandwidth for the intensity model kernel.}
 
 \item{...}{add parameters as needed or use this to pass forward into the
 outcome_modeler.}
@@ -70,7 +73,7 @@ treatment or control group.
 }
 \examples{
 
-fitted.trt.sim.numeric <-
+model <-
     fit_PCORI_within_group_model(
         group.data = PCORI_example_data,
         outcome_modeler = PCORI_sim_outcome_modeler,
@@ -80,33 +83,6 @@ fitted.trt.sim.numeric <-
         time.var = Time,
         End = 830,
         knots = c(60,60,60,60,260,460,460,460,460),
-        control = pcori_control('numeric')
-    )
-time.pw <- system.time({
-fitted.trt.sim.pw <-
-    fit_PCORI_within_group_model(
-        group.data = PCORI_example_data,
-        outcome_modeler = PCORI_sim_outcome_modeler,
-        alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-        id.var = Subject_ID,
-        outcome.var = Outcome,
-        time.var = Time,
-        End = 830,
-        knots = c(60,60,60,60,260,460,460,460,460),
-        control = pcori_control('piecewise')
-    )
-})
-fitted.trt.sim.quadv <-
-    fit_PCORI_within_group_model(
-        group.data = PCORI_example_data,
-        outcome_modeler = PCORI_sim_outcome_modeler,
-        alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-        id.var = Subject_ID,
-        outcome.var = Outcome,
-        time.var = Time,
-        End = 830,
-        knots = c(60,60,60,60,260,460,460,460,460),
-        control = pcori_control('quadv')
     )
 
 }

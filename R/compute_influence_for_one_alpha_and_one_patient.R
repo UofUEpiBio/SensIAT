@@ -1,7 +1,6 @@
 compute_influence_for_one_alpha_and_one_patient <-
 function(
     df_i,
-    patient.df,
     alpha,
     variables,
     intensity.model,
@@ -25,7 +24,7 @@ function(
             df_i[!is.na(pull(df_i, variables$prev_outcome)), ],
             bandwidth = control$intensity.bandwidth,
             variables = variables
-        )
+        )$baseline_intensity
 
     df.in.range <- df_i |>
         filter(
@@ -124,3 +123,12 @@ function(
     )
 }
 globalVariables(c('E_Y_past', 'E_exp_alphaY', 'baseline_lambda', 'Exp_gamma'))
+
+
+
+
+
+
+
+
+

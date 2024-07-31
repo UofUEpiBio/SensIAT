@@ -33,6 +33,7 @@
 #' @importFrom stats model.frame
 #' @importFrom stats model.matrix
 #' @importFrom stats model.response
+#' @importFrom stats na.omit
 #' @importFrom stats na.pass
 #' @importFrom stats nlminb
 #' @importFrom stats optim

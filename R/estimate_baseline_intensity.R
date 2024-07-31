@@ -46,7 +46,11 @@ function(
     time.diff <- outer(cumhaz.data$time, new.time, `-`)
     strata.equal <- outer(cumhaz.data$strata, new.strata, `==`)
 
-    colSums(kernel(time.diff/bandwidth) * strata.equal * cumhaz.data$hazard)/bandwidth
+    list(
+        baseline_intensity = colSums(kernel(time.diff/bandwidth) * strata.equal * cumhaz.data$hazard)/bandwidth,
+        bandwidth = bandwidth,
+        kernel = kernel
+    )
 }
 
 globalVariables('cumhaz')
