@@ -2,8 +2,8 @@ estimate_baseline_intensity <-
 function(
     intensity.model,
     data = NULL,
-    bandwidth = NULL,
-    kernel = \(x) 0.75*(1 - (x)**2) * (abs(x) < 1),
+    bandwidth = attr(intensity.model, 'bandwidth'),
+    kernel = attr(intensity.model, 'kernel') %||% \(x) 0.75*(1 - (x)**2) * (abs(x) < 1),
     variables
 ){
 
