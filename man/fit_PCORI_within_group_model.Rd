@@ -12,8 +12,8 @@ fit_PCORI_within_group_model(
   outcome.var,
   time.var,
   alpha = 0,
-  intensity.covariates = ~1,
-  outcome.covariates = ~-1,
+  intensity.covariates = ~.,
+  outcome.covariates = ~. - 1,
   End = max({
      {
          time.var
@@ -43,9 +43,9 @@ dream up in the future.}
 
 \item{alpha}{The sensitivity parameter.}
 
-\item{intensity.covariates}{= ~1 The extra covariates for the intensity model.}
+\item{intensity.covariates}{A formula representing modifications to the intensity model.}
 
-\item{outcome.covariates}{= ~-1 The extra covariates for the outcome model.  The default removes the intercept term.}
+\item{outcome.covariates}{A formula representing modifications to the outcome model.  The default removes the intercept term.}
 
 \item{End}{The end time for this data analysis, we need to set the default value as the
 max value of the time}
