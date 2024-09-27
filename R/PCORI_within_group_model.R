@@ -20,8 +20,8 @@ globalVariables(c('visit.number', 'term1', 'term2', 'IF', 'IF_ortho',
 #' @param outcome.var The variable that contains the outcome.
 #' @param time.var The variable that contains the time.
 #' @param alpha The sensitivity parameter.
-#' @param intensity.covariates = ~1 The extra covariates for the intensity model.
-#' @param outcome.covariates = ~-1 The extra covariates for the outcome model.  The default removes the intercept term.
+#' @param intensity.covariates A formula representing modifications to the intensity model.
+#' @param outcome.covariates A formula representing modifications to the outcome model.  The default removes the intercept term.
 #' @param End The end time for this data analysis, we need to set the default value as the
 #'           max value of the time
 #' @param integration.tolerance The tolerance for the integration.
@@ -59,8 +59,8 @@ fit_PCORI_within_group_model <- function(
         outcome.var,
         time.var,
         alpha = 0,
-        intensity.covariates = ~1,
-        outcome.covariates = ~-1,
+        intensity.covariates = ~.,
+        outcome.covariates = ~.-1,
         End = max({{time.var}}, na.rm = TRUE) + 1,
         integration.tolerance = .Machine$double.eps^(1/3),
         intensity.bandwidth = NULL,
@@ -101,11 +101,11 @@ fit_PCORI_within_group_model <- function(
         ) |>
         group_by(..id..) |>
         mutate(
-            ..visit.number.. = seq_along(..time..)
+            ..visit_number.. = seq_along(..time..)
         ) |>
         ungroup() |>
         group_by(..id..) |>
-        arrange(..id.., ..visit.number..) |>
+        arrange(..id.., ..visit_number..) |>
         mutate(
             ..prev_outcome..    := lag(..outcome.., order_by = ..time..),
             ..prev_time..       := lag(..time.., order_by =  ..time.., default = 0),
@@ -116,13 +116,12 @@ fit_PCORI_within_group_model <- function(
         filter(..time.. > 0, !is.na(..prev_outcome..))
 
     ######   Intensity model  ##################################################
-    intensity.model <-
-        rlang::inject(coxph(
-            Surv(..prev_time.., ..time..,  !is.na(..outcome..))
-                ~ ..prev_outcome.. + strata(..visit.number..),
-            id = ..id..,
-            data = followup_data
-        ))
+    intensity.formula <- update.formula(
+        Surv(..prev_time.., ..time..,  !is.na(..outcome..))
+        ~ ..prev_outcome.. + strata(..visit_number..)
+        , intensity.covariates
+    )
+    intensity.model <- coxph(intensity.formula,id = ..id..,data = followup_data)
 
     baseline_intensity_all =
         estimate_baseline_intensity(
@@ -137,12 +136,12 @@ fit_PCORI_within_group_model <- function(
 
 
     ######   Outcome model #####################################################
-    outcome.formula <- rlang::inject(
+    outcome.formula <- update.formula(
         ..outcome..~
             ns(..prev_outcome.., df=3) +
             scale(..time..) +
-            scale(..delta_time..) +
-            !!rlang::f_rhs(outcome.covariates)
+            scale(..delta_time..)
+        , outcome.covariates
     )
     outcome.model <- outcome_modeler(outcome.formula, data = followup_data)
 
@@ -172,8 +171,10 @@ fit_PCORI_within_group_model <- function(
 
 
     structure(list(
-        intensity.model = intensity.model,
-        outcome.model = outcome.model,
+        intensity.model = structure(intensity.model,
+                additional.covariates = intensity.covariates),
+        outcome.model = structure(outcome.model,
+                additional.covariates = intensity.covariates),
         data = mf,
         variables = vars,
         End = End,
@@ -187,3 +188,6 @@ fit_PCORI_within_group_model <- function(
     ), class = "PCORI_within_group_model",
     call = match.call())
 }
+
+
+

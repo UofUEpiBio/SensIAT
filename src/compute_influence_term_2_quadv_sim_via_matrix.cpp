@@ -132,7 +132,8 @@
 					numer += numer_term;
 					denom += denom_term;
 				}
-				ev[j] = numer / denom;
+				if (denom==0) ev[j] = 0.0;
+				else ev[j] = numer / denom;
 			}
 
 			//Evaluate the spline basis functions at the given time point.
