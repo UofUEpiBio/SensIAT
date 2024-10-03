@@ -8,25 +8,24 @@
 #'
 #' @return Object of class `PCORI::Single-index-outcome-model` which contains the outcome model portion.
 #' @export
-PCORI_sim_outcome_modeler <- function(formula, data, kernel = "K2_Biweight", method = "nmk", ...){
-  mf <- model.frame(formula, data = data)
+PCORI_sim_outcome_modeler <-
+function(formula, data, kernel = "K2_Biweight", method = "nmk", ...){
+  fu.data <- filter(data, ..time.. > 0)
+  mf <- model.frame(formula, data = fu.data, id = ..id..)
   Xi <- model.matrix(formula, data = mf)
 
   Yi <- model.response(mf)
 
   initial = estimate_starting_coefficients(Xi, Yi)
 
-
-
-
-
+  val <- SIDR_Ravinew(X = Xi, Y = Yi, index_ID= mf[['(id)']],
+                      initial=initial,
+                      kernel = kernel,
+                      method = method,
+                      ...)
   structure(
       append(
-          SIDRnew(X = Xi, Y = Yi,
-                  ,
-                  kernel = kernel,
-                  method = method,
-                  bandwidth = 1),
+        val,
           list(
               frame = mf,
               data = data
@@ -81,12 +80,13 @@ estimate_starting_coefficients <- function(X,Y, eps = 1e-7){
     Y.CP <- outer(Y, Y, "<=")
 
     # centralizing covariates
-    # X.cs <- t(t(X)-colMeans(X))
+    X.cs <- t(t(X)-colMeans(X))
 
     # calculating m(y)=\E[X_i 1(Y_i\leq y)]
     # m.y <- (t(X)-colMeans(X)) %*% Y.CP/number_n
     # calculating K=\E[m(Y_i)m(Y_i)^T]
-    Km <- tcrossprod(crossprod(X, Y.CP))/number_n/number_n
+    m.y <- crossprod(X.cs, Y.CP)/number_n
+    Km <- tcrossprod(m.y)/number_n
 
     eigen(solve(var(X) + eps*diag(number_p), Km))$vectors[,1]
 }

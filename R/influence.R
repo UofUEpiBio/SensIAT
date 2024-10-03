@@ -64,7 +64,7 @@ compute_influence_term_1_for_all <-
     ){
         if(getOption('PCORI::do_arg_checks', TRUE))
             assert_that(
-                is.vector(times_all), is.double(times_all), all(times_all > 0),
+                is.vector(times_all), is.numeric(times_all), all(times_all > 0),
                 is.matrix(X_all), is.double(X_all), nrow(X_all) == length(times_all),
                 is.vector(outcome_all), is.double(outcome_all), length(outcome_all) == nrow(X_all),
                 is.vector(prev_outcome_all), is.double(prev_outcome_all), length(prev_outcome_all) == nrow(X_all),

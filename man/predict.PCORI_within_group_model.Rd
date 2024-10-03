@@ -4,7 +4,7 @@
 \alias{predict.PCORI_within_group_model}
 \title{Predict mean and variance of the outcome for a PCORI within-group model}
 \usage{
-\method{predict}{PCORI_within_group_model}(object, time, include.var = TRUE)
+\method{predict}{PCORI_within_group_model}(object, time, include.var = TRUE, ..., base = object$base)
 }
 \arguments{
 \item{object}{PCORI_within_group_model object}

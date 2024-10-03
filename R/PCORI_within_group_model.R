@@ -107,6 +107,7 @@ fit_PCORI_within_group_model <- function(
         group_by(..id..) |>
         arrange(..id.., ..visit_number..) |>
         mutate(
+            ..time..            := as.double(..time..),
             ..prev_outcome..    := lag(..outcome.., order_by = ..time..),
             ..prev_time..       := lag(..time.., order_by =  ..time.., default = 0),
             ..delta_time..      := ..time.. - lag(..time.., order_by =  ..time.., default = 0)
@@ -143,7 +144,7 @@ fit_PCORI_within_group_model <- function(
             scale(..delta_time..)
         , outcome.covariates
     )
-    outcome.model <- outcome_modeler(outcome.formula, data = followup_data)
+    outcome.model <- outcome_modeler(outcome.formula, data = followup_data, ...)
 
     base <- SplineBasis(knots)
     V_inverse <- solve(GramMatrix(base))
