@@ -104,6 +104,9 @@ fit_PCORI_within_group_model <- function(
             ..visit_number.. = seq_along(..time..)
         ) |>
         ungroup() |>
+        complete(..id.., ..visit_number..,
+                 fill = list(..time.. = End,..prev_outcome.. = NA_real_)
+        ) |>
         group_by(..id..) |>
         arrange(..id.., ..visit_number..) |>
         mutate(
@@ -113,10 +116,10 @@ fit_PCORI_within_group_model <- function(
             ..delta_time..      := ..time.. - lag(..time.., order_by =  ..time.., default = 0)
         ) |>
         ungroup()
-    followup_data <- data_all_with_transforms |>
-        filter(..time.. > 0, !is.na(..prev_outcome..))
 
     ######   Intensity model  ##################################################
+    followup_data <- data_all_with_transforms |>
+        filter(..time.. > 0, !is.na(..prev_outcome..))
     intensity.formula <- update.formula(
         Surv(..prev_time.., ..time..,  !is.na(..outcome..))
         ~ ..prev_outcome.. + strata(..visit_number..)
@@ -124,7 +127,7 @@ fit_PCORI_within_group_model <- function(
     )
     intensity.model <- coxph(intensity.formula,id = ..id..,data = followup_data)
 
-    baseline_intensity_all =
+    baseline_intensity_all <-
         estimate_baseline_intensity(
             intensity.model = intensity.model,
             data = followup_data,
@@ -133,8 +136,7 @@ fit_PCORI_within_group_model <- function(
         )
     attr(intensity.model, 'bandwidth') <- baseline_intensity_all$bandwidth
     attr(intensity.model, 'kernel') <- baseline_intensity_all$kernel
-
-
+    followup_data$baseline_intensity <- baseline_intensity_all$baseline_intensity
 
     ######   Outcome model #####################################################
     outcome.formula <- update.formula(
@@ -144,7 +146,8 @@ fit_PCORI_within_group_model <- function(
             scale(..delta_time..)
         , outcome.covariates
     )
-    outcome.model <- outcome_modeler(outcome.formula, data = followup_data, ...)
+    outcome.model <- outcome_modeler(outcome.formula, data =
+                                         filter(followup_data, !is.na(..outcome..)), ...)
 
     base <- SplineBasis(knots)
     V_inverse <- solve(GramMatrix(base))
@@ -152,12 +155,16 @@ fit_PCORI_within_group_model <- function(
     # Compute value of the influence function: -----------------------------
     influence.terms <- purrr::map(alpha,\(a){
         compute_influence_terms(
-            data_all_with_transforms,
+            left_join(
+                data_all_with_transforms,
+                followup_data |> select(..id.., ..time.., baseline_intensity),
+                by=join_by(..id.., ..time..)
+            ),
             base = base,
             alpha = a,
             outcome.model = outcome.model,
             intensity_coef = coef(intensity.model),
-            baseline_intensity_all = baseline_intensity_all$baseline_intensity,
+            # baseline_intensity_all = baseline_intensity_all$baseline_intensity,
             tol = integration.tolerance
         )
     })

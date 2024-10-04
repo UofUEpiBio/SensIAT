@@ -225,21 +225,26 @@ compute_influence_terms <-
         baseline_intensity_all, # Baseline intensity for all patients
         tol = 1e-6
     ){
-        followup.data <- filter(data_all_with_transforms, ..time.. > 0)
-        X_all <- model.matrix(outcome.model)
-        Y_all <- model.response(model.frame(outcome.model))
-        id <- pull(filter(data_all_with_transforms, ..time.. > 0), ..id..)
-        ids <- sort(unique(pull(data_all_with_transforms, ..id..)))
+        followup.data <- filter(data_all_with_transforms, ..time.. > 0) |>
+            model.frame(terms(outcome.model), data=_,
+                        id = ..id.., time = ..time..,
+                        prev_outcome = ..prev_outcome..,
+                        intensity = baseline_intensity)
+
+        X_all <- model.matrix(terms(outcome.model), data = followup.data)
+        Y_all <- model.response(followup.data)
+        id    <- pull(followup.data, '(id)')
+        ids   <- sort(unique(pull(data_all_with_transforms, ..id..)))
         outcome_coef <- outcome.model$coef
 
 
         term1 <-
             compute_influence_term_1_for_all(
-                X_all = model.matrix(outcome.model, data = followup.data),
-                times_all = pull(followup.data, ..time..),
-                outcome_all = pull(followup.data, ..outcome..),
-                prev_outcome_all = pull(followup.data, ..prev_outcome..),
-                baseline_intensity_all = baseline_intensity_all,
+                X_all                  = X_all,
+                times_all              = pull(followup.data, "(time)"),
+                outcome_all            = Y_all,
+                prev_outcome_all       = pull(followup.data, "(prev_outcome)"),
+                baseline_intensity_all = pull(followup.data, "(intensity)"),
                 alpha = alpha,
                 intensity_coef = intensity_coef,
                 outcome_coef = outcome_coef,
