@@ -21,7 +21,8 @@ SIDR_Ravinew <- function(X, Y,
     }else
     {
         initial <- as.vector(initial)
-        initial <- initial/initial[1]
+        if(initial[1] != 0)
+            initial <- initial/initial[1]
     }
 
     if (is.null(bandwidth))

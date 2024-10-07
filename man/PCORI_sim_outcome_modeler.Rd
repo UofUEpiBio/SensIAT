@@ -9,13 +9,15 @@ PCORI_sim_outcome_modeler(
   data,
   kernel = "K2_Biweight",
   method = "nmk",
+  id = ..id..,
   ...
 )
 }
 \arguments{
 \item{formula}{The outcome model formula}
 
-\item{data}{The data to fit the outcome model to.}
+\item{data}{The data to fit the outcome model to.
+Should only include follow-up data, i.e. time > 0.}
 
 \item{kernel}{The kernel to use for the outcome model.}
 

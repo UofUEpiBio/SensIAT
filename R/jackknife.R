@@ -17,8 +17,7 @@ cross_validate <- function(original.object, progress = interactive()){
                 alpha = original.object$alpha,
                 intensity.covariates = attr(original.object$intensity.model, 'additional.covariates'),
                 outcome.covariates = attr(original.object$outcome.model, 'additional.covariates'),
-                End = original.object$End,
-                control = original.object$control
+                End = original.object$End
             ) |>
             prune_bootstrap_replication()
     }

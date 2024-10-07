@@ -27,6 +27,7 @@ test_that("Compute Influence term1 old vs. new methods", {
             ns(prev_outcome, df=3) +
             scale(Time) +
             scale(delta_time) - 1,
+        id = Subject_ID,
         data = followup.data)
 
 

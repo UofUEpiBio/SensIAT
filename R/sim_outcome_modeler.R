@@ -2,6 +2,7 @@
 #'
 #' @param formula The outcome model formula
 #' @param data The data to fit the outcome model to.
+#'             Should only include follow-up data, i.e. time > 0.
 #' @param kernel The kernel to use for the outcome model.
 #' @param method The optimization method to use for the outcome model, either "optim", "nlminb", or "nmk".
 #' @param ... Currently ignored, included for future compatibility.
@@ -9,9 +10,9 @@
 #' @return Object of class `PCORI::Single-index-outcome-model` which contains the outcome model portion.
 #' @export
 PCORI_sim_outcome_modeler <-
-function(formula, data, kernel = "K2_Biweight", method = "nmk", ...){
-  fu.data <- filter(data, ..time.. > 0)
-  mf <- model.frame(formula, data = fu.data, id = ..id..)
+function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ...){
+  id <- ensym(id)
+  mf <- rlang::inject(model.frame(formula, data = data, id = !!id))
   Xi <- model.matrix(formula, data = mf)
 
   Yi <- model.response(mf)
@@ -47,11 +48,15 @@ function(formula, data, kernel = "K2_Biweight", method = "nmk", ...){
 `model.matrix.PCORI::Single-index-outcome-model` <-
     function(object, data = model.frame(object), ...){
         model.matrix(terms(object), data = data, ...)
-    }#' @export
+    }
+#' @export
 `formula.PCORI::Single-index-outcome-model` <-
     function(x, ...){
         as.formula(terms(x))
     }
+#' @export
+`coef.PCORI::Single-index-outcome-model` <-
+    function(x, ...)x$coef
 
 #' @export
 `predict.PCORI::Single-index-outcome-model` <-
