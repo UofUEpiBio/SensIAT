@@ -1,4 +1,31 @@
+compute_influence_term_1_unweighted_at_timepoint <- function(
+        time,
+        outcome,
+        Exp_gamma,
+        Xb_ind, #< individual-level covariates to be passed to pmf_estimator
+        y,pmf,
+        alpha, #< sensitivity parameter.
+        baseline_lambda
+){
+    if (getOption('PCORI::do_arg_checks', TRUE))
+        assert_that(
+            rlang::is_scalar_double(time), time > 0,
+            rlang::is_scalar_double(outcome),
+            rlang::is_scalar_double(Exp_gamma),
+            rlang::is_scalar_double(Xb_ind),
+            is.numeric(pmf), is.numeric(y), length(pmf) == length(y),
+            rlang::is_scalar_double(alpha),
+            rlang::is_scalar_double(baseline_lambda)
+        )
 
+    # Everything above this does not depend on alpha and could be optimized
+    E_exp_alphaY <- crossprod( exp(alpha*y), pmf )
+    E_Yexp_alphaY <- crossprod( y*exp(alpha*y), pmf )
+    E_Y_past <- E_Yexp_alphaY/E_exp_alphaY
+
+    (outcome-E_Y_past)/
+    (baseline_lambda*Exp_gamma* exp(-alpha*outcome)*E_exp_alphaY)
+}
 
 
 compute_influence_term_1_at_timepoint <- function(
@@ -37,15 +64,17 @@ compute_influence_term_1_at_timepoint <- function(
     pmf <- pmf_estimator(Xb_ind)
 
     # Everything above this does not depend on alpha and could be optimized
-    E_exp_alphaY <- crossprod( exp(alpha*y), pmf )
-    E_Yexp_alphaY <- crossprod( y*exp(alpha*y), pmf )
-    E_Y_past <- E_Yexp_alphaY/E_exp_alphaY
-
     Term1_unweighted <-
-        (outcome-E_Y_past)/
-        (baseline_lambda*Exp_gamma* exp(-alpha*outcome)*E_exp_alphaY)
-
-    pcoriaccel_evaluate_basis(base, time) * c(Term1_unweighted)
+    compute_influence_term_1_unweighted_at_timepoint(
+        time = time,
+        outcome = outcome,
+        Exp_gamma = Exp_gamma,
+        Xb_ind = Xb_ind,
+        y = y,pmf = pmf,
+        alpha = alpha,
+        baseline_lambda = baseline_lambda
+    )
+    return(pcoriaccel_evaluate_basis(base, time) * c(Term1_unweighted))
 }
 
 compute_influence_term_1_for_all <-
@@ -75,7 +104,6 @@ compute_influence_term_1_for_all <-
                 rlang::is_scalar_double(bandwidth), bandwidth > 0,
                 rlang::is_string(kernel)
             )
-
 
         y_seq <- sort(unique(outcome_all))
         Xbeta <- X_all %*% outcome_coef
