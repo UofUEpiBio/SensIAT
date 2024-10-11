@@ -1,4 +1,4 @@
-
+globalVariables(c('alpha', add=TRUE))
 
 cross_validate <- function(original.object, progress = interactive()){
     data <- original.object$data

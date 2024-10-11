@@ -43,6 +43,7 @@ fit_PCORI_within_group_model_old <- function(
         model.frame(data=filter(group.data, (!!time.var) <= !!End), na.action = na.pass) |>
         arrange(!!id.var, !!time.var)
 
+    visit.number <- NULL
     model.data <- mf |>
         group_by(!!id.var) |>
         mutate(

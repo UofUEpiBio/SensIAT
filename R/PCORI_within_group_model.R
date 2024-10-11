@@ -157,8 +157,8 @@ fit_PCORI_within_group_model <- function(
         compute_influence_terms(
             left_join(
                 data_all_with_transforms,
-                followup_data |> select(..id.., ..time.., baseline_intensity),
-                by=join_by(..id.., ..time..)
+                followup_data |> select('..id..', '..time..', 'baseline_intensity'),
+                by=join_by('..id..', '..time..')
             ),
             base = base,
             alpha = a,
