@@ -22,7 +22,7 @@ cross_validate <- function(original.object, progress = interactive()){
             prune_bootstrap_replication()
     }
 
-    if(progress){
+    if(progress && rlang::is_installed("progress")){
         pb <- progress::progress_bar$new(
             format = "  cross-validation [:bar] :current/:total(:percent) eta: :eta",
             total = length(ids)
