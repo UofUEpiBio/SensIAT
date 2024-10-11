@@ -44,6 +44,7 @@
 #' @importFrom stats sd
 #' @importFrom stats terms
 #' @importFrom stats time
+#' @importFrom stats update.formula
 #' @importFrom stats var
 #' @importFrom survival coxph
 #' @importFrom survival strata

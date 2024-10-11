@@ -402,8 +402,6 @@ function(X, Y, ids,
                              control = list(tol = abs.tol))
     }else rlang::abort("Invalid optimization method")
     results <- list(coefficients = c(1, esti$par[1:(number_p-1)]),
-                    bandwidth = bandwidth,
+                    bandwidth = 1,
                     details = esti)
-
-
 }
