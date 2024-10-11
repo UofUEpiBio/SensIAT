@@ -250,9 +250,10 @@ compute_influence_terms <-
         alpha, # Sensitivity, singular alpha value
         outcome.model, # outcome model
         intensity_coef, # Coefficient(s) from the intensity model
-        baseline_intensity_all, # Baseline intensity for all patients
         tol = 1e-6
     ){
+        ..id.. <- ..time.. <- ..prev_outcome.. <- baseline_intensity <- NULL
+
         followup.data <- filter(data_all_with_transforms, ..time.. > 0) |>
             model.frame(terms(outcome.model), data=_,
                         id = ..id.., time = ..time..,

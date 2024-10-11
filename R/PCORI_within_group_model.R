@@ -1,4 +1,4 @@
-globalVariables(c('visit.number', 'term1', 'term2', 'IF', 'IF_ortho',
+globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
                   'estimate', 'Beta_hat', 'Var_beta'))
 
 #' Produce fitted model for group (treatment or control)
@@ -164,7 +164,6 @@ fit_PCORI_within_group_model <- function(
             alpha = a,
             outcome.model = outcome.model,
             intensity_coef = coef(intensity.model),
-            # baseline_intensity_all = baseline_intensity_all$baseline_intensity,
             tol = integration.tolerance
         )
     })
