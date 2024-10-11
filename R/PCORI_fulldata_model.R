@@ -26,25 +26,26 @@ fit_PCORI_fulldata_model <- function(data, trt, ...){
     ), class = 'PCORI_fulldata_model')
 }
 
-# Prediction method for `PCORI_fulldata_model` objects.
-#
-# @param object an object of class `PCORI_fulldata_model`
-# @param time  time points to evaluate at
-# @param alpha alpha values to evaluate at.
-#
-# @description
-# For each combination of `time` and `alpha` estimate the mean response and
-# variance for each group as well as estimate the mean treatment effect and
-# variance.
-#
-#
-# @return a tibble/data.frame with the following components.
-#  * `time`, the time point
+#' Prediction method for `PCORI_fulldata_model` objects.
+#'
+#' @param object an object of class `PCORI_fulldata_model`
+#' @param time  time points to evaluate at
+#' @param ... additional arguments passed to `predict.PCORI_within_group_model`
+#'
+#' @description
+#' For each combination of `time` and `alpha` estimate the mean response and
+#' variance for each group as well as estimate the mean treatment effect and
+#' variance.
+#'
+#'
+#' @return a tibble/data.frame with the following components.
+#'  * `time`, the time point
+#' @export
 `predict.PCORI_fulldata_model` <-
-    function(object, time, alpha){
+    function(object, time, ...){
 
-        control.predicted    <- predict(object$control  , time, alpha)
-        treatment.predicted  <- predict(object$treatment, time, alpha)
+        control.predicted    <- predict(object$control  , time, ...)
+        treatment.predicted  <- predict(object$treatment, time, ...)
 
         full_join(
             control.predicted,

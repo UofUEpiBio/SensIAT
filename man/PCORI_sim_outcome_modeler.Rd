@@ -23,6 +23,8 @@ Should only include follow-up data, i.e. time > 0.}
 
 \item{method}{The optimization method to use for the outcome model, either "optim", "nlminb", or "nmk".}
 
+\item{id}{The patient identifier variable for the data.}
+
 \item{...}{Currently ignored, included for future compatibility.}
 }
 \value{

@@ -12,6 +12,10 @@
 \item{time}{Time points of interest}
 
 \item{include.var}{Logical. If TRUE, the variance of the outcome is also returned}
+
+\item{...}{Currently ignored.}
+
+\item{base}{SplineBasis object used to evaluate the basis functions.}
 }
 \value{
 If include.var is TRUE, a tibble with columns time, mean, and var is returned.
@@ -19,4 +23,20 @@ otherwise if include.var is FALSE, only the mean vector is returned.
 }
 \description{
 Predict mean and variance of the outcome for a PCORI within-group model
+}
+\examples{
+\dontrun{
+model <-
+    fit_PCORI_within_group_model(
+        group.data = PCORI_example_data,
+        outcome_modeler = PCORI_sim_outcome_modeler,
+        alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+        id.var = Subject_ID,
+        outcome.var = Outcome,
+        time.var = Time,
+        End = 830,
+        knots = c(60,60,60,60,260,460,460,460,460),
+    )
+predict(model, time = c(90, 180))
+}
 }
