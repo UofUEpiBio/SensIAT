@@ -72,7 +72,7 @@ This function should be agnostic to whether it is being provided a
 treatment or control group.
 }
 \examples{
-
+\dontrun{
 model <-
     fit_PCORI_within_group_model(
         group.data = PCORI_example_data,
@@ -84,5 +84,5 @@ model <-
         End = 830,
         knots = c(60,60,60,60,260,460,460,460,460),
     )
-
+}
 }

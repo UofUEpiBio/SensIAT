@@ -38,7 +38,7 @@ globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
 #' @export
 #'
 #' @examples
-#'
+#' \dontrun{
 #' model <-
 #'     fit_PCORI_within_group_model(
 #'         group.data = PCORI_example_data,
@@ -50,7 +50,7 @@ globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
 #'         End = 830,
 #'         knots = c(60,60,60,60,260,460,460,460,460),
 #'     )
-#'
+#' }
 fit_PCORI_within_group_model <- function(
         group.data,
         outcome_modeler,

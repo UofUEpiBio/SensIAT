@@ -23,6 +23,7 @@ specified alpha values.
 Estimate response with jackknife resampling
 }
 \examples{
+\dontrun{
 original.object <-
 fit_PCORI_within_group_model(
     group.data = PCORI_example_data,
@@ -36,4 +37,5 @@ fit_PCORI_within_group_model(
     End = 830
 )
 jackknife.estimates <- pcori_jackknife(original.object, time = c(90, 180, 270, 360, 450))
+}
 }

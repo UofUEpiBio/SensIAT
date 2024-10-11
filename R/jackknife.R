@@ -48,6 +48,7 @@ cross_validate <- function(original.object, progress = interactive()){
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' original.object <-
 #' fit_PCORI_within_group_model(
 #'     group.data = PCORI_example_data,
@@ -61,6 +62,7 @@ cross_validate <- function(original.object, progress = interactive()){
 #'     End = 830
 #' )
 #' jackknife.estimates <- pcori_jackknife(original.object, time = c(90, 180, 270, 360, 450))
+#' }
 pcori_jackknife <- function(original.object, time, ...){
     replications <- cross_validate(original.object)
 
