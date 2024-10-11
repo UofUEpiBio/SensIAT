@@ -56,7 +56,7 @@ function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ...
     }
 #' @export
 `coef.PCORI::Single-index-outcome-model` <-
-    function(x, ...)x$coef
+    function(object, ...)object$coef
 
 #' @export
 `predict.PCORI::Single-index-outcome-model` <-
