@@ -28,6 +28,7 @@ globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
 #' @param intensity.bandwidth The bandwidth for the intensity model kernel.
 #' @param ... add parameters as needed or use this to pass forward into the
 #'          outcome_modeler.
+#' @param influence.args A list of additional arguments to pass to the influence function.
 #'
 #'
 #' @return
@@ -64,7 +65,8 @@ fit_PCORI_within_group_model <- function(
         End = max({{time.var}}, na.rm = TRUE) + 1,
         integration.tolerance = .Machine$double.eps^(1/3),
         intensity.bandwidth = NULL,
-        ...
+        ...,
+        influence.args = list()
 ){
     id.var <- ensym(id.var)
     outcome.var <- ensym(outcome.var)
@@ -153,7 +155,7 @@ fit_PCORI_within_group_model <- function(
     V_inverse <- solve(GramMatrix(base))
 
     # Compute value of the influence function: -----------------------------
-    influence.terms <- purrr::map(alpha,\(a){
+    influence.terms <- rlang::inject(purrr::map(alpha,\(a){
         compute_influence_terms(
             left_join(
                 data_all_with_transforms,
@@ -164,9 +166,10 @@ fit_PCORI_within_group_model <- function(
             alpha = a,
             outcome.model = outcome.model,
             intensity_coef = coef(intensity.model),
-            tol = integration.tolerance
+            tol = integration.tolerance,
+            !!!influence.args
         )
-    })
+    }))
 
     # Results
     Beta = map(influence.terms, \(IT){

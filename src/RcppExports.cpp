@@ -111,8 +111,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix
-[[nodiscard]] NumericMatrix pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix(NumericMatrix X, NumericVector Y, NumericVector times, NumericMatrix individual_X, NumericVector x_slope, NumericVector alpha, NumericVector beta, S4 spline_basis, double bandwidth, double tol);
-RcppExport SEXP _pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix(SEXP XSEXP, SEXP YSEXP, SEXP timesSEXP, SEXP individual_XSEXP, SEXP x_slopeSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP spline_basisSEXP, SEXP bandwidthSEXP, SEXP tolSEXP) {
+[[nodiscard]] NumericMatrix pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix(NumericMatrix X, NumericVector Y, NumericVector times, NumericMatrix individual_X, NumericVector x_slope, NumericVector alpha, NumericVector beta, S4 spline_basis, double bandwidth, double tol, String kernel);
+RcppExport SEXP _pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix(SEXP XSEXP, SEXP YSEXP, SEXP timesSEXP, SEXP individual_XSEXP, SEXP x_slopeSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP spline_basisSEXP, SEXP bandwidthSEXP, SEXP tolSEXP, SEXP kernelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -126,7 +126,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< S4 >::type spline_basis(spline_basisSEXP);
     Rcpp::traits::input_parameter< double >::type bandwidth(bandwidthSEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix(X, Y, times, individual_X, x_slope, alpha, beta, spline_basis, bandwidth, tol));
+    Rcpp::traits::input_parameter< String >::type kernel(kernelSEXP);
+    rcpp_result_gen = Rcpp::wrap(pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix(X, Y, times, individual_X, x_slope, alpha, beta, spline_basis, bandwidth, tol, kernel));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -182,7 +183,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pcoriRPackage_pcoriaccel_outer_sum", (DL_FUNC) &_pcoriRPackage_pcoriaccel_outer_sum, 2},
     {"_pcoriRPackage_pcoriaccel_outer_prod", (DL_FUNC) &_pcoriRPackage_pcoriaccel_outer_prod, 2},
     {"_pcoriRPackage_pcoriaccel_sorted_unique", (DL_FUNC) &_pcoriRPackage_pcoriaccel_sorted_unique, 1},
-    {"_pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix", (DL_FUNC) &_pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix, 10},
+    {"_pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix", (DL_FUNC) &_pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix, 11},
     {"_pcoriRPackage_pcoriaccel_estimate_pmf", (DL_FUNC) &_pcoriRPackage_pcoriaccel_estimate_pmf, 6},
     {"_pcoriRPackage_pcoriaccel_integrate_simp", (DL_FUNC) &_pcoriRPackage_pcoriaccel_integrate_simp, 4},
     {"_pcoriRPackage_pcoriaccel_evaluate_basis", (DL_FUNC) &_pcoriRPackage_pcoriaccel_evaluate_basis, 2},

@@ -149,8 +149,13 @@ compute_influence_term_2_for_individual <-
         beta,
         base,
         bandwidth,
-        tol = 1e-6
+        method = c('adaptive', 'fixed'),
+        kernel = c("K2_Biweight", "K4_Biweight", "dnorm"),
+        tol = 1e-6,
+        delta = NULL,
+        resolution = NULL
         ){
+        method <- match.arg(method)
 
         if (getOption('PCORI::do_arg_checks', TRUE))
             assert_that(
@@ -167,19 +172,104 @@ compute_influence_term_2_for_individual <-
                 all(times_ind >= 0)
             )
 
-        pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix(
-            X = X_all,
-            Y = Y_all,
-            individual_X = X_ind,
-            times = times_ind,
-            x_slope = slope,
-            alpha = alpha,
-            beta = beta,
-            spline_basis = base,
-            bandwidth = bandwidth,
-            tol = tol)
+        if(method == "adaptive"){
+            pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix(
+                X = X_all,
+                Y = Y_all,
+                individual_X = X_ind,
+                times = times_ind,
+                x_slope = slope,
+                alpha = alpha,
+                beta = beta,
+                spline_basis = base,
+                bandwidth = bandwidth,
+                tol = tol,
+                kernel = kernel)
+        } else
+        if(method == "fixed"){
+            if(!xor(is.null(delta), is.null(resolution)))
+                rlang::abort("When method='fixed', either delta or resolution must be provided but not both.")
+            if(is.null(delta)){
+                assert_that(assertthat::is.count(resolution))
+                delta <- diff(range(base@knots))/resolution
+            }
+            compute_influence_term_2_for_one_patient_fixed_approximation(
+                X = X_all,
+                Y = Y_all,
+                individual_X = X_ind,
+                times = times_ind,
+                x_slope = slope,
+                alpha = alpha,
+                beta = beta,
+                base = base,
+                bandwidth = bandwidth,
+                delta = delta,
+                kernel = kernel
+            )
 
-}
+
+        } else {
+            stop("method must be one of 'adaptive' or 'fixed'")
+        }
+
+    }
+
+compute_influence_term_2_for_one_patient_fixed_approximation <-
+    function(
+        X, Y, individual_X, times,
+        x_slope,
+        alpha,
+        beta,
+        base,
+        bandwidth = bandwidth,
+        delta,
+        kernel = c("K2_Biweight", "K4_Biweight", "dnorm"),
+        ...
+    ){
+        kernel <- match.arg(kernel)
+
+        eval.times <- seq(min(base@knots), max(base@knots), by = delta)
+        B <- evaluate(base, eval.times)
+
+        uY <- sort(unique(Y))
+        Xb <- X %*% beta
+        expected_value <- function(time, lhs=FALSE){
+            if(lhs){
+                period <- max(which(times - time <= 0))
+            } else {
+                period <- max(which(times - time <  0))
+            }
+            xi <- individual_X[period, ,drop=FALSE] + (time - times[period]) * x_slope
+
+
+            pmf <- pcoriaccel_estimate_pmf(
+                Xb=Xb, Y = Y,
+                xi = xi %*% beta,
+                y_seq = uY,
+                h= bandwidth, kernel = kernel)
+            E_exp_alphaY <- sum( exp(alpha*uY)*pmf )
+
+            E_Yexp_alphaY <- sum( uY*exp(alpha*uY)*pmf )
+
+            return(E_Yexp_alphaY/E_exp_alphaY)
+        }
+
+
+        ipart <- matrix(NA, nrow = length(eval.times)-1, ncol=ncol(B))
+
+        for(i in seq.int(length(eval.times)-1)){
+            if(eval.times[i] %in% times || i==1){
+                ev_left <- expected_value(eval.times[i], lhs=TRUE)
+            } else {
+                ev_left <- ev_right
+            }
+            ev_right <- expected_value(eval.times[i+1], lhs=FALSE)
+            ipart[i,] <- (ev_left*B[i,] + ev_right*B[i+1L, ])/2 * delta
+        }
+        colSums(ipart)
+    }
+
+
 compute_influence_term_2_for_all_patients <-
     function(
         outcome.model,
@@ -187,7 +277,7 @@ compute_influence_term_2_for_all_patients <-
         data_all,
         alpha,
         base,
-        tol = 1e-6
+        ...
     ){
         integration_data <- rlang::inject(
             model.frame(
@@ -233,7 +323,7 @@ compute_influence_term_2_for_all_patients <-
                 beta = outcome_coef,
                 base = base,
                 bandwidth = outcome.model$bandwidth,
-                tol = tol
+                ...
             )
 
             term2[i,] <- result
@@ -250,7 +340,8 @@ compute_influence_terms <-
         alpha, # Sensitivity, singular alpha value
         outcome.model, # outcome model
         intensity_coef, # Coefficient(s) from the intensity model
-        tol = 1e-6
+        tol = 1e-6,
+        ...
     ){
         ..id.. <- ..time.. <- ..prev_outcome.. <- baseline_intensity <- NULL
 
@@ -281,14 +372,15 @@ compute_influence_terms <-
                 bandwidth = outcome.model$bandwidth,
                 kernel = attr(outcome.model, 'kernel')
             )
-
         term2 <- compute_influence_term_2_for_all_patients(
             outcome.model = outcome.model,
             X_all=X_all, Y_all=Y_all, outcome_coef=outcome_coef,
             data_all = data_all_with_transforms,
             alpha = alpha,
             base = base,
-            tol=tol
+            tol=tol,
+            kernel = attr(outcome.model, 'kernel'),
+            ...
         )
         list(
             id = ids,

@@ -15,7 +15,8 @@ pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix(
   beta,
   spline_basis,
   bandwidth,
-  tol = 0.0001220703
+  tol = 0.0001220703,
+  kernel = "K2_Biweight"
 )
 }
 \arguments{

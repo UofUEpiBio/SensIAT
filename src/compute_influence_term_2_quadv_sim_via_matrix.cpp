@@ -40,7 +40,9 @@
 	S4 spline_basis,
 
 	double bandwidth,
-	double tol = 0.0001220703 // .Machine$double.eps^(1/4)
+	double tol = 0.0001220703, // .Machine$double.eps^(1/4)
+
+	String kernel = "K2_Biweight"
 ) {
 	#if 1
 	if ( X.ncol()!=beta.length() || X.ncol()!=individual_X.ncol() ) [[unlikely]] stop(std::format(
@@ -114,7 +116,7 @@
 
 			//Compute the pmf for `Y` at the given time point (e.g. num[1:35]).
 			NumericVector pmf = pcoriaccel_estimate_pmf(
-				Xb,Y, xt_dot_beta, distinct_Y, bandwidth
+				Xb,Y, xt_dot_beta, distinct_Y, bandwidth, kernel
 			);
 
 			//Compute the expected value of the outcome at the given time point, given the

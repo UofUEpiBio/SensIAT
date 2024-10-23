@@ -107,8 +107,8 @@ pcoriaccel_sorted_unique <- function(vec) {
 #' @return integration result
 #'
 #' @export
-pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix <- function(X, Y, times, individual_X, x_slope, alpha, beta, spline_basis, bandwidth, tol = 0.0001220703) {
-    .Call(`_pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix`, X, Y, times, individual_X, x_slope, alpha, beta, spline_basis, bandwidth, tol)
+pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix <- function(X, Y, times, individual_X, x_slope, alpha, beta, spline_basis, bandwidth, tol = 0.0001220703, kernel = "K2_Biweight") {
+    .Call(`_pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix`, X, Y, times, individual_X, x_slope, alpha, beta, spline_basis, bandwidth, tol, kernel)
 }
 
 #' Directly estimate the pmf of Y.
