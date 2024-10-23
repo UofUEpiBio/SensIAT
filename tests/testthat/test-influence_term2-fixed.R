@@ -1,5 +1,5 @@
 test_that("Compute Influence term2 fixed point integration", {
-    original.object <-
+    fixed.object <-
         fit_PCORI_within_group_model(
             group.data = PCORI_example_data,
             outcome_modeler = PCORI_sim_outcome_modeler,
@@ -12,8 +12,8 @@ test_that("Compute Influence term2 fixed point integration", {
             End = 830,
             influence.args = list(method = 'fixed', delta = 1)
         )
-    expect_identical(attr(original.object$influence[[3]]$term2, 'fcnt'),
+    expect_identical(attr(fixed.object$influence[[3]]$term2, 'fcnt'),
               vector(mode='list', length=100))
-    expect_identical(attr(original.object$influence[[3]]$term2, 'estim.prec'),
+    expect_identical(attr(fixed.object$influence[[3]]$term2, 'estim.prec'),
               vector(mode='list', length=100))
 })

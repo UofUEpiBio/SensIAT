@@ -21,6 +21,7 @@
 //' @param spline_basis   Spline basis object (`orthogonalsplinebasis::SplineBasis`)
 //' @param bandwidth      Bandwidth for the kernel density estimate of the outcome model.
 //' @param tol            Tolerance for integration
+//' @param kernel         Kernel function to use for the kernel density estimate
 //'
 //' @return integration result
 //'

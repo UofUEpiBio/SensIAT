@@ -40,6 +40,8 @@ inferences for integration.}
 \item{bandwidth}{Bandwidth for the kernel density estimate of the outcome model.}
 
 \item{tol}{Tolerance for integration}
+
+\item{kernel}{Kernel function to use for the kernel density estimate}
 }
 \value{
 integration result

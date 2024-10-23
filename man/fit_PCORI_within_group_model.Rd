@@ -21,7 +21,8 @@ fit_PCORI_within_group_model(
  }, na.rm = TRUE) + 1,
   integration.tolerance = .Machine$double.eps^(1/3),
   intensity.bandwidth = NULL,
-  ...
+  ...,
+  influence.args = list()
 )
 }
 \arguments{
@@ -56,6 +57,8 @@ max value of the time}
 
 \item{...}{add parameters as needed or use this to pass forward into the
 outcome_modeler.}
+
+\item{influence.args}{A list of additional arguments to pass to the influence function.}
 }
 \value{
 \if{html}{\out{<div class="sourceCode">}}\preformatted{ Should return everything needed to define the fit of the model.
