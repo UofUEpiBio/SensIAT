@@ -18,6 +18,6 @@ On Windows, you will also need
 
 To build and install, from the project root directory, do:
 
-``` sh
+```sh
 R CMD INSTALL .
 ```

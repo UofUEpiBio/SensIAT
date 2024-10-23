@@ -6,6 +6,7 @@ Authors@R: c(
            comment = c(ORCID = "0000-0002-6149-2438")),
     person("Agatha", "Mallett", , "agatha@geometrian.com", role = c("ctb") )   )
 Description: What the package does (one paragraph).
+Language: en-US
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -32,6 +33,7 @@ Suggests:
     dfoptim,
     inline,
     progress,
+    spelling,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Depends: 
