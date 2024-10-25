@@ -21,7 +21,7 @@ Should only include follow-up data, i.e. time > 0.}
 
 \item{kernel}{The kernel to use for the outcome model.}
 
-\item{method}{The optimization method to use for the outcome model, either "optim", "nlminb", or "nmk".}
+\item{method}{The optimization method to use for the outcome model, either \code{"optim"}, \code{"nlminb"}, or \code{"nmk"}.}
 
 \item{id}{The patient identifier variable for the data.}
 

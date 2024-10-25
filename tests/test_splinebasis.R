@@ -1,6 +1,6 @@
 #source("test_splinebasis.R")
 
-library("pcoriRPackage")
+library("SensIAT")
 library("orthogonalsplinebasis")
 
 test_basis <- function(basis){

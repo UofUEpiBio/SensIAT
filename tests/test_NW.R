@@ -1,4 +1,4 @@
-library("pcoriRPackage")
+library("SensIAT")
 
 print( pcoriaccel_hello() )
 

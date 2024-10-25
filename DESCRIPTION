@@ -1,11 +1,16 @@
-Package: pcoriRPackage
-Title: PCORI Simulations
+Package: SensIAT
+Title: Sensitivity Analysis for Irregular Assessment Times
 Version: 0.0.0.9000
 Authors@R: c(
     person("Andrew", "Redd", , "andrew.redd@hsc.utah.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-6149-2438")),
-    person("Agatha", "Mallett", , "agatha@geometrian.com", role = c("ctb") )   )
-Description: What the package does (one paragraph).
+    person("Agatha", "Mallett", , "agatha@geometrian.com", role = c("ctb") ),
+    person("Yujing", "Gao", , "ygao39@ncsu.edu", role = c("ctb"),
+           comment = c(ORCID = "0000-0002-6149-2438"))
+    )
+Description: Sensitivity analysis for trials with irregular and informative 
+    assessment times, based on a new influence function-based, augmented 
+    inverse intensity-weighted estimator.
 Language: en-US
 License: MIT + file LICENSE
 Encoding: UTF-8

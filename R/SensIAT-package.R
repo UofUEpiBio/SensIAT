@@ -54,6 +54,6 @@
 #' @importFrom tidyr complete
 #' @importFrom utils head
 #' @importFrom utils tail
-#' @useDynLib pcoriRPackage, .registration = TRUE
+#' @useDynLib SensIAT, .registration = TRUE
 ## usethis namespace: end
 NULL

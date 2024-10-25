@@ -12,7 +12,7 @@
 #' @param ... Passed on to fit_within_group_model.
 #'
 #' @return a list with class `PCORI-fulldata-fitted-model` with two components,
-#'      `control` and `treatment`, each of which is an indepently fitted
+#'      `control` and `treatment`, each of which is an independently fitted
 #'      `PCORI-within-group-fitted-model` fit with the fit_within_group_model
 #'      function.
 #' @export

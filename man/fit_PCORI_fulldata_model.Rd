@@ -16,7 +16,7 @@ Everything not treatment is considered control.}
 }
 \value{
 a list with class \code{PCORI-fulldata-fitted-model} with two components,
-\code{control} and \code{treatment}, each of which is an indepently fitted
+\code{control} and \code{treatment}, each of which is an independently fitted
 \code{PCORI-within-group-fitted-model} fit with the fit_within_group_model
 function.
 }

@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/reference/test_package.html#special-files
 
 library(testthat)
-library(pcoriRPackage)
+library(SensIAT)
 
-test_check("pcoriRPackage")
+test_check("SensIAT")

@@ -4,7 +4,7 @@
 #' @param data The data to fit the outcome model to.
 #'             Should only include follow-up data, i.e. time > 0.
 #' @param kernel The kernel to use for the outcome model.
-#' @param method The optimization method to use for the outcome model, either "optim", "nlminb", or "nmk".
+#' @param method The optimization method to use for the outcome model, either `"optim"`, `"nlminb"`, or `"nmk"`.
 #' @param id The patient identifier variable for the data.
 #' @param ... Currently ignored, included for future compatibility.
 #'

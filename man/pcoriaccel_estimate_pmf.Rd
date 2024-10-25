@@ -7,17 +7,17 @@
 pcoriaccel_estimate_pmf(Xb, Y, xi, y_seq, h, kernel = "K2_Biweight")
 }
 \arguments{
-\item{Xb}{NumericVector of individual linear predictors from the data}
+\item{Xb}{Numeric vector of individual linear predictors from the data}
 
-\item{Y}{NumericVector of individual responses from the data}
+\item{Y}{Numeric vector of individual responses from the data}
 
 \item{xi}{value of the individuals linear predictor at the point of estimation}
 
-\item{y_seq}{NumericVector of unique values of Y.}
+\item{y_seq}{Numeric vector of unique values of Y.}
 
 \item{h}{bandwidth of the kernel}
 
-\item{kernel}{character string specifying the kernel to use, either "dnorm", "K2_Biweight", or "K4_Biweight"}
+\item{kernel}{character string specifying the kernel to use, either \code{"dnorm"}, \code{"K2_Biweight"}, or \code{"K4_Biweight"}}
 }
 \description{
 Directly estimate the pmf of Y.

@@ -57,12 +57,12 @@ template< class Tfloat, KernelType kernel > [[nodiscard]] inline static
 
 //' Directly estimate the pmf of Y.
 //'
-//' @param Xb NumericVector of individual linear predictors from the data
-//' @param Y NumericVector of individual responses from the data
+//' @param Xb Numeric vector of individual linear predictors from the data
+//' @param Y Numeric vector of individual responses from the data
 //' @param xi value of the individuals linear predictor at the point of estimation
-//' @param y_seq NumericVector of unique values of Y.
+//' @param y_seq Numeric vector of unique values of Y.
 //' @param h bandwidth of the kernel
-//' @param kernel character string specifying the kernel to use, either "dnorm", "K2_Biweight", or "K4_Biweight"
+//' @param kernel character string specifying the kernel to use, either `"dnorm"`, `"K2_Biweight"`, or `"K4_Biweight"`
 //'
 //' @export
 // [[Rcpp::export]]

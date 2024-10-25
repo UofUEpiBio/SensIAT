@@ -14,7 +14,7 @@
 #'
 #' @export
 pcoriaccel_NW_basic <- function(Xb, Y, xb, y_seq, h) {
-    .Call(`_pcoriRPackage_pcoriaccel_NW_basic`, Xb, Y, xb, y_seq, h)
+    .Call(`_SensIAT_pcoriaccel_NW_basic`, Xb, Y, xb, y_seq, h)
 }
 
 #' Runs an optimized implementation of the "NW" function.
@@ -30,14 +30,14 @@ pcoriaccel_NW_basic <- function(Xb, Y, xb, y_seq, h) {
 #'
 #' @export
 pcoriaccel_NW <- function(Xb, Y, xb, y_seq, h, kernel = "K2_Biweight") {
-    .Call(`_pcoriRPackage_pcoriaccel_NW`, Xb, Y, xb, y_seq, h, kernel)
+    .Call(`_SensIAT_pcoriaccel_NW`, Xb, Y, xb, y_seq, h, kernel)
 }
 
 #' Returns a string, just as a basic check that the C++ plugin library is working.
 #' @return hello string
 #' @export
 pcoriaccel_hello <- function() {
-    .Call(`_pcoriRPackage_pcoriaccel_hello`)
+    .Call(`_SensIAT_pcoriaccel_hello`)
 }
 
 #' Multiplies two matrices.  If the first argument is a vector, it is interpreted as a row vector.
@@ -47,7 +47,7 @@ pcoriaccel_hello <- function() {
 #' @return matrA * matrB
 #' @export
 pcoriaccel_mmul <- function(matrA, matrB) {
-    .Call(`_pcoriRPackage_pcoriaccel_mmul`, matrA, matrB)
+    .Call(`_SensIAT_pcoriaccel_mmul`, matrA, matrB)
 }
 
 #' Inner product (dot product) of two vectors.
@@ -56,7 +56,7 @@ pcoriaccel_mmul <- function(matrA, matrB) {
 #' @return vecAᵀ * vecB = vecA • vecB
 #' @export
 pcoriaccel_inner_prod <- function(vecA, vecB) {
-    .Call(`_pcoriRPackage_pcoriaccel_inner_prod`, vecA, vecB)
+    .Call(`_SensIAT_pcoriaccel_inner_prod`, vecA, vecB)
 }
 
 #' Outer sum of two vectors.
@@ -67,7 +67,7 @@ pcoriaccel_inner_prod <- function(vecA, vecB) {
 #' pcoriaccel_outer_sum( c(1,2,3,4,5), c(2,4,6) )
 #' @export
 pcoriaccel_outer_sum <- function(vecA, vecB) {
-    .Call(`_pcoriRPackage_pcoriaccel_outer_sum`, vecA, vecB)
+    .Call(`_SensIAT_pcoriaccel_outer_sum`, vecA, vecB)
 }
 
 #' Outer product of two vectors.
@@ -78,7 +78,7 @@ pcoriaccel_outer_sum <- function(vecA, vecB) {
 #' pcoriaccel_outer_prod( c(1,2,3,4,5), c(2,4,6) )
 #' @export
 pcoriaccel_outer_prod <- function(vecA, vecB) {
-    .Call(`_pcoriRPackage_pcoriaccel_outer_prod`, vecA, vecB)
+    .Call(`_SensIAT_pcoriaccel_outer_prod`, vecA, vecB)
 }
 
 #' Returns the unique elements of a vector, sorted in ascending order.
@@ -86,7 +86,7 @@ pcoriaccel_outer_prod <- function(vecA, vecB) {
 #' @return sort(unique(vec))
 #' @export
 pcoriaccel_sorted_unique <- function(vec) {
-    .Call(`_pcoriRPackage_pcoriaccel_sorted_unique`, vec)
+    .Call(`_SensIAT_pcoriaccel_sorted_unique`, vec)
 }
 
 #' Runs an optimized implementation of the `compute_influence_term_2_quadv_sim_via_matrix`
@@ -109,21 +109,21 @@ pcoriaccel_sorted_unique <- function(vec) {
 #'
 #' @export
 pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix <- function(X, Y, times, individual_X, x_slope, alpha, beta, spline_basis, bandwidth, tol = 0.0001220703, kernel = "K2_Biweight") {
-    .Call(`_pcoriRPackage_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix`, X, Y, times, individual_X, x_slope, alpha, beta, spline_basis, bandwidth, tol, kernel)
+    .Call(`_SensIAT_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix`, X, Y, times, individual_X, x_slope, alpha, beta, spline_basis, bandwidth, tol, kernel)
 }
 
 #' Directly estimate the pmf of Y.
 #'
-#' @param Xb NumericVector of individual linear predictors from the data
-#' @param Y NumericVector of individual responses from the data
+#' @param Xb Numeric vector of individual linear predictors from the data
+#' @param Y Numeric vector of individual responses from the data
 #' @param xi value of the individuals linear predictor at the point of estimation
-#' @param y_seq NumericVector of unique values of Y.
+#' @param y_seq Numeric vector of unique values of Y.
 #' @param h bandwidth of the kernel
-#' @param kernel character string specifying the kernel to use, either "dnorm", "K2_Biweight", or "K4_Biweight"
+#' @param kernel character string specifying the kernel to use, either `"dnorm"`, `"K2_Biweight"`, or `"K4_Biweight"`
 #'
 #' @export
 pcoriaccel_estimate_pmf <- function(Xb, Y, xi, y_seq, h, kernel = "K2_Biweight") {
-    .Call(`_pcoriRPackage_pcoriaccel_estimate_pmf`, Xb, Y, xi, y_seq, h, kernel)
+    .Call(`_SensIAT_pcoriaccel_estimate_pmf`, Xb, Y, xi, y_seq, h, kernel)
 }
 
 #' Integrate function using adaptive Simpson quadrature.
@@ -138,7 +138,7 @@ pcoriaccel_estimate_pmf <- function(Xb, Y, xi, y_seq, h, kernel = "K2_Biweight")
 #'
 #' @export
 pcoriaccel_integrate_simp <- function(integrand, lo, hi, tol = 1.490116e-08) {
-    .Call(`_pcoriRPackage_pcoriaccel_integrate_simp`, integrand, lo, hi, tol)
+    .Call(`_SensIAT_pcoriaccel_integrate_simp`, integrand, lo, hi, tol)
 }
 
 #' Rcpp version of `evaluate_basis(⋯)` function
@@ -150,6 +150,6 @@ pcoriaccel_integrate_simp <- function(integrand, lo, hi, tol = 1.490116e-08) {
 #'
 #' @export
 pcoriaccel_evaluate_basis <- function(spline_basis, x) {
-    .Call(`_pcoriRPackage_pcoriaccel_evaluate_basis`, spline_basis, x)
+    .Call(`_SensIAT_pcoriaccel_evaluate_basis`, spline_basis, x)
 }
 
