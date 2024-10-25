@@ -153,7 +153,8 @@ compute_influence_term_2_for_individual <-
         kernel = c("K2_Biweight", "K4_Biweight", "dnorm"),
         tol = 1e-6,
         delta = NULL,
-        resolution = NULL
+        resolution = NULL,
+        fix_discontinuity = TRUE
         ){
         method <- match.arg(method)
 
@@ -204,7 +205,8 @@ compute_influence_term_2_for_individual <-
                 base = base,
                 bandwidth = bandwidth,
                 delta = delta,
-                kernel = kernel
+                kernel = kernel,
+                fix_discontinuity=fix_discontinuity
             )
 
 
@@ -258,7 +260,7 @@ compute_influence_term_2_for_one_patient_fixed_approximation <-
 
         ipart <- matrix(NA, nrow = length(eval.times)-1, ncol=ncol(B))
         if(!fix_discontinuity)
-            ev_right <- expected_value(eval.times[i], lhs=TRUE)
+            ev_right <- expected_value(eval.times[1], lhs=FALSE)
         for(i in seq.int(length(eval.times)-1)){
             if(fix_discontinuity && (eval.times[i] %in% times || i==1)){
                 ev_left <- expected_value(eval.times[i], lhs=TRUE)
