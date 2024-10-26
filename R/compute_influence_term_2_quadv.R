@@ -55,9 +55,9 @@ function(
 if(F){
     library(ARCdata)
     fitted.trt.sim <-
-     fit_PCORI_within_group_model(
+     fit_SensIAT_within_group_model(
          group.data = filter(ARC_data, Trt=='home_visits'),
-         outcome_modeler = PCORI_sim_outcome_modeler,
+         outcome_modeler = SensIAT_sim_outcome_modeler,
          id.var = elig_pid,
          outcome.var = Asthma_control,
          time.var = time,

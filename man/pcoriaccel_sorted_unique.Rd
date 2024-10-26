@@ -10,7 +10,7 @@ pcoriaccel_sorted_unique(vec)
 \item{vec}{the vector}
 }
 \value{
-sort(unique(vec))
+\code{sort(unique(vec))}
 }
 \description{
 Returns the unique elements of a vector, sorted in ascending order.

@@ -13,7 +13,7 @@ pcoriaccel_integrate_simp(integrand, lo, hi, tol = 1.490116e-08)
 
 \item{hi}{Upper integration bound}
 
-\item{tol}{Tolerance for integration, default .Machine$double.eps^(1/2)}
+\item{tol}{Tolerance for integration, default \code{.Machine$double.eps^(1/2)}}
 }
 \value{
 integration result, list with elements \verb{$Q} (the integral estimate), \verb{$fcnt} (the number

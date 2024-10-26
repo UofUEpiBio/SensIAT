@@ -7,16 +7,16 @@
 pcori_jackknife(original.object, time, ...)
 }
 \arguments{
-\item{original.object}{A PCORI_within_group_model object.}
+\item{original.object}{A SensIAT_within_group_model object.}
 
 \item{time}{Time points for which to estimate the response.}
 
 \item{...}{currently ignored.}
 }
 \value{
-A tibble with columns alpha, time, jackknife_mean, and jackknife_var,
+A \code{tibble} with columns alpha, time, jackknife_mean, and jackknife_var,
 where jackknife_mean is the mean of the jackknife estimates and jackknife_var
-is the estimated variances of the response at the given timepoints for the
+is the estimated variances of the response at the given time points for the
 specified alpha values.
 }
 \description{
@@ -25,9 +25,9 @@ Estimate response with jackknife resampling
 \examples{
 \dontrun{
 original.object <-
-fit_PCORI_within_group_model(
-    group.data = PCORI_example_data,
-    outcome_modeler = PCORI_sim_outcome_modeler,
+fit_SensIAT_within_group_model(
+    group.data = SensIAT_example_data,
+    outcome_modeler = SensIAT_sim_outcome_modeler,
     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
     id.var = Subject_ID,
     outcome.var = Outcome,

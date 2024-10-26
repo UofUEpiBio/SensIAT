@@ -12,7 +12,7 @@ pcoriaccel_outer_prod(vecA, vecB)
 \item{vecB}{second vector}
 }
 \value{
-vecA * vecBᵀ = vecA ⊗ vecB
+\verb{vecA * vecBᵀ = vecA ⊗ vecB}
 }
 \description{
 Outer product of two vectors.

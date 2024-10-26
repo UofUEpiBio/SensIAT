@@ -7,7 +7,7 @@
 pcori_conditional_means(model, alpha = 0, new.data = model.frame(model), ...)
 }
 \arguments{
-\item{model}{An object of class \code{'PCORI::outcome-model'}}
+\item{model}{An object of class \code{SensIAT::outcome-model}}
 
 \item{alpha}{Sensitivity parameter}
 
@@ -22,7 +22,7 @@ The \code{new.data} frame with additional columns \code{E_Y_past}, and \code{E_e
 Compute Conditional Means
 }
 \details{
-Compute the conditional expectations needed for predictions in the PCORI models.
+Compute the conditional expectations needed for predictions in the models.
 Three additional values/expectations are computed:
 \itemize{
 \item \verb{$E \\big[ Y(t) \\exp \\\{  \\alpha Y(t) \\\}   | A(t)=1, \\bar\{O\}(t) \\big]$}, returned as \code{E_y_past}, and

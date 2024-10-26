@@ -1,5 +1,5 @@
 test_that("Compute Influence term1 old vs. new methods", {
-    model.data <- PCORI_example_data |>
+    model.data <- SensIAT_example_data |>
         group_by(Subject_ID) |>
         arrange(Time) |>
         mutate(
@@ -22,7 +22,7 @@ test_that("Compute Influence term1 old vs. new methods", {
         ))
 
 
-    outcome.model <- PCORI_sim_outcome_modeler(
+    outcome.model <- SensIAT_sim_outcome_modeler(
         Outcome ~
             ns(prev_outcome, df=3) +
             scale(Time) +

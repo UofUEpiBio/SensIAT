@@ -2,7 +2,7 @@
 % Please edit documentation in R/pcori_control.R
 \name{pcori_control}
 \alias{pcori_control}
-\title{Control Parameters for Fitting the PCORI Within Group Model}
+\title{Control Parameters for Fitting the within Group Model}
 \usage{
 pcori_control(
   integration.method = c("quadvcpp", "quadv", "linear", "numerical", "piecewise"),
@@ -30,7 +30,7 @@ pcori_control(
 a list of control parameters.
 }
 \description{
-Control Parameters for Fitting the PCORI Within Group Model
+Control Parameters for Fitting the within Group Model
 }
 \examples{
 pcori_control("piecewise", intensity.bandwidth = 30, resolution.within.period = 50)

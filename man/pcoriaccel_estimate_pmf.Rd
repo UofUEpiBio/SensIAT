@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{pcoriaccel_estimate_pmf}
 \alias{pcoriaccel_estimate_pmf}
-\title{Directly estimate the pmf of Y.}
+\title{Directly estimate the probability mass function of Y.}
 \usage{
 pcoriaccel_estimate_pmf(Xb, Y, xi, y_seq, h, kernel = "K2_Biweight")
 }
@@ -13,12 +13,12 @@ pcoriaccel_estimate_pmf(Xb, Y, xi, y_seq, h, kernel = "K2_Biweight")
 
 \item{xi}{value of the individuals linear predictor at the point of estimation}
 
-\item{y_seq}{Numeric vector of unique values of Y.}
+\item{y_seq}{Numeric vector of unique values of \code{Y}.}
 
 \item{h}{bandwidth of the kernel}
 
 \item{kernel}{character string specifying the kernel to use, either \code{"dnorm"}, \code{"K2_Biweight"}, or \code{"K4_Biweight"}}
 }
 \description{
-Directly estimate the pmf of Y.
+Directly estimate the probability mass function of Y.
 }

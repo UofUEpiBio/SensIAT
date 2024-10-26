@@ -9,7 +9,7 @@ pcoriaccel_NW(Xb, Y, xb, y_seq, h, kernel = "K2_Biweight")
 \arguments{
 \item{Xb}{a vector (expected to be about 500 elements)}
 
-\item{Y}{a vector (same size as Xb)}
+\item{Y}{a vector (same size as \code{Xb})}
 
 \item{xb}{a vector}
 
@@ -17,10 +17,10 @@ pcoriaccel_NW(Xb, Y, xb, y_seq, h, kernel = "K2_Biweight")
 
 \item{h}{a scalar, the bandwidth of kernel}
 
-\item{kernel}{a string, denoting the kernel function to use, either "dnorm", "K2_Biweight", or "K4_Biweight"}
+\item{kernel}{a string, denoting the kernel function to use, either \code{"dnorm"}, \code{"K2_Biweight"}, or \code{"K4_Biweight"}}
 }
 \value{
-Matrix fyxb
+A matrix of the same size as \code{xb} by \code{y_seq}.
 }
 \description{
 Runs an optimized implementation of the "NW" function.

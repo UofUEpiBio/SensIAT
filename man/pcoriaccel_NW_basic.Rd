@@ -10,7 +10,7 @@ pcoriaccel_NW_basic(Xb, Y, xb, y_seq, h)
 \arguments{
 \item{Xb}{a vector (expected to be about 500 elements)}
 
-\item{Y}{a vector (same size as Xb)}
+\item{Y}{a vector (same size as \code{Xb})}
 
 \item{xb}{a vector}
 
@@ -19,7 +19,7 @@ pcoriaccel_NW_basic(Xb, Y, xb, y_seq, h)
 \item{h}{a scalar, the bandwidth of kernel}
 }
 \value{
-Matrix fyxb
+A matrix of the same size as \code{xb} by \code{y_seq}.
 }
 \description{
 Runs a \emph{basic} implementation of the "NW" function with the "K2_Biweight" kernel, just as a

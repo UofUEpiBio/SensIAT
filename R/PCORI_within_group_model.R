@@ -10,7 +10,7 @@ globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
 #' treatment or control group.
 #'
 #' @param group.data The data for the group that is being analyzed.
-#'          Preferably passed in as a single tibble that internally is
+#'          Preferably passed in as a single `tibble` that internally is
 #'          subsetted/filtered as needed.
 #' @param outcome_modeler A separate function that may be swapped out to switch
 #'          between negative-binomial, single index model, or another we will
@@ -41,9 +41,9 @@ globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
 #' @examples
 #' \dontrun{
 #' model <-
-#'     fit_PCORI_within_group_model(
-#'         group.data = PCORI_example_data,
-#'         outcome_modeler = PCORI_sim_outcome_modeler,
+#'     fit_SensIAT_within_group_model(
+#'         group.data = SensIAT_example_data,
+#'         outcome_modeler = SensIAT_sim_outcome_modeler,
 #'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
 #'         id.var = Subject_ID,
 #'         outcome.var = Outcome,
@@ -52,7 +52,7 @@ globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
 #'         knots = c(60,60,60,60,260,460,460,460,460),
 #'     )
 #' }
-fit_PCORI_within_group_model <- function(
+fit_SensIAT_within_group_model <- function(
         group.data,
         outcome_modeler,
         knots,
@@ -195,7 +195,7 @@ fit_PCORI_within_group_model <- function(
         intensity.bandwidth = intensity.bandwidth,
         base=base,
         V_inverse = V_inverse
-    ), class = "PCORI_within_group_model",
+    ), class = "SensIAT_within_group_model",
     call = match.call())
 }
 

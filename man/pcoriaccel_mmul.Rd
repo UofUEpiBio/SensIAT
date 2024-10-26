@@ -13,7 +13,7 @@ pcoriaccel_mmul(matrA, matrB)
 \item{matrB}{second matrix}
 }
 \value{
-matrA * matrB
+\code{matrA * matrB}
 }
 \description{
 Multiplies two matrices.  If the first argument is a vector, it is interpreted as a row vector.

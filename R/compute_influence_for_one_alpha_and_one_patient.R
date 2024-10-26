@@ -9,10 +9,10 @@ function(
     control,
     ...
 ){
-    if (getOption('PCORI::do_arg_checks', TRUE))
+    if (getOption('SensIAT::do_arg_checks', TRUE))
         assert_that(
             rlang::is_atomic(alpha), is.numeric(alpha),
-            # is(object, 'PCORI_within_group_model'),
+            # is(object, 'SensIAT_within_group_model'),
             is.data.frame(df_i),
             is(base, "SplineBasis"),
             is.list(control)

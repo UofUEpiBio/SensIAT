@@ -1,4 +1,4 @@
-#' Outcome Modeler for PCORI Single Index Model.
+#' Outcome Modeler for `SensIAT` Single Index Model.
 #'
 #' @param formula The outcome model formula
 #' @param data The data to fit the outcome model to.
@@ -8,9 +8,9 @@
 #' @param id The patient identifier variable for the data.
 #' @param ... Currently ignored, included for future compatibility.
 #'
-#' @return Object of class `PCORI::Single-index-outcome-model` which contains the outcome model portion.
+#' @return Object of class `SensIAT::Single-index-outcome-model` which contains the outcome model portion.
 #' @export
-PCORI_sim_outcome_modeler <-
+SensIAT_sim_outcome_modeler <-
 function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ...){
   id <- ensym(id)
   mf <- rlang::inject(model.frame(formula, data = data, id = !!id))
@@ -33,34 +33,34 @@ function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ...
               data = data
           )
       ),
-      class = c('PCORI::outcome-model', 'PCORI::Single-index-outcome-model'),
+      class = c('SensIAT::outcome-model', 'SensIAT::Single-index-outcome-model'),
       kernel = kernel,
       terms = terms(mf))
 }
 
 #' @export
-`model.frame.PCORI::Single-index-outcome-model` <-
+`model.frame.SensIAT::Single-index-outcome-model` <-
     function(formula, data=NULL, ...){
         if(is.null(data))
             data <- formula$data
         NextMethod('model.frame', data=data, ...)
     }
 #' @export
-`model.matrix.PCORI::Single-index-outcome-model` <-
+`model.matrix.SensIAT::Single-index-outcome-model` <-
     function(object, data = model.frame(object), ...){
         model.matrix(terms(object), data = data, ...)
     }
 #' @export
-`formula.PCORI::Single-index-outcome-model` <-
+`formula.SensIAT::Single-index-outcome-model` <-
     function(x, ...){
         as.formula(terms(x))
     }
 #' @export
-`coef.PCORI::Single-index-outcome-model` <-
+`coef.SensIAT::Single-index-outcome-model` <-
     function(object, ...)object$coef
 
 #' @export
-`predict.PCORI::Single-index-outcome-model` <-
+`predict.SensIAT::Single-index-outcome-model` <-
     function( object
             , newdata = NULL
             , type = c('response', 'terms')
@@ -169,7 +169,7 @@ Cond_mean_fn_single2 <-
 
 
 #' @export
-`pcori_conditional_means.PCORI::Single-index-outcome-model` <-
+`pcori_conditional_means.SensIAT::Single-index-outcome-model` <-
 function(
     model,
     alpha,
@@ -179,14 +179,14 @@ function(
     )
 {
     assert_that(
-        is(model, 'PCORI::Single-index-outcome-model'),
+        is(model, 'SensIAT::Single-index-outcome-model'),
         is.numeric(alpha)
     )
     if(length(alpha) > 1){
         return(
             purrr::map_dfr(
                 alpha,
-                `pcori_conditional_means.PCORI::Single-index-outcome-model`,
+                `pcori_conditional_means.SensIAT::Single-index-outcome-model`,
                 model = model, new.data = new.data,
                 ...
             )
@@ -238,3 +238,5 @@ function(
 
     tibble(new.data, alpha, E_Y_past, E_exp_alphaY, E_Yexp_alphaY)
 }
+
+

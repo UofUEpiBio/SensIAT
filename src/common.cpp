@@ -16,7 +16,7 @@ void negate_slot( List list, char const* slot_name ) noexcept
 
 [[nodiscard]] String pcoriaccel_hello()
 {
-	return String("Hello from the PCORI Acceleration C++ sub-library!");
+	return String("Hello from the SensIAT Acceleration C++ sub-library!");
 }
 
 [[nodiscard]] NumericMatrix mmul( NumericMatrix matrA  , NumericMatrix matrB   )

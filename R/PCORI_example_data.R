@@ -1,6 +1,6 @@
-#' PCORI Example Data
+#' SensIAT Example Data
 #'
-#' A simulated dataset for use in the PCORI tutorial, testing and documentation.
+#' A simulated dataset for use in the SensIAT tutorial, testing and documentation.
 #'
 #' @format A data frame with 779 rows and 4 variables consisting of 200
 #' simulated patients.  Each row in the data represents a visit for the patient.
@@ -11,4 +11,4 @@
 #'      \item{Time}{The time of the visit in days, since baseline.}
 #'      \item{Outcome}{The outcome of interest.}
 #' }
-"PCORI_example_data"
+"SensIAT_example_data"

@@ -12,7 +12,7 @@ pcoriaccel_outer_sum(vecA, vecB)
 \item{vecB}{second vector}
 }
 \value{
-vecA ⊕ vecB
+\verb{vecA ⊕ vecB}
 }
 \description{
 Outer sum of two vectors.

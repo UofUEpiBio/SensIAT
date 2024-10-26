@@ -7,7 +7,7 @@ compute_influence_term_1_unweighted_at_timepoint <- function(
         alpha, #< sensitivity parameter.
         baseline_lambda
 ){
-    if (getOption('PCORI::do_arg_checks', TRUE))
+    if (getOption('SensIAT::do_arg_checks', TRUE))
         assert_that(
             rlang::is_scalar_double(time), time > 0,
             rlang::is_scalar_double(outcome),
@@ -40,7 +40,7 @@ compute_influence_term_1_at_timepoint <- function(
     base,
     y = sort(unique(outcome))
 ){
-    if (getOption('PCORI::do_arg_checks', TRUE))
+    if (getOption('SensIAT::do_arg_checks', TRUE))
         assert_that(
             rlang::is_scalar_double(time), time > 0,
             rlang::is_scalar_double(outcome),
@@ -91,7 +91,7 @@ compute_influence_term_1_for_all <-
         bandwidth,
         kernel
     ){
-        if(getOption('PCORI::do_arg_checks', TRUE))
+        if(getOption('SensIAT::do_arg_checks', TRUE))
             assert_that(
                 is.vector(times_all), is.numeric(times_all), all(times_all > 0),
                 is.matrix(X_all), is.double(X_all), nrow(X_all) == length(times_all),
@@ -158,7 +158,7 @@ compute_influence_term_2_for_individual <-
         ){
         method <- match.arg(method)
 
-        if (getOption('PCORI::do_arg_checks', TRUE))
+        if (getOption('SensIAT::do_arg_checks', TRUE))
             assert_that(
                 is.numeric(times_ind),
                 is.matrix(X_ind), is.double(X_ind), length(times_ind) == nrow(X_ind),

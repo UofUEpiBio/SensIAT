@@ -12,7 +12,7 @@ pcoriaccel_inner_prod(vecA, vecB)
 \item{vecB}{second vector}
 }
 \value{
-vecAᵀ * vecB = vecA • vecB
+\verb{vecAᵀ * vecB = vecA • vecB}
 }
 \description{
 Inner product (dot product) of two vectors.

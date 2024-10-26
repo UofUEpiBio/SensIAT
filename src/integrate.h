@@ -172,7 +172,7 @@ template<class Fn>
 //' @param integrand   The integrand, must take scalar argument, may return scalar, vector, or matrix.
 //' @param lo          Lower integration bound
 //' @param hi          Upper integration bound
-//' @param tol         Tolerance for integration, default .Machine$double.eps^(1/2)
+//' @param tol         Tolerance for integration, default `.Machine$double.eps^(1/2)`
 //'
 //' @return integration result, list with elements `$Q` (the integral estimate), `$fcnt` (the number
 //' of function evaluations), and `$estim.prec` (a (pessimistic) estimate of the precision).

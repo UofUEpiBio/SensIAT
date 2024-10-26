@@ -232,7 +232,7 @@ enum KernelType { Kt_normal, Kt_biweight2, Kt_biweight4 };
 //' Otherwise, if the second argument is a vector, it is interpreted as a column vector.
 //' @param matrA first matrix
 //' @param matrB second matrix
-//' @return matrA * matrB
+//' @return `matrA * matrB`
 //' @export
 // [[Rcpp::export]]
 [[nodiscard]] SEXP pcoriaccel_mmul( SEXP matrA, SEXP matrB );
@@ -240,14 +240,14 @@ enum KernelType { Kt_normal, Kt_biweight2, Kt_biweight4 };
 //' Inner product (dot product) of two vectors.
 //' @param vecA first vector
 //' @param vecB second vector
-//' @return vecAᵀ * vecB = vecA • vecB
+//' @return `vecAᵀ * vecB = vecA • vecB`
 //' @export
 // [[Rcpp::export]]
 [[nodiscard]] double pcoriaccel_inner_prod( NumericVector vecA, NumericVector vecB );
 //' Outer sum of two vectors.
 //' @param vecA first vector
 //' @param vecB second vector
-//' @return vecA ⊕ vecB
+//' @return `vecA ⊕ vecB`
 //' @examples
 //' pcoriaccel_outer_sum( c(1,2,3,4,5), c(2,4,6) )
 //' @export
@@ -256,7 +256,7 @@ enum KernelType { Kt_normal, Kt_biweight2, Kt_biweight4 };
 //' Outer product of two vectors.
 //' @param vecA first vector
 //' @param vecB second vector
-//' @return vecA * vecBᵀ = vecA ⊗ vecB
+//' @return `vecA * vecBᵀ = vecA ⊗ vecB`
 //' @examples
 //' pcoriaccel_outer_prod( c(1,2,3,4,5), c(2,4,6) )
 //' @export
@@ -265,7 +265,7 @@ enum KernelType { Kt_normal, Kt_biweight2, Kt_biweight4 };
 
 //' Returns the unique elements of a vector, sorted in ascending order.
 //' @param vec the vector
-//' @return sort(unique(vec))
+//' @return `sort(unique(vec))`
 //' @export
 // [[Rcpp::export]]
 [[nodiscard]] NumericVector pcoriaccel_sorted_unique( NumericVector vec );

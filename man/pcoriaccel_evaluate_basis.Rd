@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{pcoriaccel_evaluate_basis}
 \alias{pcoriaccel_evaluate_basis}
-\title{Rcpp version of \verb{evaluate_basis(⋯)} function}
+\title{Compiled version of \verb{evaluate_basis(⋯)} function}
 \usage{
 pcoriaccel_evaluate_basis(spline_basis, x)
 }
@@ -12,8 +12,8 @@ pcoriaccel_evaluate_basis(spline_basis, x)
 \item{x}{The point to evaluate}
 }
 \value{
-Vector fyxb
+Vector of the basis functions evaluated at x.
 }
 \description{
-Rcpp version of \verb{evaluate_basis(⋯)} function
+Compiled version of \verb{evaluate_basis(⋯)} function
 }

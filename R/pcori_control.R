@@ -1,4 +1,4 @@
-#' Control Parameters for Fitting the PCORI Within Group Model
+#' Control Parameters for Fitting the within Group Model
 #'
 #' @param integration.method        Method for integration when computing the second influence term.
 #' @param intensity.bandwidth       The bandwidth for the intensity model.

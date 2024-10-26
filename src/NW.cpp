@@ -8,12 +8,12 @@
 //' proof-of-concept.
 //'
 //' @param Xb    a vector (expected to be about 500 elements)
-//' @param Y     a vector (same size as Xb)
+//' @param Y     a vector (same size as `Xb`)
 //' @param xb    a vector
 //' @param y_seq a vector
 //' @param h     a scalar, the bandwidth of kernel
 //'
-//' @return Matrix fyxb
+//' @return A matrix of the same size as `xb` by `y_seq`.
 //'
 //' @export
 // [[Rcpp::export]]
@@ -186,13 +186,13 @@ NumericMatrix _pcoriaccel_NW(
 //' Runs an optimized implementation of the "NW" function.
 //'
 //' @param Xb    a vector (expected to be about 500 elements)
-//' @param Y     a vector (same size as Xb)
+//' @param Y     a vector (same size as `Xb`)
 //' @param xb    a vector
 //' @param y_seq a vector
 //' @param h     a scalar, the bandwidth of kernel
-//' @param kernel a string, denoting the kernel function to use, either "dnorm", "K2_Biweight", or "K4_Biweight"
+//' @param kernel a string, denoting the kernel function to use, either `"dnorm"`, `"K2_Biweight"`, or `"K4_Biweight"`
 //'
-//' @return Matrix fyxb
+//' @return A matrix of the same size as `xb` by `y_seq`.
 //'
 //' @export
 // [[Rcpp::export]]

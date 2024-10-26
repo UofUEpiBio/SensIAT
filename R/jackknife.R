@@ -8,7 +8,7 @@ cross_validate <- function(original.object, progress = interactive()){
     run_without <- function(id){
         if(progress)on.exit(try(pb$tick(), silent = TRUE))
         data |> filter(!!original.object$variables$id != id) |>
-            fit_PCORI_within_group_model(
+            fit_SensIAT_within_group_model(
                 outcome_modeler = attr(original.object, 'call')$outcome_modeler,
                 knots = original.object$base@knots,
                 id.var = !!original.object$variables$id,
@@ -36,23 +36,23 @@ cross_validate <- function(original.object, progress = interactive()){
 
 #' Estimate response with jackknife resampling
 #'
-#' @param original.object A PCORI_within_group_model object.
+#' @param original.object A SensIAT_within_group_model object.
 #' @param time Time points for which to estimate the response.
 #' @param ... currently ignored.
 #'
 #' @return
-#' A tibble with columns alpha, time, jackknife_mean, and jackknife_var,
+#' A `tibble` with columns alpha, time, jackknife_mean, and jackknife_var,
 #' where jackknife_mean is the mean of the jackknife estimates and jackknife_var
-#' is the estimated variances of the response at the given timepoints for the
+#' is the estimated variances of the response at the given time points for the
 #' specified alpha values.
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' original.object <-
-#' fit_PCORI_within_group_model(
-#'     group.data = PCORI_example_data,
-#'     outcome_modeler = PCORI_sim_outcome_modeler,
+#' fit_SensIAT_within_group_model(
+#'     group.data = SensIAT_example_data,
+#'     outcome_modeler = SensIAT_sim_outcome_modeler,
 #'     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
 #'     id.var = Subject_ID,
 #'     outcome.var = Outcome,
@@ -66,7 +66,7 @@ cross_validate <- function(original.object, progress = interactive()){
 pcori_jackknife <- function(original.object, time, ...){
     replications <- cross_validate(original.object)
 
-    estimates <- map(replications, predict.PCORI_within_group_model, time=time,
+    estimates <- map(replications, predict.SensIAT_within_group_model, time=time,
                      include.var=FALSE, base = original.object$base)
     estimates |> bind_rows(.id='.rep') |>
         group_by(alpha, time) |>

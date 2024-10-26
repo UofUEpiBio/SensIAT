@@ -1,8 +1,8 @@
 test_that("Compute Influence term2 fixed point integration", {
     fixed.object <-
-        fit_PCORI_within_group_model(
-            group.data = PCORI_example_data,
-            outcome_modeler = PCORI_sim_outcome_modeler,
+        fit_SensIAT_within_group_model(
+            group.data = SensIAT_example_data,
+            outcome_modeler = SensIAT_sim_outcome_modeler,
             alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
             id.var = Subject_ID,
             outcome.var = Outcome,
