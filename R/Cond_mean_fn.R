@@ -18,7 +18,7 @@
 #' for Y a (truncated version of) a negative binomial having mean `mu` and
 #' size `theta`.
 #'
-#' @export
+#' @keywords internal
 Cond_mean_fn <- function(mu,theta,alpha){
 
     pmf_fn=function(z){

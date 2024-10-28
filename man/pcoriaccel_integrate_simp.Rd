@@ -22,3 +22,4 @@ of function evaluations), and \verb{$estim.prec} (a (pessimistic) estimate of th
 \description{
 Integrate function using adaptive Simpson quadrature.
 }
+\keyword{internal}

@@ -12,7 +12,7 @@
 #'
 #' @return A matrix of the same size as `xb` by `y_seq`.
 #'
-#' @export
+#' @keywords internal
 pcoriaccel_NW_basic <- function(Xb, Y, xb, y_seq, h) {
     .Call(`_SensIAT_pcoriaccel_NW_basic`, Xb, Y, xb, y_seq, h)
 }
@@ -28,16 +28,9 @@ pcoriaccel_NW_basic <- function(Xb, Y, xb, y_seq, h) {
 #'
 #' @return A matrix of the same size as `xb` by `y_seq`.
 #'
-#' @export
+#' @keywords internal
 pcoriaccel_NW <- function(Xb, Y, xb, y_seq, h, kernel = "K2_Biweight") {
     .Call(`_SensIAT_pcoriaccel_NW`, Xb, Y, xb, y_seq, h, kernel)
-}
-
-#' Returns a string, just as a basic check that the C++ plugin library is working.
-#' @return hello string
-#' @export
-pcoriaccel_hello <- function() {
-    .Call(`_SensIAT_pcoriaccel_hello`)
 }
 
 #' Multiplies two matrices.  If the first argument is a vector, it is interpreted as a row vector.
@@ -45,7 +38,7 @@ pcoriaccel_hello <- function() {
 #' @param matrA first matrix
 #' @param matrB second matrix
 #' @return `matrA * matrB`
-#' @export
+#' @keywords internal
 pcoriaccel_mmul <- function(matrA, matrB) {
     .Call(`_SensIAT_pcoriaccel_mmul`, matrA, matrB)
 }
@@ -54,7 +47,7 @@ pcoriaccel_mmul <- function(matrA, matrB) {
 #' @param vecA first vector
 #' @param vecB second vector
 #' @return `vecAᵀ * vecB = vecA • vecB`
-#' @export
+#' @keywords internal
 pcoriaccel_inner_prod <- function(vecA, vecB) {
     .Call(`_SensIAT_pcoriaccel_inner_prod`, vecA, vecB)
 }
@@ -63,9 +56,7 @@ pcoriaccel_inner_prod <- function(vecA, vecB) {
 #' @param vecA first vector
 #' @param vecB second vector
 #' @return `vecA ⊕ vecB`
-#' @examples
-#' pcoriaccel_outer_sum( c(1,2,3,4,5), c(2,4,6) )
-#' @export
+#' @keywords internal
 pcoriaccel_outer_sum <- function(vecA, vecB) {
     .Call(`_SensIAT_pcoriaccel_outer_sum`, vecA, vecB)
 }
@@ -74,9 +65,7 @@ pcoriaccel_outer_sum <- function(vecA, vecB) {
 #' @param vecA first vector
 #' @param vecB second vector
 #' @return `vecA * vecBᵀ = vecA ⊗ vecB`
-#' @examples
-#' pcoriaccel_outer_prod( c(1,2,3,4,5), c(2,4,6) )
-#' @export
+#' @keywords internal
 pcoriaccel_outer_prod <- function(vecA, vecB) {
     .Call(`_SensIAT_pcoriaccel_outer_prod`, vecA, vecB)
 }
@@ -84,7 +73,7 @@ pcoriaccel_outer_prod <- function(vecA, vecB) {
 #' Returns the unique elements of a vector, sorted in ascending order.
 #' @param vec the vector
 #' @return `sort(unique(vec))`
-#' @export
+#' @keywords internal
 pcoriaccel_sorted_unique <- function(vec) {
     .Call(`_SensIAT_pcoriaccel_sorted_unique`, vec)
 }
@@ -107,7 +96,7 @@ pcoriaccel_sorted_unique <- function(vec) {
 #'
 #' @return integration result
 #'
-#' @export
+#' @keywords internal
 pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix <- function(X, Y, times, individual_X, x_slope, alpha, beta, spline_basis, bandwidth, tol = 0.0001220703, kernel = "K2_Biweight") {
     .Call(`_SensIAT_pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix`, X, Y, times, individual_X, x_slope, alpha, beta, spline_basis, bandwidth, tol, kernel)
 }
@@ -135,7 +124,7 @@ pcoriaccel_estimate_pmf <- function(Xb, Y, xi, y_seq, h, kernel = "K2_Biweight")
 #' @return integration result, list with elements `$Q` (the integral estimate), `$fcnt` (the number
 #' of function evaluations), and `$estim.prec` (a (pessimistic) estimate of the precision).
 #'
-#' @export
+#' @keywords internal
 pcoriaccel_integrate_simp <- function(integrand, lo, hi, tol = 1.490116e-08) {
     .Call(`_SensIAT_pcoriaccel_integrate_simp`, integrand, lo, hi, tol)
 }

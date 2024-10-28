@@ -28,3 +28,4 @@ ARC data (which was negative binomial), and specific to the
 tilting function alpha*Y(t), so would need to be changed if
 using a different outcome model or different tilting function.
 }
+\keyword{internal}

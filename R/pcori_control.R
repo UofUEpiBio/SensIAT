@@ -8,13 +8,7 @@
 #' @param ...                       Currently ignored.
 #'
 #' @return a list of control parameters.
-#' @export
-#'
-#' @examples
-#' pcori_control("piecewise", intensity.bandwidth = 30, resolution.within.period = 50)
-#' pcori_control("numerical", intensity.bandwidth = 30, resolution = 1000)
-#' pcori_control("quadv", intensity.bandwidth = 30, tol = 1e-6)
-#' pcori_control("quadvcpp", intensity.bandwidth = 30, tol = 1e-6)
+#' @keywords internal
 pcori_control <-
     function(
         integration.method = c('quadvcpp', 'quadv', "linear", "numerical", "piecewise"),

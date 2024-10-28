@@ -25,3 +25,4 @@ A matrix of the same size as \code{xb} by \code{y_seq}.
 \description{
 Runs an optimized implementation of the "NW" function.
 }
+\keyword{internal}

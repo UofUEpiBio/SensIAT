@@ -15,3 +15,4 @@ pcoriaccel_sorted_unique(vec)
 \description{
 Returns the unique elements of a vector, sorted in ascending order.
 }
+\keyword{internal}

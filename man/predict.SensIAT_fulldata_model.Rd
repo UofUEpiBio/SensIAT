@@ -24,3 +24,19 @@ For each combination of \code{time} and \code{alpha} estimate the mean response 
 variance for each group as well as estimate the mean treatment effect and
 variance.
 }
+\examples{
+\dontrun{
+model <-
+    fit_SensIAT_within_group_model(
+        group.data = SensIAT_example_data,
+        outcome_modeler = SensIAT_sim_outcome_modeler,
+        alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+        id.var = Subject_ID,
+        outcome.var = Outcome,
+        time.var = Time,
+        End = 830,
+        knots = c(60,60,60,60,260,460,460,460,460),
+    )
+predict(model, time = c(90, 180))
+}
+}

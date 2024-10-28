@@ -4,9 +4,13 @@ Version: 0.0.0.9000
 Authors@R: c(
     person("Andrew", "Redd", , "andrew.redd@hsc.utah.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-6149-2438")),
-    person("Agatha", "Mallett", , "agatha@geometrian.com", role = c("ctb") ),
-    person("Yujing", "Gao", , "ygao39@ncsu.edu", role = c("ctb"),
-           comment = c(ORCID = "0000-0002-6149-2438"))
+    person("Yujing", "Gao", , "ygao39@ncsu.edu", role = c("aut"),
+           comment = c(ORCID = "0000-0002-6149-2438")),
+    person("Shu", "Yang", , "syang24@ncsu.edu", role = c("aut")),
+    person("Bonnie", "Smith", , "bsmit179@jhmi.edu", role = c("aut")),
+    person("Agatha", "Mallett", , "agatha@geometrian.com", role = c("ctb", "ctr")),
+    person("Daniel", "Scharfstein", , "daniel.scharfstein@hsc.utah.edu", role = c("pdr", "aut", "cph"),
+           comment = c(ORCID = "0000-0001-7482-9653"))
     )
 Description: Sensitivity analysis for trials with irregular and informative 
     assessment times, based on a new influence function-based, augmented 

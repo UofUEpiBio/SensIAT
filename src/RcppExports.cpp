@@ -41,16 +41,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// pcoriaccel_hello
-[[nodiscard]] String pcoriaccel_hello();
-RcppExport SEXP _SensIAT_pcoriaccel_hello() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(pcoriaccel_hello());
-    return rcpp_result_gen;
-END_RCPP
-}
 // pcoriaccel_mmul
 [[nodiscard]] SEXP pcoriaccel_mmul(SEXP matrA, SEXP matrB);
 RcppExport SEXP _SensIAT_pcoriaccel_mmul(SEXP matrASEXP, SEXP matrBSEXP) {
@@ -177,7 +167,6 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_SensIAT_pcoriaccel_NW_basic", (DL_FUNC) &_SensIAT_pcoriaccel_NW_basic, 5},
     {"_SensIAT_pcoriaccel_NW", (DL_FUNC) &_SensIAT_pcoriaccel_NW, 6},
-    {"_SensIAT_pcoriaccel_hello", (DL_FUNC) &_SensIAT_pcoriaccel_hello, 0},
     {"_SensIAT_pcoriaccel_mmul", (DL_FUNC) &_SensIAT_pcoriaccel_mmul, 2},
     {"_SensIAT_pcoriaccel_inner_prod", (DL_FUNC) &_SensIAT_pcoriaccel_inner_prod, 2},
     {"_SensIAT_pcoriaccel_outer_sum", (DL_FUNC) &_SensIAT_pcoriaccel_outer_sum, 2},

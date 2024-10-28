@@ -11,10 +11,17 @@ Sensitivity analysis for trials with irregular and informative assessment times,
 \author{
 \strong{Maintainer}: Andrew Redd \email{andrew.redd@hsc.utah.edu} (\href{https://orcid.org/0000-0002-6149-2438}{ORCID})
 
+Authors:
+\itemize{
+  \item Yujing Gao \email{ygao39@ncsu.edu} (\href{https://orcid.org/0000-0002-6149-2438}{ORCID})
+  \item Shu Yang \email{syang24@ncsu.edu}
+  \item Bonnie Smith \email{bsmit179@jhmi.edu}
+  \item Daniel Scharfstein \email{daniel.scharfstein@hsc.utah.edu} (\href{https://orcid.org/0000-0001-7482-9653}{ORCID}) [project director, copyright holder]
+}
+
 Other contributors:
 \itemize{
-  \item Agatha Mallett \email{agatha@geometrian.com} [contributor]
-  \item Yujing Gao \email{ygao39@ncsu.edu} (\href{https://orcid.org/0000-0002-6149-2438}{ORCID}) [contributor]
+  \item Agatha Mallett \email{agatha@geometrian.com} [contributor, contractor]
 }
 
 }

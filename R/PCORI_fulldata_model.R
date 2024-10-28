@@ -16,7 +16,20 @@
 #'      `SensIAT-within-group-fitted-model` fit with the fit_within_group_model
 #'      function.
 #' @export
-#'
+#' @examples
+#' \dontrun{
+#' model <-
+#'     fit_SensIAT_within_group_model(
+#'         group.data = SensIAT_example_data,
+#'         outcome_modeler = SensIAT_sim_outcome_modeler,
+#'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+#'         id.var = Subject_ID,
+#'         outcome.var = Outcome,
+#'         time.var = Time,
+#'         End = 830,
+#'         knots = c(60,60,60,60,260,460,460,460,460),
+#'     )
+#' }
 fit_SensIAT_fulldata_model <- function(data, trt, ...){
     trt <- rlang::enquo(trt) #< diffuses evaluation for tidy expressions
 
@@ -41,6 +54,21 @@ fit_SensIAT_fulldata_model <- function(data, trt, ...){
 #' @return a `tibble`/`data.frame` with the following components.
 #'  * `time`, the time point
 #' @export
+#' @examples
+#' \dontrun{
+#' model <-
+#'     fit_SensIAT_within_group_model(
+#'         group.data = SensIAT_example_data,
+#'         outcome_modeler = SensIAT_sim_outcome_modeler,
+#'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+#'         id.var = Subject_ID,
+#'         outcome.var = Outcome,
+#'         time.var = Time,
+#'         End = 830,
+#'         knots = c(60,60,60,60,260,460,460,460,460),
+#'     )
+#' predict(model, time = c(90, 180))
+#' }
 `predict.SensIAT_fulldata_model` <-
     function(object, time, ...){
 

@@ -25,7 +25,7 @@
 //'
 //' @return integration result
 //'
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 [[nodiscard]] NumericMatrix pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix(
 	NumericMatrix X,            // e.g. num[1:453,1:5]

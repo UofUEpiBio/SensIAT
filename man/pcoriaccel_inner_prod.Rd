@@ -17,3 +17,4 @@ pcoriaccel_inner_prod(vecA, vecB)
 \description{
 Inner product (dot product) of two vectors.
 }
+\keyword{internal}

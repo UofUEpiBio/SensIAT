@@ -17,6 +17,4 @@ pcoriaccel_outer_sum(vecA, vecB)
 \description{
 Outer sum of two vectors.
 }
-\examples{
-pcoriaccel_outer_sum( c(1,2,3,4,5), c(2,4,6) )
-}
+\keyword{internal}

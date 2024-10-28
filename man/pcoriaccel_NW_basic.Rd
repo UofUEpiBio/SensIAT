@@ -25,3 +25,4 @@ A matrix of the same size as \code{xb} by \code{y_seq}.
 Runs a \emph{basic} implementation of the "NW" function with the "K2_Biweight" kernel, just as a
 proof-of-concept.
 }
+\keyword{internal}

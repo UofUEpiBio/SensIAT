@@ -61,9 +61,9 @@ cross_validate <- function(original.object, progress = interactive()){
 #'     knots = c(60,60,60,60,260,460,460,460,460),
 #'     End = 830
 #' )
-#' jackknife.estimates <- pcori_jackknife(original.object, time = c(90, 180, 270, 360, 450))
+#' jackknife.estimates <- SensIAT_jackknife(original.object, time = c(90, 180, 270, 360, 450))
 #' }
-pcori_jackknife <- function(original.object, time, ...){
+SensIAT_jackknife <- function(original.object, time, ...){
     replications <- cross_validate(original.object)
 
     estimates <- map(replications, predict.SensIAT_within_group_model, time=time,

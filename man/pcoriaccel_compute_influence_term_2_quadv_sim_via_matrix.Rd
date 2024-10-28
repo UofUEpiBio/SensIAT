@@ -50,3 +50,4 @@ integration result
 Runs an optimized implementation of the \code{compute_influence_term_2_quadv_sim_via_matrix}
 function.
 }
+\keyword{internal}

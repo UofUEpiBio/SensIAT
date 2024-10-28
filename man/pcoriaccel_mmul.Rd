@@ -19,3 +19,4 @@ pcoriaccel_mmul(matrA, matrB)
 Multiplies two matrices.  If the first argument is a vector, it is interpreted as a row vector.
 Otherwise, if the second argument is a vector, it is interpreted as a column vector.
 }
+\keyword{internal}

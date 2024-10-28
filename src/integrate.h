@@ -177,7 +177,7 @@ template<class Fn>
 //' @return integration result, list with elements `$Q` (the integral estimate), `$fcnt` (the number
 //' of function evaluations), and `$estim.prec` (a (pessimistic) estimate of the precision).
 //'
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 [[nodiscard]] List pcoriaccel_integrate_simp(
 	Function integrand,
