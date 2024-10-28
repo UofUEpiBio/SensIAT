@@ -46,23 +46,23 @@
 	String kernel = "K2_Biweight"
 ) {
 	#if 1
-	if ( X.ncol()!=beta.length() || X.ncol()!=individual_X.ncol() ) [[unlikely]] stop(std::format(
-		"Width of matrix `X` ({}), width of matrix `individual_X` ({}), "
-		"and length of vector `beta` ({}) must match!",
-		X.ncol(), individual_X.ncol(), beta.length()
-	));
-	if ( X.nrow() != Y.length() ) [[unlikely]] stop(std::format(
-		"Height of matrix `X` ({}) and length of vector `Y` ({}) must match!",
-		X.nrow(), Y.length()
-	));
-	if ( individual_X.ncol() != x_slope.length() ) [[unlikely]] stop(std::format(
-		"Width of matrix `individual_X` ({}) and length of vector `x_slope` ({}) must match!",
-		individual_X.ncol(), x_slope.length()
-	));
-	if ( individual_X.nrow() != times.length() ) [[unlikely]] stop(std::format(
-		"Height of matrix `individual_X` ({}) and length of vector `times` ({}) must match!",
-		individual_X.nrow(), times.length()
-	));
+	if ( X.ncol()!=beta.length() || X.ncol()!=individual_X.ncol() ) [[unlikely]] stop(
+		"Width of matrix `X` (" + std::to_string(X.ncol()) + "), " +
+		"width of matrix `individual_X` (" + std::to_string(individual_X.ncol()) + "), " +
+		"and length of vector `beta` (" + std::to_string(beta.length()) + ") must match!"
+	);
+	if ( X.nrow() != Y.length() ) [[unlikely]] stop(
+		"Height of matrix `X` (" + std::to_string(X.nrow()) + ") and " +
+	    "length of vector `Y` (" + std::to_string(Y.length()) + ") must match!"
+	);
+	if ( individual_X.ncol() != x_slope.length() ) [[unlikely]] stop(
+		"Width of matrix `individual_X` (" + std::to_string(individual_X.ncol()) + ") and " +
+	    "length of vector `x_slope` (" + std::to_string(x_slope.length()) + ") must match!"
+	);
+	if ( individual_X.nrow() != times.length() ) [[unlikely]] stop(
+		"Height of matrix `individual_X` (" + std::to_string(individual_X.nrow()) + ") and " +
+	    "length of vector `times` (" + std::to_string(times.length()) + ") must match!"
+	);
 	#endif
 
 	//Spline basis wrapper

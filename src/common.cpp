@@ -1,6 +1,7 @@
 // [[Rcpp::plugins(cpp20)]]
 
 #include "common.h"
+#include <algorithm> // std::sort
 
 
 
@@ -23,10 +24,11 @@ void negate_slot( List list, char const* slot_name ) noexcept
 {
 	if ( matrA.ncol() != matrB.nrow() ) [[unlikely]]
 	{
-		stop(std::format(
-			"Matrix dimension mismatch {}x{} by {}x{}!\n",
-			matrA.nrow(),matrA.ncol(), matrB.nrow(),matrB.ncol()
-		));
+		stop(
+			"Matrix dimension mismatch " +
+			    std::to_string(matrA.nrow()) + "x" + std::to_string(matrA.ncol()) + " by " +
+			    std::to_string(matrB.nrow()) + "x" + std::to_string(matrB.ncol()) + "!\n"
+		);
 	}
 
 	NumericMatrix ret(Dimension( matrA.nrow(), matrB.ncol() ));
@@ -46,10 +48,10 @@ void negate_slot( List list, char const* slot_name ) noexcept
 {
 	if ( row_vec.length() != matr.nrow() ) [[unlikely]]
 	{
-		stop(std::format(
-			"Matrix dimension mismatch {}x{} by {}x{}!\n",
-			1,row_vec.length(), matr.nrow(),matr.ncol()
-		));
+		stop(
+			"Matrix dimension mismatch 1x" + std::to_string(row_vec.length()) + " by " +
+			    std::to_string(matr.nrow()) + "x" + std::to_string(matr.ncol()) + "!\n"
+		);
 	}
 
 	NumericVector ret( matr.ncol() );
@@ -68,10 +70,11 @@ void negate_slot( List list, char const* slot_name ) noexcept
 {
 	if ( matr.ncol() != col_vec.length() ) [[unlikely]]
 	{
-		stop(std::format(
-			"Matrix dimension mismatch {}x{} by {}x{}!\n",
-			matr.nrow(),matr.ncol(), col_vec.length(),1
-		));
+		stop(
+			"Matrix dimension mismatch " +
+			    std::to_string(matr.nrow()) + "x" + std::to_string(matr.ncol()) + " by " +
+			    std::to_string(col_vec.length()) + "x1!\n"
+		);
 	}
 
 	NumericVector ret( matr.nrow() );
@@ -110,10 +113,10 @@ void negate_slot( List list, char const* slot_name ) noexcept
 {
 	if ( vecA.length() != vecB.length() ) [[unlikely]]
 	{
-		stop(std::format(
-			"Matrix dimension mismatch {}x{} by {}x{}!\n",
-			1,vecA.length(), vecB.length(),1
-		));
+		stop(
+			"Matrix dimension mismatch 1x" + std::to_string(vecA.length()) +
+			    " by " + std::to_string(vecB.length()) + "x1!\n"
+		);
 	}
 
 	double dp = 0.0;
@@ -153,7 +156,10 @@ void negate_slot( List list, char const* slot_name ) noexcept
 	int k = 0;
 	for ( double val : tmp ) ret[k++]=val;
 
+#if __cplusplus >= 202002L
 	std::ranges::sort(ret);
-
+#else
+	std::sort(ret.begin(), ret.end());
+#endif
 	return ret;
 }
