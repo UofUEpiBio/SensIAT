@@ -219,12 +219,6 @@ enum KernelType { Kt_normal, Kt_biweight2, Kt_biweight4 };
 
 
 
-//' Returns a string, just as a basic check that the C++ plugin library is working.
-//' @return hello string
-//' @export
-// [[Rcpp::export]]
-[[nodiscard]] String pcoriaccel_hello();
-
 [[nodiscard]] NumericMatrix mmul( NumericMatrix matrA  , NumericMatrix matrB   );
 [[nodiscard]] NumericVector mmul( NumericVector row_vec, NumericMatrix matr    );
 [[nodiscard]] NumericVector mmul( NumericMatrix matr   , NumericVector col_vec );
@@ -233,7 +227,7 @@ enum KernelType { Kt_normal, Kt_biweight2, Kt_biweight4 };
 //' @param matrA first matrix
 //' @param matrB second matrix
 //' @return `matrA * matrB`
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 [[nodiscard]] SEXP pcoriaccel_mmul( SEXP matrA, SEXP matrB );
 
@@ -241,31 +235,27 @@ enum KernelType { Kt_normal, Kt_biweight2, Kt_biweight4 };
 //' @param vecA first vector
 //' @param vecB second vector
 //' @return `vecAᵀ * vecB = vecA • vecB`
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 [[nodiscard]] double pcoriaccel_inner_prod( NumericVector vecA, NumericVector vecB );
 //' Outer sum of two vectors.
 //' @param vecA first vector
 //' @param vecB second vector
 //' @return `vecA ⊕ vecB`
-//' @examples
-//' pcoriaccel_outer_sum( c(1,2,3,4,5), c(2,4,6) )
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 [[nodiscard]] NumericMatrix pcoriaccel_outer_sum( NumericVector vecA, NumericVector vecB );
 //' Outer product of two vectors.
 //' @param vecA first vector
 //' @param vecB second vector
 //' @return `vecA * vecBᵀ = vecA ⊗ vecB`
-//' @examples
-//' pcoriaccel_outer_prod( c(1,2,3,4,5), c(2,4,6) )
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 [[nodiscard]] NumericMatrix pcoriaccel_outer_prod( NumericVector vecA, NumericVector vecB );
 
 //' Returns the unique elements of a vector, sorted in ascending order.
 //' @param vec the vector
 //' @return `sort(unique(vec))`
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 [[nodiscard]] NumericVector pcoriaccel_sorted_unique( NumericVector vec );
