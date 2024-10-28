@@ -32,14 +32,15 @@ globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
 #'
 #'
 #' @return
-#'      Should return everything needed to define the fit of the model.
-#'      This can then be used for producing the estimates of mean, variance,
-#'      and in turn treatment effect.
+#'  Should return everything needed to define the fit of the model.
+#'  This can then be used for producing the estimates of mean, variance,
+#'  and in turn treatment effect.  For the full data model a list with two
+#'  models one each for the traeatment and control groups.
 #'
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' model <-
 #'     fit_SensIAT_within_group_model(
 #'         group.data = SensIAT_example_data,

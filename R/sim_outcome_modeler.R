@@ -11,7 +11,7 @@
 #' @return Object of class `SensIAT::Single-index-outcome-model` which contains the outcome model portion.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' model <-
 #'     fit_SensIAT_within_group_model(
 #'         group.data = SensIAT_example_data,

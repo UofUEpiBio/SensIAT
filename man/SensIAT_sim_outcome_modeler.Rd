@@ -34,7 +34,7 @@ Object of class \code{SensIAT::Single-index-outcome-model} which contains the ou
 Outcome Modeler for \code{SensIAT} Single Index Model.
 }
 \examples{
-\dontrun{
+\donttest{
 model <-
     fit_SensIAT_within_group_model(
         group.data = SensIAT_example_data,

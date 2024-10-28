@@ -12,7 +12,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' model <-
 #'     fit_SensIAT_within_group_model(
 #'         group.data = SensIAT_example_data,
