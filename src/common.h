@@ -3,7 +3,6 @@
 #include <cmath>
 
 #include <algorithm>
-#include <format>
 #include <limits>
 #include <ranges>
 #include <set>
@@ -43,7 +42,9 @@ Set directory:
 constexpr double RT_TWOPI_RECIP =  0.398942280401432677; // (2π)⁻¹⸍²
 constexpr double NEG_HALF_LOG2E = -0.7213475204444817  ; // -½ log₂e
 
-
+#if __cplusplus >= 202002L
+// C++20 (and later) code
+#include <format>
 
 template<> struct std::formatter< std::vector<double>, char >
 {
@@ -66,6 +67,8 @@ void print( std::format_string<Args...> fmt, Args&&... args ) noexcept
 {
 	Rcout << std::format( fmt, std::forward<Args>(args)... );
 }
+
+#endif // __cplusplus >= 202002L
 
 template<class T> [[nodiscard]] constexpr
 T sq( T val ) noexcept { return val*val; }
@@ -116,37 +119,44 @@ inline NumericVector& operator/=( NumericVector& vec, double val ) noexcept
 }
 inline NumericMatrix& operator-=( NumericMatrix& matrA, NumericMatrix const& matrB )
 {
-	if ( matrA.nrow()!=matrB.nrow() || matrA.ncol()!=matrB.ncol() ) [[unlikely]] stop(std::format(
-		"Matrix dimension mismatch in {} ({}x{} vs. {}x{})!",
-		"subtract", matrA.nrow(),matrA.ncol(), matrB.nrow(),matrB.ncol()
-	));
+	if ( matrA.nrow()!=matrB.nrow() || matrA.ncol()!=matrB.ncol() ) [[unlikely]]
+	    stop("Matrix dimension mismatch in subtract (" +
+	        std::to_string(matrA.nrow()) + "x" + std::to_string(matrA.ncol()) +
+	        " vs. " +
+	        std::to_string(matrB.nrow()) + "x" + std::to_string(matrB.ncol()) +
+	        ")!");
 	for ( int k=0; k<matrA.length(); ++k ) matrA[k]-=matrB[k];
 	return matrA;
 }
 inline NumericMatrix& operator+=( NumericMatrix& matrA, NumericMatrix const& matrB )
 {
-	if ( matrA.nrow()!=matrB.nrow() || matrA.ncol()!=matrB.ncol() ) [[unlikely]] stop(std::format(
-		"Matrix dimension mismatch in {} ({}x{} vs. {}x{})!",
-		"add", matrA.nrow(),matrA.ncol(), matrB.nrow(),matrB.ncol()
-	));
-	for ( int k=0; k<matrA.length(); ++k ) matrA[k]+=matrB[k];
+    if (matrA.nrow() != matrB.nrow() || matrA.ncol() != matrB.ncol()) [[unlikely]]
+        stop("Matrix dimension mismatch in add (" +
+            std::to_string(matrA.nrow()) + "x" + std::to_string(matrA.ncol()) +
+            " vs. " +
+            std::to_string(matrB.nrow()) + "x" + std::to_string(matrB.ncol()) +
+            ")!");
+    for ( int k=0; k<matrA.length(); ++k ) matrA[k]+=matrB[k];
 	return matrA;
 }
 inline NumericVector& operator-=( NumericVector& vecA, NumericVector const& vecB )
 {
-	if ( vecA.length() != vecB.length() ) [[unlikely]] stop(std::format(
-		"Vector dimension mismatch in {} ({} vs. {})!",
-		"subtract", vecA.length(), vecB.length()
-	));
+	if ( vecA.length() != vecB.length() ) [[unlikely]]
+    	stop("Vector dimension mismatch in subtract (" +
+    	    std::to_string(vecA.length()) + " vs. " +
+    		std::to_string(vecB.length()) + ")!"
+    	    );
 	for ( int k=0; k<vecA.length(); ++k ) vecA[k]-=vecB[k];
 	return vecA;
 }
 inline NumericVector& operator+=( NumericVector& vecA, NumericVector const& vecB )
 {
-	if ( vecA.length() != vecB.length() ) [[unlikely]] stop(std::format(
-		"Vector dimension mismatch in {} ({} vs. {})!",
-		"add", vecA.length(), vecB.length()
-	));
+	if ( vecA.length() != vecB.length() ) [[unlikely]]
+    	stop("Vector dimension mismatch in add (" +
+            std::to_string(vecA.length()) + " vs. " +
+            std::to_string(vecB.length()) + ")!"
+        	);
+
 	for ( int k=0; k<vecA.length(); ++k ) vecA[k]+=vecB[k];
 	return vecA;
 }

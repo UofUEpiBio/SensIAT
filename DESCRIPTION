@@ -49,4 +49,4 @@ Depends:
     R (>= 4.2.0)
 LazyData: true
 LinkingTo: Rcpp
-SystemRequirements: C++20
+SystemRequirements: C++17
