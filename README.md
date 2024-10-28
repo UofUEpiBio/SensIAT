@@ -1,23 +1,22 @@
 
 [![R-CMD-check](https://github.com/UofUEpi/pcoriRpackage/actions/workflows/r.yml/badge.svg)](https://github.com/UofUEpi/pcoriRpackage/actions/workflows/r.yml)
+<!-- badges: start --> [![CRAN
+status](https://www.r-pkg.org/badges/version/SensIAT)](https://CRAN.R-project.org/package=SensIAT)
+<!-- badges: end -->
 
 # SensIAT
 
 R Package for sensitivity analysis with irregular assessment times.
 
-## Setup
-
-Installation of required dependencies:
+## Installation
 
 ``` r
-install.packages(c( "assertthat", "dplyr", "orthogonalsplinebasis", "pracma", "purrr", "Rcpp", "rlang", "roxygen2", "tibble", "tidyr" ))
+# Install from CRAN
+install.packages("SensIAT")
 ```
 
-On Windows, you will also need
-[`RTools`](https://cran.r-project.org/bin/windows/Rtools/).
+You can also install the current development version from GitHub:
 
-To build and install, from the project root directory, do:
-
-``` sh
-R CMD INSTALL .
+``` r
+devtools::install_github("UofUEpiBio/pcoriRPackage")
 ```
