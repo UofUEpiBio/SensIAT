@@ -99,43 +99,44 @@ SIDR_Ravinew <- function(X, Y,
             {
                 stop("There's no weighted version of the dnorm kernel.")
             }
-        }else if (kernel=="K4_Biweight")
-        {
-            if (is.null(wi.boot))
-            {
-                Eij3 <- function(parameter){
-                    K <- function(x, h) 105/64*(1-3*((x/h)^2))*(1-(x/h)^2)^2 * (abs(x) <= h)
-
-                    b <- c(1, parameter[1:(number_p-1)])
-                    h <- exp(parameter[number_p])
-
-                    x <- c(X%*%b)
-                    y <- Y
-
-                    n <- length(y)
-                    yo <- order(y)
-                    ys <- y[yo]
-                    uy <- rle(ys)[[1]]
-                    cols <- cumsum(uy)
-                    ei <- rep(0, n)
-                    for (i in 1:n){
-                        Kih <- K(x-x[i],h=h)
-
-                        # remove all obs of ith obs's patient
-                        index_remove <- which(index_ID == index_ID[i])
-                        Kih[index_remove] <- 0
-
-                        # Kih[i] <- 0                       # the fix
-                        denom <- sum(Kih)
-                        ei[i] <- sum(uy*(1*(y[i] <= ys)[cols] - (denom != 0)* cumsum(Kih[yo])[cols] / (denom + (denom == 0)))^2)
-                    }
-                    return(sum(ei)/n^2)
-                }
-            }else
-            {
-                stop("There's no weighted version of the K4_Biweight kernel.")
-            }
-        }
+        # }else if (kernel=="K4_Biweight")
+        # {
+        #     if (is.null(wi.boot))
+        #     {
+        #         Eij3 <- function(parameter){
+        #             K <- function(x, h) 105/64*(1-3*((x/h)^2))*(1-(x/h)^2)^2 * (abs(x) <= h)
+        #
+        #             b <- c(1, parameter[1:(number_p-1)])
+        #             h <- exp(parameter[number_p])
+        #
+        #             x <- c(X%*%b)
+        #             y <- Y
+        #
+        #             n <- length(y)
+        #             yo <- order(y)
+        #             ys <- y[yo]
+        #             uy <- rle(ys)[[1]]
+        #             cols <- cumsum(uy)
+        #             ei <- rep(0, n)
+        #             for (i in 1:n){
+        #                 Kih <- K(x-x[i],h=h)
+        #
+        #                 # remove all obs of ith obs's patient
+        #                 index_remove <- which(index_ID == index_ID[i])
+        #                 Kih[index_remove] <- 0
+        #
+        #                 # Kih[i] <- 0                       # the fix
+        #                 denom <- sum(Kih)
+        #                 ei[i] <- sum(uy*(1*(y[i] <= ys)[cols] - (denom != 0)* cumsum(Kih[yo])[cols] / (denom + (denom == 0)))^2)
+        #             }
+        #             return(sum(ei)/n^2)
+        #         }
+        #     }else
+        #     {
+        #         stop("There's no weighted version of the K4_Biweight kernel.")
+        #     }
+        } else
+            rlang::abort("The kernel is not supported.")
 
         if(method == "nlminb")
         {
@@ -235,43 +236,44 @@ SIDR_Ravinew <- function(X, Y,
             {
                 stop("There's no weighted version of the dnorm kernel.")
             }
-        }else if (kernel=="K4_Biweight")
-        {
-            if (is.null(wi.boot))
-            {
-                Eij3 <- function(parameter){
-                    K <- function(x, h) 105/64*(1-3*((x/h)^2))*(1-(x/h)^2)^2 * (abs(x) <= h)
-
-                    b <- c(1, parameter[1:(number_p-1)])
-                    h <- bandwidth
-
-                    x <- c(X%*%b)
-                    y <- Y
-
-                    n <- length(y)
-                    yo <- order(y)
-                    ys <- y[yo]
-                    uy <- rle(ys)[[1]]
-                    cols <- cumsum(uy)  # Ravi
-                    ei <- rep(0, n)
-                    for (i in 1:n){
-                        Kih <- K(x-x[i],h=h)
-
-                        # remove all obs of ith obs's patient
-                        index_remove <- which(index_ID == index_ID[i])
-                        Kih[index_remove] <- 0
-
-                        # Kih[i] <- 0                       # the fix
-                        denom <- sum(Kih)
-                        ei[i] <- sum(uy*(1*(y[i] <= ys)[cols] - (denom != 0)* cumsum(Kih[yo])[cols] / (denom + (denom == 0)))^2)
-                    }
-                    return(sum(ei)/n^2)
-                }
-            }else
-            {
-                stop("There's no weighted version of the K4_Biweight kernel.")
-            }
-        }
+        # }else if (kernel=="K4_Biweight")
+        # {
+        #     if (is.null(wi.boot))
+        #     {
+        #         Eij3 <- function(parameter){
+        #             K <- function(x, h) 105/64*(1-3*((x/h)^2))*(1-(x/h)^2)^2 * (abs(x) <= h)
+        #
+        #             b <- c(1, parameter[1:(number_p-1)])
+        #             h <- bandwidth
+        #
+        #             x <- c(X%*%b)
+        #             y <- Y
+        #
+        #             n <- length(y)
+        #             yo <- order(y)
+        #             ys <- y[yo]
+        #             uy <- rle(ys)[[1]]
+        #             cols <- cumsum(uy)  # Ravi
+        #             ei <- rep(0, n)
+        #             for (i in 1:n){
+        #                 Kih <- K(x-x[i],h=h)
+        #
+        #                 # remove all obs of ith obs's patient
+        #                 index_remove <- which(index_ID == index_ID[i])
+        #                 Kih[index_remove] <- 0
+        #
+        #                 # Kih[i] <- 0                       # the fix
+        #                 denom <- sum(Kih)
+        #                 ei[i] <- sum(uy*(1*(y[i] <= ys)[cols] - (denom != 0)* cumsum(Kih[yo])[cols] / (denom + (denom == 0)))^2)
+        #             }
+        #             return(sum(ei)/n^2)
+        #         }
+        #     }else
+        #     {
+        #         stop("There's no weighted version of the K4_Biweight kernel.")
+        #     }
+        } else
+            rlang::abort("The kernel is not supported.")
 
         if(method == "nlminb")
         {

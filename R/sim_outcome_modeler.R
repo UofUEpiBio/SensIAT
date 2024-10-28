@@ -10,6 +10,20 @@
 #'
 #' @return Object of class `SensIAT::Single-index-outcome-model` which contains the outcome model portion.
 #' @export
+#' @examples
+#' \dontrun{
+#' model <-
+#'     fit_SensIAT_within_group_model(
+#'         group.data = SensIAT_example_data,
+#'         outcome_modeler = SensIAT_sim_outcome_modeler,
+#'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+#'         id.var = Subject_ID,
+#'         outcome.var = Outcome,
+#'         time.var = Time,
+#'         End = 830,
+#'         knots = c(60,60,60,60,260,460,460,460,460),
+#'     )
+#' }
 SensIAT_sim_outcome_modeler <-
 function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ...){
   id <- ensym(id)
@@ -108,8 +122,10 @@ function(Xb, Y, xb, y, h, kernel = "K2_Biweight"){
         K <- function(x, h){dnorm(x/h, 0, 1)} # Gaussian
     } else if(kernel == "K2_Biweight"){
         K <- function(x, h){15/16*(1-(x/h)^2)^2 * (abs(x) <= h)} # K2_biweight
-    } else if(kernel=="K4_Biweight"){
-        K <- function(x, h){105/64*(1-3*((x/h)^2))*(1-(x/h)^2)^2 * (abs(x) <= h) }# K4_biweight
+    # } else if(kernel=="K4_Biweight"){
+    #     K <- function(x, h){105/64*(1-3*((x/h)^2))*(1-(x/h)^2)^2 * (abs(x) <= h) }# K4_biweight
+    } else {
+        stop("Kernel not recognized")
     }
 
     Kxb <- sapply(xb, function(x, Xb) K(Xb-x, h), Xb=Xb)

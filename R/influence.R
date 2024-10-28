@@ -150,7 +150,7 @@ compute_influence_term_2_for_individual <-
         base,
         bandwidth,
         method = c('adaptive', 'fixed'),
-        kernel = c("K2_Biweight", "K4_Biweight", "dnorm"),
+        kernel = c("K2_Biweight", "dnorm"),
         tol = 1e-6,
         delta = NULL,
         resolution = NULL,
@@ -225,7 +225,7 @@ compute_influence_term_2_for_one_patient_fixed_approximation <-
         base,
         bandwidth = bandwidth,
         delta,
-        kernel = c("K2_Biweight", "K4_Biweight", "dnorm"),
+        kernel = c("K2_Biweight", "dnorm"),
         fix_discontinuity = TRUE,
         ...
     ){

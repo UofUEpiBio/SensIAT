@@ -82,16 +82,16 @@ template< class Tfloat, KernelType kernel > [[nodiscard]] inline static
     {
         return _pcoriaccel_estimate_pmf< Tfloat, Kt_normal >( Xb,Y, xi, y_seq, (Tfloat)h );
     }
-    else if ( kernel == "K2_Biweight" )
+    else if ( kernel == "K2_Biweight" ) [[likely]]
     {
         return _pcoriaccel_estimate_pmf< Tfloat, Kt_biweight2 >( Xb,Y, xi, y_seq, (Tfloat)h );
     }
-    else if ( kernel == "K4_Biweight" ) [[likely]]
-    {
-        return _pcoriaccel_estimate_pmf< Tfloat, Kt_biweight4 >( Xb,Y, xi, y_seq, (Tfloat)h );
-    }
+    // else if ( kernel == "K4_Biweight" )
+    // {
+    //     return _pcoriaccel_estimate_pmf< Tfloat, Kt_biweight4 >( Xb,Y, xi, y_seq, (Tfloat)h );
+    // }
     else [[unlikely]]
     {
-        stop("Invalid value for `kernel`: choices are { \"dnorm\", \"K2_Biweight\", \"K4_Biweight\" }.");
+        stop("Invalid value for `kernel`: choices are { \"dnorm\", \"K2_Biweight\" }.");
     }
 }

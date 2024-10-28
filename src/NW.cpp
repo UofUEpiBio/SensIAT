@@ -15,7 +15,7 @@
 //'
 //' @return A matrix of the same size as `xb` by `y_seq`.
 //'
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 [[nodiscard]] NumericMatrix pcoriaccel_NW_basic(
 	NumericVector Xb, NumericVector Y,
@@ -194,7 +194,7 @@ NumericMatrix _pcoriaccel_NW(
 //'
 //' @return A matrix of the same size as `xb` by `y_seq`.
 //'
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 [[nodiscard]] NumericMatrix pcoriaccel_NW(
 	NumericVector Xb, NumericVector Y, //Same length, about 500
@@ -213,16 +213,16 @@ NumericMatrix _pcoriaccel_NW(
 	{
 		return _pcoriaccel_NW< Tfloat, 1 >( Xb,Y, xb, y_seq, (Tfloat)h );
 	}
-	else if ( kernel == "K2_Biweight" )
+	else if ( kernel == "K2_Biweight" ) [[likely]]
 	{
 		return _pcoriaccel_NW< Tfloat, 2 >( Xb,Y, xb, y_seq, (Tfloat)h );
 	}
-	else if ( kernel == "K4_Biweight" ) [[likely]]
-	{
-		return _pcoriaccel_NW< Tfloat, 3 >( Xb,Y, xb, y_seq, (Tfloat)h );
-	}
+	// else if ( kernel == "K4_Biweight" )
+	// {
+	// 	return _pcoriaccel_NW< Tfloat, 3 >( Xb,Y, xb, y_seq, (Tfloat)h );
+	// }
 	else [[unlikely]]
 	{
-		stop("Invalid value for `kernel`: choices are { \"dnorm\", \"K2_Biweight\", \"K4_Biweight\" }.");
+		stop("Invalid value for `kernel`: choices are { \"dnorm\", \"K2_Biweight\" }.");
 	}
 }
