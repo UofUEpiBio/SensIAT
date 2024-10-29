@@ -1,4 +1,4 @@
-# SensIAT (Version 0.1.0)
+# SensIAT 0.1.0
 
 * Initial CRAN submission.
 * Beta Release.
