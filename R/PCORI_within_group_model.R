@@ -35,7 +35,7 @@ globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
 #'  Should return everything needed to define the fit of the model.
 #'  This can then be used for producing the estimates of mean, variance,
 #'  and in turn treatment effect.  For the full data model a list with two
-#'  models one each for the traeatment and control groups.
+#'  models one each for the treatment and control groups.
 #'
 #' @export
 #'

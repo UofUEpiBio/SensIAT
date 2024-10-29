@@ -8,6 +8,14 @@
 \description{
 Sensitivity analysis for trials with irregular and informative assessment times, based on a new influence function-based, augmented inverse intensity-weighted estimator.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/UofUEpiBio/SensIAT}
+  \item Report bugs at \url{https://github.com/UofUEpiBio/SensIAT/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Andrew Redd \email{andrew.redd@hsc.utah.edu} (\href{https://orcid.org/0000-0002-6149-2438}{ORCID})
 
