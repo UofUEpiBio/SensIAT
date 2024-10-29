@@ -16,7 +16,8 @@ template<class Fn>
 	unsigned N = 1000
 ) {
 	List ret(3);
-	if      ( lo <  hi ) [[likely]] {} //continue below
+	if      ( lo <  hi ) // [[likely]]
+	    {} //continue below
 	else if ( lo == hi ) return List::create(
 		Named("Q"         ) = 0.0,
 		Named("fcnt"      ) = 0,
@@ -67,7 +68,7 @@ template<class Fn>
 	using Tval = decltype(integrand(0.0));
 
 	List ret(3);
-	if      ( lo <  hi ) [[likely]] {} //continue below
+	if      ( lo <  hi ) {} //continue below
 	else if ( lo == hi ) return List::create(
 		Named("Q"         ) = 0.0,
 		Named("fcnt"      ) = 0,
@@ -115,12 +116,14 @@ template<class Fn>
 		auto& helper_ref, double a,double c,double e, Tval const& fa,Tval const& fc,Tval const& fe
 	) {
 		constexpr unsigned fcnt_max = 10000;
-		if ( fcnt+2 > fcnt_max ) [[unlikely]] stop("Too many integrand evaluations; singularity likely.");
+		if ( fcnt+2 > fcnt_max ) // [[unlikely]]
+		    stop("Too many integrand evaluations; singularity likely.");
 		//if ( depth > 5 ) stop("abort");
 
 		//Calculate subintervals
 		double h = e - a;
-		if ( h<hmin || a==c || c==e ) [[unlikely]] stop("Minimum step size; singularity possible.");
+		if ( h<hmin || a==c || c==e ) // [[unlikely]]
+		    stop("Minimum step size; singularity possible.");
 		double b = 0.5*( a + c );
 		double d = 0.5*( c + e );
 
@@ -135,7 +138,8 @@ template<class Fn>
 		Tval Q2=clone(fb); Q2+=fd; Q2*=2.0; Q2+=fc; Q2*=2.0; Q2+=fa; Q2+=fe; Q2*=h*(1.0/12.0);
 		//One step of Romberg extrapolation:   Q = Q2 + (Q2-Q1)/15
 		Tval Q=clone(Q2); Q-=Q1; Q*=1.0/15.0; Q+=Q2;
-		if ( !all_finite(Q) ) [[unlikely]] stop("Improper integrand: ∞ or NaN");
+		if ( !all_finite(Q) ) // [[unlikely]]
+		    stop("Improper integrand: ∞ or NaN");
 
 		//If accurate enough, return.  Original was just max(Q2-Q)<tol; doesn't sound correct to me.
 		//	TODO: can optimize with prev.

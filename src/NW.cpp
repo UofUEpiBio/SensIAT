@@ -59,7 +59,7 @@
 			denom += Kxb(k,j);
 		}
 
-		if ( denom == 0.0 ) [[unlikely]]
+		if ( denom == 0.0 ) // [[unlikely]]
 		{
 			for ( int i=0; i<fyxb.ncol(); ++i )
 			{
@@ -152,7 +152,7 @@ NumericMatrix _pcoriaccel_NW(
 		for ( int i=0; i<Xb.length(); ++i ) denom+=KxbT_row[i];
 
 		//(Row of answer is zeros if denominator is zero)
-		if ( denom == 0 ) [[unlikely]]
+		if ( denom == 0 ) // [[unlikely]]
 		{
 			for ( int i=0; i<fyxb.ncol(); ++i )
 			{
@@ -203,7 +203,7 @@ NumericMatrix _pcoriaccel_NW(
 	double h, //scalar bandwidth
 	String kernel = "K2_Biweight"
 ) {
-	if ( Xb.length() != Y.length() ) [[unlikely]]
+	if ( Xb.length() != Y.length() ) // [[unlikely]]
 	{
 		stop("Lengths of arguments `Xb` and `Y` must match!");
 	}
@@ -213,7 +213,7 @@ NumericMatrix _pcoriaccel_NW(
 	{
 		return _pcoriaccel_NW< Tfloat, 1 >( Xb,Y, xb, y_seq, (Tfloat)h );
 	}
-	else if ( kernel == "K2_Biweight" ) [[likely]]
+	else if ( kernel == "K2_Biweight" ) // [[likely]]
 	{
 		return _pcoriaccel_NW< Tfloat, 2 >( Xb,Y, xb, y_seq, (Tfloat)h );
 	}
@@ -221,7 +221,7 @@ NumericMatrix _pcoriaccel_NW(
 	// {
 	// 	return _pcoriaccel_NW< Tfloat, 3 >( Xb,Y, xb, y_seq, (Tfloat)h );
 	// }
-	else [[unlikely]]
+	else // [[unlikely]]
 	{
 		stop("Invalid value for `kernel`: choices are { \"dnorm\", \"K2_Biweight\" }.");
 	}

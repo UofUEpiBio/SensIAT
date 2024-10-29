@@ -46,20 +46,24 @@
 	String kernel = "K2_Biweight"
 ) {
 	#if 1
-	if ( X.ncol()!=beta.length() || X.ncol()!=individual_X.ncol() ) [[unlikely]] stop(
+	if ( X.ncol()!=beta.length() || X.ncol()!=individual_X.ncol() ) // [[unlikely]]
+	stop(
 		"Width of matrix `X` (" + std::to_string(X.ncol()) + "), " +
 		"width of matrix `individual_X` (" + std::to_string(individual_X.ncol()) + "), " +
 		"and length of vector `beta` (" + std::to_string(beta.length()) + ") must match!"
 	);
-	if ( X.nrow() != Y.length() ) [[unlikely]] stop(
+	if ( X.nrow() != Y.length() ) // [[unlikely]]
+	stop(
 		"Height of matrix `X` (" + std::to_string(X.nrow()) + ") and " +
 	    "length of vector `Y` (" + std::to_string(Y.length()) + ") must match!"
 	);
-	if ( individual_X.ncol() != x_slope.length() ) [[unlikely]] stop(
+	if ( individual_X.ncol() != x_slope.length() ) // [[unlikely]]
+	stop(
 		"Width of matrix `individual_X` (" + std::to_string(individual_X.ncol()) + ") and " +
 	    "length of vector `x_slope` (" + std::to_string(x_slope.length()) + ") must match!"
 	);
-	if ( individual_X.nrow() != times.length() ) [[unlikely]] stop(
+	if ( individual_X.nrow() != times.length() ) // [[unlikely]]
+	stop(
 		"Height of matrix `individual_X` (" + std::to_string(individual_X.nrow()) + ") and " +
 	    "length of vector `times` (" + std::to_string(times.length()) + ") must match!"
 	);

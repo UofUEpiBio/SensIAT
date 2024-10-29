@@ -119,7 +119,7 @@ inline NumericVector& operator/=( NumericVector& vec, double val ) noexcept
 }
 inline NumericMatrix& operator-=( NumericMatrix& matrA, NumericMatrix const& matrB )
 {
-	if ( matrA.nrow()!=matrB.nrow() || matrA.ncol()!=matrB.ncol() ) [[unlikely]]
+	if ( matrA.nrow()!=matrB.nrow() || matrA.ncol()!=matrB.ncol() ) // [[unlikely]]
 	    stop("Matrix dimension mismatch in subtract (" +
 	        std::to_string(matrA.nrow()) + "x" + std::to_string(matrA.ncol()) +
 	        " vs. " +
@@ -130,7 +130,7 @@ inline NumericMatrix& operator-=( NumericMatrix& matrA, NumericMatrix const& mat
 }
 inline NumericMatrix& operator+=( NumericMatrix& matrA, NumericMatrix const& matrB )
 {
-    if (matrA.nrow() != matrB.nrow() || matrA.ncol() != matrB.ncol()) [[unlikely]]
+    if (matrA.nrow() != matrB.nrow() || matrA.ncol() != matrB.ncol()) // [[unlikely]]
         stop("Matrix dimension mismatch in add (" +
             std::to_string(matrA.nrow()) + "x" + std::to_string(matrA.ncol()) +
             " vs. " +
@@ -141,7 +141,7 @@ inline NumericMatrix& operator+=( NumericMatrix& matrA, NumericMatrix const& mat
 }
 inline NumericVector& operator-=( NumericVector& vecA, NumericVector const& vecB )
 {
-	if ( vecA.length() != vecB.length() ) [[unlikely]]
+	if ( vecA.length() != vecB.length() ) // [[unlikely]]
     	stop("Vector dimension mismatch in subtract (" +
     	    std::to_string(vecA.length()) + " vs. " +
     		std::to_string(vecB.length()) + ")!"
@@ -151,7 +151,7 @@ inline NumericVector& operator-=( NumericVector& vecA, NumericVector const& vecB
 }
 inline NumericVector& operator+=( NumericVector& vecA, NumericVector const& vecB )
 {
-	if ( vecA.length() != vecB.length() ) [[unlikely]]
+	if ( vecA.length() != vecB.length() ) // [[unlikely]]
     	stop("Vector dimension mismatch in add (" +
             std::to_string(vecA.length()) + " vs. " +
             std::to_string(vecB.length()) + ")!"

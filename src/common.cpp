@@ -22,7 +22,7 @@ void negate_slot( List list, char const* slot_name ) noexcept
 
 [[nodiscard]] NumericMatrix mmul( NumericMatrix matrA  , NumericMatrix matrB   )
 {
-	if ( matrA.ncol() != matrB.nrow() ) [[unlikely]]
+	if ( matrA.ncol() != matrB.nrow() ) // [[unlikely]]
 	{
 		stop(
 			"Matrix dimension mismatch " +
@@ -46,7 +46,7 @@ void negate_slot( List list, char const* slot_name ) noexcept
 }
 [[nodiscard]] NumericVector mmul( NumericVector row_vec, NumericMatrix matr    )
 {
-	if ( row_vec.length() != matr.nrow() ) [[unlikely]]
+	if ( row_vec.length() != matr.nrow() ) // [[unlikely]]
 	{
 		stop(
 			"Matrix dimension mismatch 1x" + std::to_string(row_vec.length()) + " by " +
@@ -68,7 +68,7 @@ void negate_slot( List list, char const* slot_name ) noexcept
 }
 [[nodiscard]] NumericVector mmul( NumericMatrix matr   , NumericVector col_vec )
 {
-	if ( matr.ncol() != col_vec.length() ) [[unlikely]]
+	if ( matr.ncol() != col_vec.length() ) // [[unlikely]]
 	{
 		stop(
 			"Matrix dimension mismatch " +
@@ -111,7 +111,7 @@ void negate_slot( List list, char const* slot_name ) noexcept
 
 [[nodiscard]] double pcoriaccel_inner_prod( NumericVector vecA, NumericVector vecB )
 {
-	if ( vecA.length() != vecB.length() ) [[unlikely]]
+	if ( vecA.length() != vecB.length() ) // [[unlikely]]
 	{
 		stop(
 			"Matrix dimension mismatch 1x" + std::to_string(vecA.length()) +

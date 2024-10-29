@@ -8,24 +8,28 @@ SplineBasis::SplineBasis( S4 backing )
 {
 	//Unpack the object slots once, here, so we don't have to do that for each access
 
-	if ( !backing.hasSlot("knots"   ) ) [[unlikely]] stop(
-		"Spline basis expected to have slot `knots`!"
-	);
+	if ( !backing.hasSlot("knots"   ) ) // [[unlikely]]
+    	stop(
+    		"Spline basis expected to have slot `knots`!"
+    	);
 	_knots = (NumericVector)backing.slot("knots"   );
 
-	if ( !backing.hasSlot("order"   ) ) [[unlikely]] stop(
-		"Spline basis expected to have slot `order`!"
-	);
+	if ( !backing.hasSlot("order"   ) ) // [[unlikely]]
+    	stop(
+    		"Spline basis expected to have slot `order`!"
+    	);
 	_order = (int          )backing.slot("order"   );
 
-	if ( !backing.hasSlot("Matrices") ) [[unlikely]] stop(
-		"Spline basis expected to have slot `Matrices`!"
-	);
+	if ( !backing.hasSlot("Matrices") ) // [[unlikely]]
+    	stop(
+    		"Spline basis expected to have slot `Matrices`!"
+    	);
 	_matrs = (NumericVector)backing.slot("Matrices");
 
-	if ( !_matrs.hasAttribute("dim")  ) [[unlikely]] stop(
-		"Spline basis `Matrix` expected to have attribute `dim`!"
-	);
+	if ( !_matrs.hasAttribute("dim")  ) // [[unlikely]]
+    	stop(
+    		"Spline basis `Matrix` expected to have attribute `dim`!"
+    	);
 	_mdims = (IntegerVector)_matrs.attr("dim");
 
 	//!backing.hasSlot("class") -> "SplineBasis" (apparently optional)
@@ -41,7 +45,7 @@ SplineBasis::SplineBasis( S4 backing )
 	NumericVector ret( _mdims[1] );
 
 	//Out-of-range `x`; note test written so as to also catch NaN
-	if (!( x>=lo && x<=hi )) [[unlikely]]
+	if (!( x>=lo && x<=hi )) // [[unlikely]]
 	{
 		//print("  -> out of range\n");
 		ret.fill(NA_REAL);

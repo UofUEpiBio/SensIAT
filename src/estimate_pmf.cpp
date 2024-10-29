@@ -45,7 +45,10 @@ template< class Tfloat, KernelType kernel > [[nodiscard]] inline static
         denom += Kxb_j;
     }
 
-    if ( denom == 0.0 ) [[unlikely]] pmf_est.fill(0.0);
+    if ( denom == 0.0 ) // [[unlikely]]
+    {
+        pmf_est.fill(0.0);
+    }
     else
     {
         for ( double& elem : pmf_est ) elem/=denom;
@@ -72,7 +75,7 @@ template< class Tfloat, KernelType kernel > [[nodiscard]] inline static
 	double h,
     String kernel = "K2_Biweight"
 ) {
-    if ( Xb.length() != Y.length() ) [[unlikely]]
+    if ( Xb.length() != Y.length() ) // [[unlikely]]
     {
         stop("Lengths of arguments `Xb` and `Y` must match!");
     }
@@ -82,7 +85,7 @@ template< class Tfloat, KernelType kernel > [[nodiscard]] inline static
     {
         return _pcoriaccel_estimate_pmf< Tfloat, Kt_normal >( Xb,Y, xi, y_seq, (Tfloat)h );
     }
-    else if ( kernel == "K2_Biweight" ) [[likely]]
+    else if ( kernel == "K2_Biweight" ) // [[likely]]
     {
         return _pcoriaccel_estimate_pmf< Tfloat, Kt_biweight2 >( Xb,Y, xi, y_seq, (Tfloat)h );
     }
@@ -90,7 +93,7 @@ template< class Tfloat, KernelType kernel > [[nodiscard]] inline static
     // {
     //     return _pcoriaccel_estimate_pmf< Tfloat, Kt_biweight4 >( Xb,Y, xi, y_seq, (Tfloat)h );
     // }
-    else [[unlikely]]
+    else // [[unlikely]]
     {
         stop("Invalid value for `kernel`: choices are { \"dnorm\", \"K2_Biweight\" }.");
     }
