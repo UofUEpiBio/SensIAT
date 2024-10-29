@@ -4,8 +4,7 @@ Version: 0.1.0
 Authors@R: c(
     person("Andrew", "Redd", , "andrew.redd@hsc.utah.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-6149-2438")),
-    person("Yujing", "Gao", , "ygao39@ncsu.edu", role = c("aut"),
-           comment = c(ORCID = "0000-0002-6149-2438")),
+    person("Yujing", "Gao", , "ygao39@ncsu.edu", role = c("aut")),
     person("Shu", "Yang", , "syang24@ncsu.edu", role = c("aut")),
     person("Bonnie", "Smith", , "bsmit179@jhmi.edu", role = c("aut")),
     person("Agatha", "Mallett", , "agatha@geometrian.com", role = c("ctb", "ctr")),

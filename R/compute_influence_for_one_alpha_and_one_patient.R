@@ -81,12 +81,12 @@ function(
                 resolution = control$resolution,
                 variables = variables, ...
             ) |> as.vector()
-        } else if (control$integration.method == 'linear') {
-            compute_influence_term_2_linearly(
-                df_i, expected_value, base=base,
-                variables = variables, ...
-            ) |>
-                unlist() |> as.vector()
+        # } else if (control$integration.method == 'linear') {
+        #     compute_influence_term_2_linearly(
+        #         df_i, expected_value, base=base,
+        #         variables = variables, ...
+        #     ) |>
+        #         unlist() |> as.vector()
         } else if (control$integration.method == 'quadv') {
             compute_influence_term_2_quadv_sim(
                 df_i, expected_value, base=base,
@@ -96,15 +96,15 @@ function(
                 alpha = alpha,
                 ...
             )
-        } else if (control$integration.method == 'quadvcpp') {
-            compute_influence_term_2_quadv_cpp_sim(
-                df_i, expected_value, base=base,
-                outcome.model = outcome.model,
-                tol = control$tol,
-                variables = variables,
-                alpha = alpha,
-                ...
-            )
+        # } else if (control$integration.method == 'quadvcpp') {
+        #     compute_influence_term_2_quadv_cpp_sim(
+        #         df_i, expected_value, base=base,
+        #         outcome.model = outcome.model,
+        #         tol = control$tol,
+        #         variables = variables,
+        #         alpha = alpha,
+        #         ...
+        #     )
         } else rlang::abort('Unknown integration method')
     influence <- colSums(term1) + term2
     V_inverse <- solve(GramMatrix(base))

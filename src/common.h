@@ -232,34 +232,41 @@ enum KernelType { Kt_normal, Kt_biweight2, Kt_biweight4 };
 [[nodiscard]] NumericMatrix mmul( NumericMatrix matrA  , NumericMatrix matrB   );
 [[nodiscard]] NumericVector mmul( NumericVector row_vec, NumericMatrix matr    );
 [[nodiscard]] NumericVector mmul( NumericMatrix matr   , NumericVector col_vec );
+
 //' Multiplies two matrices.  If the first argument is a vector, it is interpreted as a row vector.
 //' Otherwise, if the second argument is a vector, it is interpreted as a column vector.
 //' @param matrA first matrix
 //' @param matrB second matrix
-//' @return `matrA * matrB`
+//' @return The product of `matrA` and `matrB`.
 //' @keywords internal
+//' @noRd
 // [[Rcpp::export]]
 [[nodiscard]] SEXP pcoriaccel_mmul( SEXP matrA, SEXP matrB );
 
 //' Inner product (dot product) of two vectors.
 //' @param vecA first vector
 //' @param vecB second vector
-//' @return `vecAᵀ * vecB = vecA • vecB`
+//' @return scalar product of `vecA` and `vecB`
 //' @keywords internal
+//' @noRd
 // [[Rcpp::export]]
 [[nodiscard]] double pcoriaccel_inner_prod( NumericVector vecA, NumericVector vecB );
+
 //' Outer sum of two vectors.
 //' @param vecA first vector
 //' @param vecB second vector
-//' @return `vecA ⊕ vecB`
+//' @return Matrix where each element of `vecA`(row) is added to the element of `vecB`(column).
 //' @keywords internal
+//' @noRd
 // [[Rcpp::export]]
 [[nodiscard]] NumericMatrix pcoriaccel_outer_sum( NumericVector vecA, NumericVector vecB );
+
 //' Outer product of two vectors.
 //' @param vecA first vector
 //' @param vecB second vector
-//' @return `vecA * vecBᵀ = vecA ⊗ vecB`
+//' @return matrix of the outer product of vectors `vecA` and `vecB`.
 //' @keywords internal
+//' @noRd
 // [[Rcpp::export]]
 [[nodiscard]] NumericMatrix pcoriaccel_outer_prod( NumericVector vecA, NumericVector vecB );
 
@@ -267,5 +274,6 @@ enum KernelType { Kt_normal, Kt_biweight2, Kt_biweight4 };
 //' @param vec the vector
 //' @return `sort(unique(vec))`
 //' @keywords internal
+//' @noRd
 // [[Rcpp::export]]
 [[nodiscard]] NumericVector pcoriaccel_sorted_unique( NumericVector vec );

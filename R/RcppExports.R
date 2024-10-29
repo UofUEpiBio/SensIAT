@@ -37,8 +37,9 @@ pcoriaccel_NW <- function(Xb, Y, xb, y_seq, h, kernel = "K2_Biweight") {
 #' Otherwise, if the second argument is a vector, it is interpreted as a column vector.
 #' @param matrA first matrix
 #' @param matrB second matrix
-#' @return `matrA * matrB`
+#' @return The product of `matrA` and `matrB`.
 #' @keywords internal
+#' @noRd
 pcoriaccel_mmul <- function(matrA, matrB) {
     .Call(`_SensIAT_pcoriaccel_mmul`, matrA, matrB)
 }
@@ -46,8 +47,9 @@ pcoriaccel_mmul <- function(matrA, matrB) {
 #' Inner product (dot product) of two vectors.
 #' @param vecA first vector
 #' @param vecB second vector
-#' @return `vecAᵀ * vecB = vecA • vecB`
+#' @return scalar product of `vecA` and `vecB`
 #' @keywords internal
+#' @noRd
 pcoriaccel_inner_prod <- function(vecA, vecB) {
     .Call(`_SensIAT_pcoriaccel_inner_prod`, vecA, vecB)
 }
@@ -55,8 +57,9 @@ pcoriaccel_inner_prod <- function(vecA, vecB) {
 #' Outer sum of two vectors.
 #' @param vecA first vector
 #' @param vecB second vector
-#' @return `vecA ⊕ vecB`
+#' @return Matrix where each element of `vecA`(row) is added to the element of `vecB`(column).
 #' @keywords internal
+#' @noRd
 pcoriaccel_outer_sum <- function(vecA, vecB) {
     .Call(`_SensIAT_pcoriaccel_outer_sum`, vecA, vecB)
 }
@@ -64,8 +67,9 @@ pcoriaccel_outer_sum <- function(vecA, vecB) {
 #' Outer product of two vectors.
 #' @param vecA first vector
 #' @param vecB second vector
-#' @return `vecA * vecBᵀ = vecA ⊗ vecB`
+#' @return matrix of the outer product of vectors `vecA` and `vecB`.
 #' @keywords internal
+#' @noRd
 pcoriaccel_outer_prod <- function(vecA, vecB) {
     .Call(`_SensIAT_pcoriaccel_outer_prod`, vecA, vecB)
 }
@@ -74,6 +78,7 @@ pcoriaccel_outer_prod <- function(vecA, vecB) {
 #' @param vec the vector
 #' @return `sort(unique(vec))`
 #' @keywords internal
+#' @noRd
 pcoriaccel_sorted_unique <- function(vec) {
     .Call(`_SensIAT_pcoriaccel_sorted_unique`, vec)
 }
@@ -129,7 +134,7 @@ pcoriaccel_integrate_simp <- function(integrand, lo, hi, tol = 1.490116e-08) {
     .Call(`_SensIAT_pcoriaccel_integrate_simp`, integrand, lo, hi, tol)
 }
 
-#' Compiled version of `evaluate_basis(⋯)` function
+#' Compiled version of `evaluate_basis()` function
 #'
 #' @param spline_basis   The spline basis, S4 class `orthogonalsplinebasis::SplineBasis`
 #' @param x              The point to evaluate

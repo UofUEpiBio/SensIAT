@@ -21,7 +21,7 @@ Useful links:
 
 Authors:
 \itemize{
-  \item Yujing Gao \email{ygao39@ncsu.edu} (\href{https://orcid.org/0000-0002-6149-2438}{ORCID})
+  \item Yujing Gao \email{ygao39@ncsu.edu}
   \item Shu Yang \email{syang24@ncsu.edu}
   \item Bonnie Smith \email{bsmit179@jhmi.edu}
   \item Daniel Scharfstein \email{daniel.scharfstein@hsc.utah.edu} (\href{https://orcid.org/0000-0001-7482-9653}{ORCID}) [project director]

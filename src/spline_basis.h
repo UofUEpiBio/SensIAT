@@ -28,7 +28,7 @@ class SplineBasis final
 		[[nodiscard]] NumericVector evaluate( double x ) const noexcept;
 };
 
-//' Compiled version of `evaluate_basis(⋯)` function
+//' Compiled version of `evaluate_basis()` function
 //'
 //' @param spline_basis   The spline basis, S4 class `orthogonalsplinebasis::SplineBasis`
 //' @param x              The point to evaluate
