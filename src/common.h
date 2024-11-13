@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <limits>
-#include <ranges>
 #include <set>
 #include <vector>
 
@@ -45,6 +44,7 @@ constexpr double NEG_HALF_LOG2E = -0.7213475204444817  ; // -½ log₂e
 #if __cplusplus >= 202002L
 // C++20 (and later) code
 #include <format>
+#include <ranges>
 
 template<> struct std::formatter< std::vector<double>, char >
 {

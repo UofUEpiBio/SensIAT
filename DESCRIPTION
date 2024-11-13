@@ -49,6 +49,6 @@ Depends:
     R (>= 4.4.0)
 LazyData: true
 LinkingTo: Rcpp
-SystemRequirements: C++20
+SystemRequirements: C++17
 URL: https://github.com/UofUEpiBio/SensIAT
 BugReports: https://github.com/UofUEpiBio/SensIAT/issues
