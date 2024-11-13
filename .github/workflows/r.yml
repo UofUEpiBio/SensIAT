@@ -60,5 +60,5 @@ jobs:
       - name: Print logs
         if: always()
         run: |
-          cat check/epiworldR.Rcheck/00install.out || echo "There's no 00install.out"
-          cat check/epiworldR.Rcheck/00check.log || echo "There's no 00check.out"
+          cat check/SensIAT.Rcheck/00install.out || echo "There's no 00install.out"
+          cat check/SensIAT.Rcheck/00check.log || echo "There's no 00check.out"
