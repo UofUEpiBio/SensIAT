@@ -1,8 +1,11 @@
+This is a patch release to fix the compiling issue that was happening on certain
+Debian systems.  This should be fixed now, although I don't have direct access 
+to those systems. I have tested on rhub and it works there. 
+
+
+
 ## R CMD check results
 
 0 errors | 0 warnings | 1 note
 
-* This is a new release. It is a beta release and not feature complete.
-* Note occurs from "unable to verify current time"
-* Being released to correspond to an upcoming publication.
-  Description will be updated with the reference when published.
+* Note occurs from "Not all R platforms support C++17"
