@@ -8,6 +8,9 @@ status](https://www.r-pkg.org/badges/version/SensIAT)](https://CRAN.R-project.or
 
 R Package for sensitivity analysis with irregular assessment times.
 
+A link to the paper describing the methodology can be found
+[here](https://arxiv.org/abs/2204.11979).
+
 ## Installation
 
 ``` r
