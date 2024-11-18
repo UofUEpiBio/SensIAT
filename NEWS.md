@@ -1,3 +1,5 @@
+# SensIAT (development version)
+
 # SensIAT 0.1.1
 
 * Bug fix for compiling on Debian and other systems without C++20.
