@@ -12,6 +12,7 @@ Sensitivity analysis for trials with irregular and informative assessment times,
 Useful links:
 \itemize{
   \item \url{https://github.com/UofUEpiBio/SensIAT}
+  \item \url{https://uofuepibio.github.io/SensIAT/}
   \item Report bugs at \url{https://github.com/UofUEpiBio/SensIAT/issues}
 }
 

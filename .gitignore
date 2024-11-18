@@ -36,3 +36,4 @@ src/*.dll
 vignettes/*.html
 vignettes/*.pdf
 *.DS_Store
+docs
