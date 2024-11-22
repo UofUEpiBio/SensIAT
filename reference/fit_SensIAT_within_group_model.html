@@ -47,22 +47,16 @@ variance for the given group.</p>
 <span><span class="fu">fit_SensIAT_within_group_model</span><span class="op">(</span></span>
 <span>  <span class="va">group.data</span>,</span>
 <span>  <span class="va">outcome_modeler</span>,</span>
+<span>  <span class="va">id</span>,</span>
+<span>  <span class="va">outcome</span>,</span>
+<span>  <span class="va">time</span>,</span>
 <span>  <span class="va">knots</span>,</span>
-<span>  <span class="va">id.var</span>,</span>
-<span>  <span class="va">outcome.var</span>,</span>
-<span>  <span class="va">time.var</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  intensity.covariates <span class="op">=</span> <span class="op">~</span><span class="va">.</span>,</span>
-<span>  outcome.covariates <span class="op">=</span> <span class="op">~</span><span class="va">.</span> <span class="op">-</span> <span class="fl">1</span>,</span>
-<span>  End <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>     <span class="op">{</span></span>
-<span>         <span class="va">time.var</span></span>
-<span>     <span class="op">}</span></span>
-<span> <span class="op">}</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span>,</span>
-<span>  integration.tolerance <span class="op">=</span> <span class="va">.Machine</span><span class="op">$</span><span class="va">double.eps</span><span class="op">^</span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="fl">3</span><span class="op">)</span>,</span>
-<span>  intensity.bandwidth <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">...</span>,</span>
-<span>  influence.args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  End <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  intensity.args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  outcome.args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  influence.args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  spline.degree <span class="op">=</span> <span class="fl">3</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -80,8 +74,7 @@ Everything not treatment is considered control.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>add parameters as needed or use this to pass forward into the
-outcome_modeler.</p></dd>
+<dd><p>common arguments passed to <code>fit_SensIAT_within_group_model</code>.</p></dd>
 
 
 <dt id="arg-group-data">group.data<a class="anchor" aria-label="anchor" href="#arg-group-data"></a></dt>
@@ -96,49 +89,49 @@ between negative-binomial, single index model, or another we will
 dream up in the future.</p></dd>
 
 
-<dt id="arg-knots">knots<a class="anchor" aria-label="anchor" href="#arg-knots"></a></dt>
-<dd><p>knot locations for defining the spline basis.</p></dd>
-
-
-<dt id="arg-id-var">id.var<a class="anchor" aria-label="anchor" href="#arg-id-var"></a></dt>
+<dt id="arg-id">id<a class="anchor" aria-label="anchor" href="#arg-id"></a></dt>
 <dd><p>The variable that identifies the patient.</p></dd>
 
 
-<dt id="arg-outcome-var">outcome.var<a class="anchor" aria-label="anchor" href="#arg-outcome-var"></a></dt>
+<dt id="arg-outcome">outcome<a class="anchor" aria-label="anchor" href="#arg-outcome"></a></dt>
 <dd><p>The variable that contains the outcome.</p></dd>
 
 
-<dt id="arg-time-var">time.var<a class="anchor" aria-label="anchor" href="#arg-time-var"></a></dt>
+<dt id="arg-time">time<a class="anchor" aria-label="anchor" href="#arg-time"></a></dt>
 <dd><p>The variable that contains the time.</p></dd>
+
+
+<dt id="arg-knots">knots<a class="anchor" aria-label="anchor" href="#arg-knots"></a></dt>
+<dd><p>knot locations for defining the spline basis.</p></dd>
 
 
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
 <dd><p>The sensitivity parameter.</p></dd>
 
 
-<dt id="arg-intensity-covariates">intensity.covariates<a class="anchor" aria-label="anchor" href="#arg-intensity-covariates"></a></dt>
-<dd><p>A formula representing modifications to the intensity model.</p></dd>
-
-
-<dt id="arg-outcome-covariates">outcome.covariates<a class="anchor" aria-label="anchor" href="#arg-outcome-covariates"></a></dt>
-<dd><p>A formula representing modifications to the outcome model.  The default removes the intercept term.</p></dd>
-
-
 <dt id="arg-end">End<a class="anchor" aria-label="anchor" href="#arg-end"></a></dt>
 <dd><p>The end time for this data analysis, we need to set the default value as the
-max value of the time</p></dd>
+max value of the time.</p></dd>
 
 
-<dt id="arg-integration-tolerance">integration.tolerance<a class="anchor" aria-label="anchor" href="#arg-integration-tolerance"></a></dt>
-<dd><p>The tolerance for the integration.</p></dd>
+<dt id="arg-intensity-args">intensity.args<a class="anchor" aria-label="anchor" href="#arg-intensity-args"></a></dt>
+<dd><p>A list of optional arguments for intensity model.
+See the Intensity Arguments section.</p></dd>
 
 
-<dt id="arg-intensity-bandwidth">intensity.bandwidth<a class="anchor" aria-label="anchor" href="#arg-intensity-bandwidth"></a></dt>
-<dd><p>The bandwidth for the intensity model kernel.</p></dd>
+<dt id="arg-outcome-args">outcome.args<a class="anchor" aria-label="anchor" href="#arg-outcome-args"></a></dt>
+<dd><p>parameters as needed passed into the <code>outcome_modeler</code>.
+One special element may be <code>'model.modifications'</code> which, if present,
+should be a formula that will be used to modify the outcome model per, <a href="https://rdrr.io/r/stats/update.formula.html" class="external-link">update.formula</a>.</p></dd>
 
 
 <dt id="arg-influence-args">influence.args<a class="anchor" aria-label="anchor" href="#arg-influence-args"></a></dt>
-<dd><p>A list of additional arguments to pass to the influence function.</p></dd>
+<dd><p>A list of optional arguments used when computing the influence.
+See the Influence Arguments section.</p></dd>
+
+
+<dt id="arg-spline-degree">spline.degree<a class="anchor" aria-label="anchor" href="#arg-spline-degree"></a></dt>
+<dd><p>The degree of the spline basis.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -162,6 +155,25 @@ treatment or control group.</p>
 
 <ul><li><p><code>fit_SensIAT_fulldata_model()</code>: Fit the sensitivity analysis for both treatment and control groups.</p></li>
 </ul></div>
+    <div class="section level2">
+    <h2 id="intensity-arguments">Intensity Arguments<a class="anchor" aria-label="anchor" href="#intensity-arguments"></a></h2>
+
+
+<p>The <code>intensity.args</code> list may contain the following elements:</p><ul><li><p><strong><code>model.modifications</code></strong> A formula that will be used to modify the intensity model from it's default, per <a href="https://rdrr.io/r/stats/update.formula.html" class="external-link">update.formula</a>.</p></li>
+<li><p><strong><code>kernel</code></strong> The kernel function for the intensity model. Default is the Epanechnikov kernel.</p></li>
+<li><p><strong><code>bandwidth</code></strong> The bandwidth for the intensity model kernel.</p></li>
+</ul></div>
+    <div class="section level2">
+    <h2 id="influence-arguments">Influence Arguments<a class="anchor" aria-label="anchor" href="#influence-arguments"></a></h2>
+
+
+
+<p>The <code>influence.args</code> list may contain the following elements:</p><ul><li><p><strong><code>method</code></strong> The method for integrating, adaptive or fixed quadrature. Default is <code>'adaptive'</code>.</p></li>
+<li><p><strong><code>tolerance</code></strong> The tolerance when using adaptive quadrature.</p></li>
+<li><p><strong><code>delta</code></strong> The bin width for fixed quadrature.</p></li>
+<li><p><strong><code>resolution</code></strong> alternative to <code>delta</code> by specifying the number of bins.</p></li>
+<li><p><strong><code>fix_discontinuity</code></strong> Whether to account for the discontinuity in the influence at observation times.</p></li>
+</ul></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
@@ -171,11 +183,11 @@ treatment or control group.</p>
 <span class="r-in"><span>        group.data <span class="op">=</span> <span class="va">SensIAT_example_data</span>,</span></span>
 <span class="r-in"><span>        outcome_modeler <span class="op">=</span> <span class="va">SensIAT_sim_outcome_modeler</span>,</span></span>
 <span class="r-in"><span>        alpha <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.6</span>, <span class="op">-</span><span class="fl">0.3</span>, <span class="fl">0</span>, <span class="fl">0.3</span>, <span class="fl">0.6</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>        id.var <span class="op">=</span> <span class="va">Subject_ID</span>,</span></span>
-<span class="r-in"><span>        outcome.var <span class="op">=</span> <span class="va">Outcome</span>,</span></span>
-<span class="r-in"><span>        time.var <span class="op">=</span> <span class="va">Time</span>,</span></span>
+<span class="r-in"><span>        id <span class="op">=</span> <span class="va">Subject_ID</span>,</span></span>
+<span class="r-in"><span>        outcome <span class="op">=</span> <span class="va">Outcome</span>,</span></span>
+<span class="r-in"><span>        time <span class="op">=</span> <span class="va">Time</span>,</span></span>
 <span class="r-in"><span>        End <span class="op">=</span> <span class="fl">830</span>,</span></span>
-<span class="r-in"><span>        knots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">60</span>,<span class="fl">60</span>,<span class="fl">60</span>,<span class="fl">60</span>,<span class="fl">260</span>,<span class="fl">460</span>,<span class="fl">460</span>,<span class="fl">460</span>,<span class="fl">460</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        knots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">60</span>,<span class="fl">260</span>,<span class="fl">460</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>

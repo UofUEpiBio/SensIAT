@@ -85,19 +85,18 @@ Should only include follow-up data, i.e. time &gt; 0.</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># A basic example using fixed intensity bandwidth.</span></span></span>
+<span class="r-in"><span><span class="va">object</span> <span class="op">&lt;-</span></span></span>
 <span class="r-in"><span>    <span class="fu"><a href="fit_SensIAT_within_group_model.html">fit_SensIAT_within_group_model</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>        group.data <span class="op">=</span> <span class="va">SensIAT_example_data</span>,</span></span>
 <span class="r-in"><span>        outcome_modeler <span class="op">=</span> <span class="va">SensIAT_sim_outcome_modeler</span>,</span></span>
-<span class="r-in"><span>        alpha <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.6</span>, <span class="op">-</span><span class="fl">0.3</span>, <span class="fl">0</span>, <span class="fl">0.3</span>, <span class="fl">0.6</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>        id.var <span class="op">=</span> <span class="va">Subject_ID</span>,</span></span>
-<span class="r-in"><span>        outcome.var <span class="op">=</span> <span class="va">Outcome</span>,</span></span>
-<span class="r-in"><span>        time.var <span class="op">=</span> <span class="va">Time</span>,</span></span>
+<span class="r-in"><span>        id <span class="op">=</span> <span class="va">Subject_ID</span>,</span></span>
+<span class="r-in"><span>        outcome <span class="op">=</span> <span class="va">Outcome</span>,</span></span>
+<span class="r-in"><span>        time <span class="op">=</span> <span class="va">Time</span>,</span></span>
+<span class="r-in"><span>        knots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">60</span>,<span class="fl">260</span>,<span class="fl">460</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>        End <span class="op">=</span> <span class="fl">830</span>,</span></span>
-<span class="r-in"><span>        knots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">60</span>,<span class="fl">60</span>,<span class="fl">60</span>,<span class="fl">60</span>,<span class="fl">260</span>,<span class="fl">460</span>,<span class="fl">460</span>,<span class="fl">460</span>,<span class="fl">460</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        intensity.args<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>bandwidth<span class="op">=</span><span class="fl">30</span><span class="op">)</span></span></span>
 <span class="r-in"><span>    <span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

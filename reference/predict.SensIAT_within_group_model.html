@@ -91,11 +91,11 @@ variance.</p></li>
 <span class="r-in"><span>        group.data <span class="op">=</span> <span class="va">SensIAT_example_data</span>,</span></span>
 <span class="r-in"><span>        outcome_modeler <span class="op">=</span> <span class="va">SensIAT_sim_outcome_modeler</span>,</span></span>
 <span class="r-in"><span>        alpha <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.6</span>, <span class="op">-</span><span class="fl">0.3</span>, <span class="fl">0</span>, <span class="fl">0.3</span>, <span class="fl">0.6</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>        id.var <span class="op">=</span> <span class="va">Subject_ID</span>,</span></span>
-<span class="r-in"><span>        outcome.var <span class="op">=</span> <span class="va">Outcome</span>,</span></span>
-<span class="r-in"><span>        time.var <span class="op">=</span> <span class="va">Time</span>,</span></span>
+<span class="r-in"><span>        id <span class="op">=</span> <span class="va">Subject_ID</span>,</span></span>
+<span class="r-in"><span>        outcome <span class="op">=</span> <span class="va">Outcome</span>,</span></span>
+<span class="r-in"><span>        time <span class="op">=</span> <span class="va">Time</span>,</span></span>
 <span class="r-in"><span>        End <span class="op">=</span> <span class="fl">830</span>,</span></span>
-<span class="r-in"><span>        knots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">60</span>,<span class="fl">60</span>,<span class="fl">60</span>,<span class="fl">60</span>,<span class="fl">260</span>,<span class="fl">460</span>,<span class="fl">460</span>,<span class="fl">460</span>,<span class="fl">460</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        knots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">60</span>,<span class="fl">260</span>,<span class="fl">460</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">180</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 10 × 4</span></span>
