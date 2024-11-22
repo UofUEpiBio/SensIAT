@@ -17,6 +17,7 @@
 #' @importFrom orthogonalsplinebasis orthogonalize
 #' @importFrom orthogonalsplinebasis SplineBasis
 #' @importFrom pracma quadv
+#' @importFrom purrr discard_at
 #' @importFrom purrr map
 #' @importFrom purrr map_dfr
 #' @importFrom purrr pmap

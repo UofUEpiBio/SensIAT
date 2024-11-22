@@ -16,20 +16,20 @@ globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
 #'          between negative-binomial, single index model, or another we will
 #'          dream up in the future.
 #' @param knots knot locations for defining the spline basis.
-#' @param id.var The variable that identifies the patient.
-#' @param outcome.var The variable that contains the outcome.
-#' @param time.var The variable that contains the time.
+#' @param id The variable that identifies the patient.
+#' @param outcome The variable that contains the outcome.
+#' @param time The variable that contains the time.
 #' @param alpha The sensitivity parameter.
-#' @param intensity.covariates A formula representing modifications to the intensity model.
-#' @param outcome.covariates A formula representing modifications to the outcome model.  The default removes the intercept term.
 #' @param End The end time for this data analysis, we need to set the default value as the
-#'           max value of the time
-#' @param integration.tolerance The tolerance for the integration.
-#' @param intensity.bandwidth The bandwidth for the intensity model kernel.
-#' @param ... add parameters as needed or use this to pass forward into the
-#'          outcome_modeler.
-#' @param influence.args A list of additional arguments to pass to the influence function.
-#'
+#'          max value of the time.
+#' @param intensity.args A list of optional arguments for intensity model.
+#'          See the Intensity Arguments section.
+#' @param outcome.args parameters as needed passed into the `outcome_modeler`.
+#'          One special element may be `'model.modifications'` which, if present,
+#'          should be a formula that will be used to modify the outcome model per, [update.formula].
+#' @param influence.args A list of optional arguments used when computing the influence.
+#'         See the Influence Arguments section.
+#' @param spline.degree The degree of the spline basis.
 #'
 #' @return
 #'  Should return everything needed to define the fit of the model.
@@ -46,46 +46,73 @@ globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
 #'         group.data = SensIAT_example_data,
 #'         outcome_modeler = SensIAT_sim_outcome_modeler,
 #'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-#'         id.var = Subject_ID,
-#'         outcome.var = Outcome,
-#'         time.var = Time,
+#'         id = Subject_ID,
+#'         outcome = Outcome,
+#'         time = Time,
 #'         End = 830,
-#'         knots = c(60,60,60,60,260,460,460,460,460),
+#'         knots = c(60,260,460),
 #'     )
 #' }
 fit_SensIAT_within_group_model <- function(
         group.data,
         outcome_modeler,
+        id,
+        outcome,
+        time,
         knots,
-        id.var,
-        outcome.var,
-        time.var,
         alpha = 0,
-        intensity.covariates = ~.,
-        outcome.covariates = ~.-1,
-        End = max({{time.var}}, na.rm = TRUE) + 1,
-        integration.tolerance = .Machine$double.eps^(1/3),
-        intensity.bandwidth = NULL,
-        ...,
-        influence.args = list()
+        End = NULL,
+        intensity.args = list(),
+        outcome.args = list(),
+        influence.args = list(),
+        spline.degree = 3
 ){
-    id.var <- ensym(id.var)
-    outcome.var <- ensym(outcome.var)
-    time.var <- ensym(time.var)
-
-    mf <- rlang::inject(!!outcome.var ~ !!id.var + !!time.var + !!rlang::f_rhs(intensity.covariates)) |>
-        model.frame(data=filter(group.data, (!!time.var) <= !!End), na.action = na.pass) |>
-        arrange(!!id.var, !!time.var)
-
-    outcome_modeler <- match.fun(outcome_modeler)
-    End <- rlang::enexpr(End)
-    End <- rlang::eval_tidy(End, data = group.data, env =parent.frame())
-
+    ##### Input clean and capture -------------------------------------------
+    # Variables
+    id.var <- ensym(id)
+    outcome.var <- ensym(outcome)
+    time.var <- ensym(time)
     vars <- list(
         outcome = outcome.var,
         id = id.var,
         time = time.var
     )
+
+    assert_that(is.numeric(knots))
+    if(anyDuplicated(knots)){
+        rlang::warn("Duplicate knots may be ignored.")
+        knots <- unique(knots)
+    }
+    if(is.unsorted(knots)){
+        rlang::warn("Knots are not sorted.")
+        knots <- sort(knots)
+    }
+    knots <- c(
+        rep(head(knots,1), spline.degree),
+        knots,
+        rep(tail(knots, 1), spline.degree)
+    )
+
+    # Pass through Argument Lists
+    intensity.args <- match.names(intensity.args, c("model.modifications", 'bandwidth'), FALSE)
+    outcome.args <- match.names(outcome.args, c("model.modifications"))
+    influence.args <- match.names(influence.args, c("tolerance"))
+
+    # Function
+    outcome_modeler <- match.fun(outcome_modeler)
+    if(is.null(End)){
+        End <- rlang::eval_tidy( max({{time.var}}, na.rm = TRUE) + 1, data = group.data, env =parent.frame())
+    }
+    # Create usable data
+    mf <- rlang::inject(
+            !!outcome.var ~ !!id.var + !!time.var +
+            !!(rlang::f_rhs(intensity.args$model.modifications %||% ~.)) +
+            !!(rlang::f_rhs(outcome.args$model.modifications %||% ~.))
+        ) |>
+        model.frame(data=filter(group.data, (!!time.var) <= !!End), na.action = na.pass) |>
+        arrange(!!id.var, !!time.var)
+
+
 
     group.data2 <- filter(group.data, !!time.var <= End)
 
@@ -93,7 +120,6 @@ fit_SensIAT_within_group_model <- function(
     N <- pull(summarize(group.data2, n_distinct(!!id.var)))
 
 
-    ######   Andersen-Gill model stratifying by assessment number ------
 
 
     data_all_with_transforms <- mf |>
@@ -120,42 +146,64 @@ fit_SensIAT_within_group_model <- function(
         ) |>
         ungroup()
 
+    ######   Andersen-Gill model stratifying by assessment number ------
     ######   Intensity model  ##################################################
+    #' @section Intensity Arguments:
+    #' The `intensity.args` list may contain the following elements:
+    #'
+    #' * **`model.modifications`** A formula that will be used to modify the intensity model from it's default, per [update.formula].
+    #' * **`kernel`** The kernel function for the intensity model. Default is the Epanechnikov kernel.
+    #' * **`bandwidth`** The bandwidth for the intensity model kernel.
+    #'
     followup_data <- data_all_with_transforms |>
         filter(..time.. > 0, !is.na(..prev_outcome..))
-    intensity.formula <- update.formula(
-        Surv(..prev_time.., ..time..,  !is.na(..outcome..))
-        ~ ..prev_outcome.. + strata(..visit_number..)
-        , intensity.covariates
-    )
-    intensity.model <- coxph(intensity.formula,id = ..id..,data = followup_data)
+
+    intensity.formula <- Surv(..prev_time.., ..time..,  !is.na(..outcome..)) ~ ..prev_outcome.. + strata(..visit_number..)
+    if(!is.null(intensity.args$model.modifications))
+        intensity.formula <- update.formula(intensity.formula, intensity.args$model.modifications)
+
+    intensity.model <- coxph(intensity.formula, id = ..id.., data = followup_data)
 
     baseline_intensity_all <-
         estimate_baseline_intensity(
             intensity.model = intensity.model,
             data = followup_data,
             variables = list(prev_outcome = sym("..prev_outcome..")),
-            bandwidth = intensity.bandwidth
+            kernel = intensity.args$kernel %||% \(x) 0.75*(1 - (x)**2) * (abs(x) < 1),
+            bandwidth = intensity.args$bandwidth
         )
     attr(intensity.model, 'bandwidth') <- baseline_intensity_all$bandwidth
     attr(intensity.model, 'kernel') <- baseline_intensity_all$kernel
     followup_data$baseline_intensity <- baseline_intensity_all$baseline_intensity
 
     ######   Outcome model #####################################################
-    outcome.formula <- update.formula(
-        ..outcome..~
+    outcome.formula <-
+        ..outcome..~ -1 +
             ns(..prev_outcome.., df=3) +
             scale(..time..) +
             scale(..delta_time..)
-        , outcome.covariates
-    )
-    outcome.model <- outcome_modeler(outcome.formula, data =
-                                         filter(followup_data, !is.na(..outcome..)), ...)
+    if(!is.null(outcome.args$model.modifications))
+        outcome.formula <- update.formula(outcome.formula, outcome.args$model.modifications)
 
-    base <- SplineBasis(knots)
+    outcome.model <- rlang::inject(
+        outcome_modeler(outcome.formula,
+                        data = filter(followup_data, !is.na(..outcome..)),
+                        !!!purrr::discard_at(outcome.args, "model.modifications"))
+        )
+
+    base <- SplineBasis(knots, order=spline.degree+1L)
     V_inverse <- solve(GramMatrix(base))
 
     # Compute value of the influence function: -----------------------------
+    #' @section Influence Arguments:
+    #'
+    #' The `influence.args` list may contain the following elements:
+    #'
+    #' * **`method`** The method for integrating, adaptive or fixed quadrature. Default is `'adaptive'`.
+    #' * **`tolerance`** The tolerance when using adaptive quadrature.
+    #' * **`delta`** The bin width for fixed quadrature.
+    #' * **`resolution`** alternative to `delta` by specifying the number of bins.
+    #' * **`fix_discontinuity`** Whether to account for the discontinuity in the influence at observation times.
     influence.terms <- rlang::inject(purrr::map(alpha,\(a){
         compute_influence_terms(
             left_join(
@@ -167,8 +215,8 @@ fit_SensIAT_within_group_model <- function(
             alpha = a,
             outcome.model = outcome.model,
             intensity_coef = coef(intensity.model),
-            tol = integration.tolerance,
-            !!!influence.args
+            tol = influence.args$tolerance %||% .Machine$double.eps^(1/3),
+            !!!discard_at(influence.args, 'tolerance')
         )
     }))
 
@@ -182,10 +230,10 @@ fit_SensIAT_within_group_model <- function(
 
 
     structure(list(
-        intensity.model = structure(intensity.model,
-                additional.covariates = intensity.covariates),
-        outcome.model = structure(outcome.model,
-                additional.covariates = intensity.covariates),
+        models = list(
+            intensity = intensity.model,
+            outcome = outcome.model
+        ),
         data = mf,
         variables = vars,
         End = End,
@@ -193,7 +241,11 @@ fit_SensIAT_within_group_model <- function(
         alpha = alpha,
         coefficients = map(Beta, getElement, 'estimate'),
         coefficient.variance = map(Beta, getElement, 'variance'),
-        intensity.bandwidth = intensity.bandwidth,
+        args = list(
+            intensity = intensity.args,
+            outcome = outcome.args,
+            influence = influence.args
+        ),
         base=base,
         V_inverse = V_inverse
     ), class = "SensIAT_within_group_model",

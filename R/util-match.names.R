@@ -1,6 +1,6 @@
 match.names <- function(x, names, allow.multiple = NA){
     i <- pmatch(names(x), names, duplicates.ok = TRUE)
-    if(!isTRUE(allow.multiple) && any(duplicated(i))){
+    if(!isTRUE(allow.multiple) && anyDuplicated(i, NA_integer_)){
         if(is.na(allow.multiple))
             warning("Multiple matches found")
         else

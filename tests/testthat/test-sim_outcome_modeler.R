@@ -1,24 +1,33 @@
-test_that("model.matrix.SensIAT::Single-index-outcome-model is invariant to subsetting", {
-    object <-
-        fit_SensIAT_within_group_model(
-            group.data = SensIAT_example_data,
-            outcome_modeler = SensIAT_sim_outcome_modeler,
-            id.var = Subject_ID,
-            outcome.var = Outcome,
-            time.var = Time,
-            intensity.bandwidth = 30,
-            knots = c(60,60,60,60,260,460,460,460,460),
-            End = 830
-        )
+test_that("outcome model structure", {
+    source(system.file("examples/basic.R", package='SensIAT'))
     expect_s3_class(object, 'SensIAT_within_group_model')
     expect_contains(
         names(object),
-        c('intensity.model', 'outcome.model',
-          'data', 'variables', 'End', 'influence', 'coefficients',
-          'coefficient.variance', 'base'))
-    expect_s3_class(object$outcome.model, 'SensIAT::Single-index-outcome-model')
-    expect_s3_class(object$intensity.model, 'coxph')
+        c('models', 'data', 'variables', 'End', 'influence',
+          'alpha', 'coefficients', 'coefficient.variance',
+          'args', 'base', 'V_inverse'))
+    expect_true(is.list(object$models))
+    expect_s3_class(object$data, 'data.frame')
+    expect_true(is.list(object$variables) && rlang::is_named(object$variables))
+
     expect_true(is.list(object$influence))
+    expect_length(object$influence, length(object$alpha))
     expect_true(is.list(object$influence[[1]]))
-    expect_contains(names(object$influence[[1]]), c('id', 'alpha', 'term1', 'term2'))
+    expect_named(object$influence[[1]], c('term1', 'term2', 'id', 'alpha'), ignore.order=TRUE)
+
+    expect_true(is.list(object$models))
+    expect_named(object$models, c('intensity', 'outcome'), ignore.order=TRUE)
+    expect_s3_class(object$models$outcome, 'SensIAT::Single-index-outcome-model')
+    expect_s3_class(object$models$intensity, 'coxph')
+
+    expect_equal(object$alpha, 0)
+    expect_s4_class(object$base, 'SplineBasis')
+
+    expect_true(is.list(object$args))
+    expect_named(object$args, c('intensity', 'outcome', 'influence'), ignore.order=TRUE)
+
+    expect_true(is.list(object$args$intensity))
+    expect_true(is.list(object$args$outcome))
+    expect_true(is.list(object$args$influence))
+
 })

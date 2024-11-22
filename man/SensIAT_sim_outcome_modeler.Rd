@@ -34,17 +34,16 @@ Object of class \code{SensIAT::Single-index-outcome-model} which contains the ou
 Outcome Modeler for \code{SensIAT} Single Index Model.
 }
 \examples{
-\donttest{
-model <-
+# A basic example using fixed intensity bandwidth.
+object <-
     fit_SensIAT_within_group_model(
         group.data = SensIAT_example_data,
         outcome_modeler = SensIAT_sim_outcome_modeler,
-        alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-        id.var = Subject_ID,
-        outcome.var = Outcome,
-        time.var = Time,
+        id = Subject_ID,
+        outcome = Outcome,
+        time = Time,
+        knots = c(60,260,460),
         End = 830,
-        knots = c(60,60,60,60,260,460,460,460,460),
+        intensity.args=list(bandwidth=30)
     )
-}
 }

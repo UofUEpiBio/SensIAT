@@ -11,22 +11,16 @@ fit_SensIAT_fulldata_model(data, trt, ...)
 fit_SensIAT_within_group_model(
   group.data,
   outcome_modeler,
+  id,
+  outcome,
+  time,
   knots,
-  id.var,
-  outcome.var,
-  time.var,
   alpha = 0,
-  intensity.covariates = ~.,
-  outcome.covariates = ~. - 1,
-  End = max({
-     {
-         time.var
-     }
- }, na.rm = TRUE) + 1,
-  integration.tolerance = .Machine$double.eps^(1/3),
-  intensity.bandwidth = NULL,
-  ...,
-  influence.args = list()
+  End = NULL,
+  intensity.args = list(),
+  outcome.args = list(),
+  influence.args = list(),
+  spline.degree = 3
 )
 }
 \arguments{
@@ -35,8 +29,7 @@ fit_SensIAT_within_group_model(
 \item{trt}{an expression that determine what is treated as the treatment.
 Everything not treatment is considered control.}
 
-\item{...}{add parameters as needed or use this to pass forward into the
-outcome_modeler.}
+\item{...}{common arguments passed to \code{fit_SensIAT_within_group_model}.}
 
 \item{group.data}{The data for the group that is being analyzed.
 Preferably passed in as a single \code{tibble} that internally is
@@ -46,28 +39,30 @@ subsetted/filtered as needed.}
 between negative-binomial, single index model, or another we will
 dream up in the future.}
 
+\item{id}{The variable that identifies the patient.}
+
+\item{outcome}{The variable that contains the outcome.}
+
+\item{time}{The variable that contains the time.}
+
 \item{knots}{knot locations for defining the spline basis.}
-
-\item{id.var}{The variable that identifies the patient.}
-
-\item{outcome.var}{The variable that contains the outcome.}
-
-\item{time.var}{The variable that contains the time.}
 
 \item{alpha}{The sensitivity parameter.}
 
-\item{intensity.covariates}{A formula representing modifications to the intensity model.}
-
-\item{outcome.covariates}{A formula representing modifications to the outcome model.  The default removes the intercept term.}
-
 \item{End}{The end time for this data analysis, we need to set the default value as the
-max value of the time}
+max value of the time.}
 
-\item{integration.tolerance}{The tolerance for the integration.}
+\item{intensity.args}{A list of optional arguments for intensity model.
+See the Intensity Arguments section.}
 
-\item{intensity.bandwidth}{The bandwidth for the intensity model kernel.}
+\item{outcome.args}{parameters as needed passed into the \code{outcome_modeler}.
+One special element may be \code{'model.modifications'} which, if present,
+should be a formula that will be used to modify the outcome model per, \link{update.formula}.}
 
-\item{influence.args}{A list of additional arguments to pass to the influence function.}
+\item{influence.args}{A list of optional arguments used when computing the influence.
+See the Influence Arguments section.}
+
+\item{spline.degree}{The degree of the spline basis.}
 }
 \value{
 a list with class \code{SensIAT-fulldata-fitted-model} with two components,
@@ -93,6 +88,29 @@ treatment or control group.
 \item \code{fit_SensIAT_fulldata_model()}: Fit the sensitivity analysis for both treatment and control groups.
 
 }}
+\section{Intensity Arguments}{
+
+The \code{intensity.args} list may contain the following elements:
+\itemize{
+\item \strong{\code{model.modifications}} A formula that will be used to modify the intensity model from it's default, per \link{update.formula}.
+\item \strong{\code{kernel}} The kernel function for the intensity model. Default is the Epanechnikov kernel.
+\item \strong{\code{bandwidth}} The bandwidth for the intensity model kernel.
+}
+}
+
+\section{Influence Arguments}{
+
+
+The \code{influence.args} list may contain the following elements:
+\itemize{
+\item \strong{\code{method}} The method for integrating, adaptive or fixed quadrature. Default is \code{'adaptive'}.
+\item \strong{\code{tolerance}} The tolerance when using adaptive quadrature.
+\item \strong{\code{delta}} The bin width for fixed quadrature.
+\item \strong{\code{resolution}} alternative to \code{delta} by specifying the number of bins.
+\item \strong{\code{fix_discontinuity}} Whether to account for the discontinuity in the influence at observation times.
+}
+}
+
 \examples{
 \donttest{
 model <-
@@ -100,11 +118,11 @@ model <-
         group.data = SensIAT_example_data,
         outcome_modeler = SensIAT_sim_outcome_modeler,
         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-        id.var = Subject_ID,
-        outcome.var = Outcome,
-        time.var = Time,
+        id = Subject_ID,
+        outcome = Outcome,
+        time = Time,
         End = 830,
-        knots = c(60,60,60,60,260,460,460,460,460),
+        knots = c(60,260,460),
     )
 }
 }

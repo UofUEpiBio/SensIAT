@@ -18,11 +18,11 @@
 #'         group.data = SensIAT_example_data,
 #'         outcome_modeler = SensIAT_sim_outcome_modeler,
 #'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-#'         id.var = Subject_ID,
-#'         outcome.var = Outcome,
-#'         time.var = Time,
+#'         id = Subject_ID,
+#'         outcome = Outcome,
+#'         time = Time,
 #'         End = 830,
-#'         knots = c(60,60,60,60,260,460,460,460,460),
+#'         knots = c(60,260,460),
 #'     )
 #' predict(model, time = c(90, 180))
 #' }

@@ -32,8 +32,8 @@ fit_SensIAT_within_group_model(
     id.var = Subject_ID,
     outcome.var = Outcome,
     time.var = Time,
-    intensity.bandwidth = 30,
-    knots = c(60,60,60,60,260,460,460,460,460),
+    intensity.args=list(bandwidth = 30),
+    knots = c(60,260,460),
     End = 830
 )
 jackknife.estimates <- SensIAT_jackknife(original.object, time = c(90, 180, 270, 360, 450))

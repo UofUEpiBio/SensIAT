@@ -5,6 +5,7 @@
 #' @param data the full data set.
 #' @param trt  an expression that determine what is treated as the treatment.
 #'              Everything not treatment is considered control.
+#' @param ... common arguments passed to `fit_SensIAT_within_group_model`.
 #'
 #' @return a list with class `SensIAT-fulldata-fitted-model` with two components,
 #'      `control` and `treatment`, each of which is an independently fitted

@@ -10,14 +10,16 @@ cross_validate <- function(original.object, progress = interactive()){
         data |> filter(!!original.object$variables$id != id) |>
             fit_SensIAT_within_group_model(
                 outcome_modeler = attr(original.object, 'call')$outcome_modeler,
+                id = !!original.object$variables$id,
+                outcome = !!original.object$variables$outcome,
+                time = !!original.object$variables$time,
                 knots = original.object$base@knots,
-                id.var = !!original.object$variables$id,
-                outcome.var = !!original.object$variables$outcome,
-                time.var = !!original.object$variables$time,
                 alpha = original.object$alpha,
-                intensity.covariates = attr(original.object$intensity.model, 'additional.covariates'),
-                outcome.covariates = attr(original.object$outcome.model, 'additional.covariates'),
-                End = original.object$End
+                End = original.object$End,
+                intensity.args = original.object$args$intensity,
+                outcome.args = original.object$args$outcome,
+                influence.args = original.object$args$influence,
+                spline.degree = original.object$base@order-1L
             ) |>
             prune_bootstrap_replication()
     }
@@ -57,8 +59,8 @@ cross_validate <- function(original.object, progress = interactive()){
 #'     id.var = Subject_ID,
 #'     outcome.var = Outcome,
 #'     time.var = Time,
-#'     intensity.bandwidth = 30,
-#'     knots = c(60,60,60,60,260,460,460,460,460),
+#'     intensity.args=list(bandwidth = 30),
+#'     knots = c(60,260,460),
 #'     End = 830
 #' )
 #' jackknife.estimates <- SensIAT_jackknife(original.object, time = c(90, 180, 270, 360, 450))
