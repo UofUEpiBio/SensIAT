@@ -67,7 +67,7 @@ fit_SensIAT_within_group_model <- function(
         influence.args = list(),
         spline.degree = 3
 ){
-    ##### Input clean and capture -------------------------------------------
+    ###### Input clean and capture -------------------------------------------
     # Variables
     id.var <- ensym(id)
     outcome.var <- ensym(outcome)
@@ -95,7 +95,7 @@ fit_SensIAT_within_group_model <- function(
 
     # Pass through Argument Lists
     intensity.args <- match.names(intensity.args, c("model.modifications", 'bandwidth'), FALSE)
-    outcome.args <- match.names(outcome.args, c("model.modifications"))
+    outcome.args   <- match.names(outcome.args  , c("model.modifications"))
     influence.args <- match.names(influence.args, c("tolerance"))
 
     # Function
@@ -103,24 +103,19 @@ fit_SensIAT_within_group_model <- function(
     if(is.null(End)){
         End <- rlang::eval_tidy( max({{time.var}}, na.rm = TRUE) + 1, data = group.data, env =parent.frame())
     }
-    # Create usable data
-    mf <- rlang::inject(
-            !!outcome.var ~ !!id.var + !!time.var +
-            !!(rlang::f_rhs(intensity.args$model.modifications %||% ~.)) +
-            !!(rlang::f_rhs(outcome.args$model.modifications %||% ~.))
-        ) |>
-        model.frame(data=filter(group.data, (!!time.var) <= !!End), na.action = na.pass) |>
+
+    ###### Create Model Frame -----------------------------------------------
+    outcome.extra.vars <- all.vars(outcome.args$model.modifications) |>
+        setdiff(c('..id..', '..time..', '..prev_outcome..', '..delta_time..', '..visit_number..', '..outcome..'))
+    intensity.extra.vars <- all.vars(intensity.args$model.modifications) |>
+        setdiff(c('..id..', '..time..', '..prev_outcome..', '..delta_time..', '..visit_number..', '..outcome..'))
+
+    mf <- group.data |>
+        filter((!!time.var) <= !!End) |>
+        select(!!id.var, !!time.var, !!outcome.var,
+               any_of(outcome.extra.vars),
+               any_of(intensity.extra.vars)) |>
         arrange(!!id.var, !!time.var)
-
-
-
-    group.data2 <- filter(group.data, !!time.var <= End)
-
-    u_hv <- group.data2 |> select(!!id.var) |> distinct() |> pull()
-    N <- pull(summarize(group.data2, n_distinct(!!id.var)))
-
-
-
 
     data_all_with_transforms <- mf |>
         rename(
@@ -145,6 +140,7 @@ fit_SensIAT_within_group_model <- function(
             ..delta_time..      := ..time.. - lag(..time.., order_by =  ..time.., default = 0)
         ) |>
         ungroup()
+
 
     ######   Andersen-Gill model stratifying by assessment number ------
     ######   Intensity model  ##################################################
