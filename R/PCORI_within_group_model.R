@@ -101,7 +101,8 @@ fit_SensIAT_within_group_model <- function(
     # Function
     outcome_modeler <- match.fun(outcome_modeler)
     if(is.null(End)){
-        End <- rlang::eval_tidy( max({{time.var}}, na.rm = TRUE) + 1, data = group.data, env =parent.frame())
+        End <- rlang::expr(max({{time}}, na.rm = TRUE) + 1) %>%
+            rlang::eval_tidy(data = group.data, env = parent.frame())
     }
 
     ###### Create Model Frame -----------------------------------------------
