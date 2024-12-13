@@ -28,7 +28,7 @@
 #' }
 predict.SensIAT_within_group_model <-
 function(object, time, include.var= TRUE, ..., base = object$base){
-    B <- evaluate(base, time)
+    B <- do.call(rbind, map(time, pcoriaccel_evaluate_basis, spline_basis = base))
     tmp <- purrr::map2(object$coefficients, object$coefficient.variance,
          function(beta, var_beta){
              mean <- as.vector(B %*% beta)
