@@ -363,7 +363,6 @@ function(X, Y, ids,
     else rlang::abort("Bad Kernel")
 
     Eij3 <- function(parameter){
-        # b <- c(1, parameter[1:(number_p-1)])
         x <- c(X %*% parameter)
         y <- Y
 
@@ -401,7 +400,7 @@ function(X, Y, ids,
                              fn = Eij3,
                              control = list(tol = abs.tol))
     }else rlang::abort("Invalid optimization method")
-    results <- list(coefficients = c(1, esti$par[1:(number_p-1)]),
+    results <- list(coefficients = esti$par,
                     bandwidth = 1,
                     details = esti)
 }
