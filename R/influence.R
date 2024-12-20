@@ -250,6 +250,7 @@ compute_influence_term_2_for_one_patient_fixed_approximation <-
                 xi = xi %*% beta,
                 y_seq = uY,
                 h= bandwidth, kernel = kernel)
+            if(all(pmf ==0)) return(0)
             E_exp_alphaY <- sum( exp(alpha*uY)*pmf )
 
             E_Yexp_alphaY <- sum( uY*exp(alpha*uY)*pmf )
