@@ -347,11 +347,10 @@ function(X, Y, ids,
 
     if (is.null(initial))
     {
-        initial <- c(1, rep(0, number_p-1))
+        initial <- rep(0, number_p)
     }else
     {
         initial <- as.vector(initial)
-        initial <- initial/initial[1]
     }
 
     if (kernel=="K2_Biweight")

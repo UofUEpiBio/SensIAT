@@ -243,3 +243,33 @@ function(
 }
 
 
+#' @describeIn SensIAT_sim_outcome_modeler for fitting with a fixed bandwidth
+#' @export
+SensIAT_sim_outcome_modeler_fbw <-
+    function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ...){
+        id <- ensym(id)
+        mf <- rlang::inject(model.frame(formula, data = data, id = !!id))
+        Xi <- model.matrix(formula, data = mf)
+
+        Yi <- model.response(mf)
+
+        initial = estimate_starting_coefficients(Xi, Yi)
+
+        val <- SIDRnew_fixed_bandwidth(X = Xi, Y = Yi, ids= mf[['(id)']],
+                            initial=initial,
+                            kernel = kernel,
+                            method = method,
+                            ...)
+        structure(
+            append(
+                val,
+                list(
+                    frame = mf,
+                    data = data
+                )
+            ),
+            class = c('SensIAT::outcome-model', 'SensIAT::Single-index-outcome-model'),
+            kernel = kernel,
+            terms = terms(mf))
+    }
+

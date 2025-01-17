@@ -2,9 +2,19 @@
 % Please edit documentation in R/sim_outcome_modeler.R
 \name{SensIAT_sim_outcome_modeler}
 \alias{SensIAT_sim_outcome_modeler}
+\alias{SensIAT_sim_outcome_modeler_fbw}
 \title{Outcome Modeler for \code{SensIAT} Single Index Model.}
 \usage{
 SensIAT_sim_outcome_modeler(
+  formula,
+  data,
+  kernel = "K2_Biweight",
+  method = "nmk",
+  id = ..id..,
+  ...
+)
+
+SensIAT_sim_outcome_modeler_fbw(
   formula,
   data,
   kernel = "K2_Biweight",
@@ -33,6 +43,11 @@ Object of class \code{SensIAT::Single-index-outcome-model} which contains the ou
 \description{
 Outcome Modeler for \code{SensIAT} Single Index Model.
 }
+\section{Functions}{
+\itemize{
+\item \code{SensIAT_sim_outcome_modeler_fbw()}: for fitting with a fixed bandwidth
+
+}}
 \examples{
 # A basic example using fixed intensity bandwidth.
 object <-
