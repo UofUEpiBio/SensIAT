@@ -45,6 +45,7 @@
 <span>  kernel <span class="op">=</span> <span class="st">"K2_Biweight"</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"nmk"</span>,</span>
 <span>  id <span class="op">=</span> <span class="va">..id..</span>,</span>
+<span>  initial <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -54,6 +55,7 @@
 <span>  kernel <span class="op">=</span> <span class="st">"K2_Biweight"</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"nmk"</span>,</span>
 <span>  id <span class="op">=</span> <span class="va">..id..</span>,</span>
+<span>  initial <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -83,6 +85,11 @@ Should only include follow-up data, i.e. time &gt; 0.</p></dd>
 <dd><p>The patient identifier variable for the data.</p></dd>
 
 
+<dt id="arg-initial">initial<a class="anchor" aria-label="anchor" href="#arg-initial"></a></dt>
+<dd><p>Either a vector of initial values or a function to estimate initial values.
+If NULL (default), the initial values are estimated using the <code><a href="https://rdrr.io/pkg/MAVE/man/mave.html" class="external-link">MAVE::mave.compute</a></code> function.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Currently ignored, included for future compatibility.</p></dd>
 
@@ -101,6 +108,18 @@ Should only include follow-up data, i.e. time &gt; 0.</p></dd>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># A basic example using fixed intensity bandwidth.</span></span></span>
 <span class="r-in"><span><span class="va">object</span> <span class="op">&lt;-</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="fit_SensIAT_within_group_model.html">fit_SensIAT_within_group_model</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>        group.data <span class="op">=</span> <span class="va">SensIAT_example_data</span>,</span></span>
+<span class="r-in"><span>        outcome_modeler <span class="op">=</span> <span class="va">SensIAT_sim_outcome_modeler_fbw</span>,</span></span>
+<span class="r-in"><span>        id <span class="op">=</span> <span class="va">Subject_ID</span>,</span></span>
+<span class="r-in"><span>        outcome <span class="op">=</span> <span class="va">Outcome</span>,</span></span>
+<span class="r-in"><span>        time <span class="op">=</span> <span class="va">Time</span>,</span></span>
+<span class="r-in"><span>        knots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">60</span>,<span class="fl">260</span>,<span class="fl">460</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        End <span class="op">=</span> <span class="fl">830</span>,</span></span>
+<span class="r-in"><span>        intensity.args<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>bandwidth<span class="op">=</span><span class="fl">30</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">object.bw</span> <span class="op">&lt;-</span></span></span>
 <span class="r-in"><span>    <span class="fu"><a href="fit_SensIAT_within_group_model.html">fit_SensIAT_within_group_model</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>        group.data <span class="op">=</span> <span class="va">SensIAT_example_data</span>,</span></span>
 <span class="r-in"><span>        outcome_modeler <span class="op">=</span> <span class="va">SensIAT_sim_outcome_modeler</span>,</span></span>
