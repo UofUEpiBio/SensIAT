@@ -6,20 +6,31 @@
 #' @param kernel The kernel to use for the outcome model.
 #' @param method The optimization method to use for the outcome model, either `"optim"`, `"nlminb"`, or `"nmk"`.
 #' @param id The patient identifier variable for the data.
+#' @param initial Either a vector of initial values or a function to estimate initial values.
+#'      If NULL (default), the initial values are estimated using the `MAVE::mave.compute` function.
 #' @param ... Currently ignored, included for future compatibility.
 #'
 #' @return Object of class `SensIAT::Single-index-outcome-model` which contains the outcome model portion.
 #' @export
 #' @example inst/examples/basic.R
 SensIAT_sim_outcome_modeler <-
-function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ...){
+function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., initial=NULL, ...){
   id <- ensym(id)
   mf <- rlang::inject(model.frame(formula, data = data, id = !!id))
   Xi <- model.matrix(formula, data = mf)
 
   Yi <- model.response(mf)
 
-  initial = estimate_starting_coefficients(Xi, Yi)
+  if(is.null(initial)){
+      requireNamespace('MAVE', quietly = TRUE)
+      initial = coef(MAVE::mave.compute(Xi, Yi, max.dim = 1), 1)
+  } else if(is.function(initial)){
+      initial = initial(Xi, Yi)
+  } else if(is.numeric(initial)){
+      initial = initial
+  } else {
+      stop("initial must be a function, a numeric vector, or NULL")
+  }
 
   val <- SIDR_Ravinew(X = Xi, Y = Yi, index_ID= mf[['(id)']],
                       initial=initial,
@@ -36,7 +47,8 @@ function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ...
       ),
       class = c('SensIAT::outcome-model', 'SensIAT::Single-index-outcome-model'),
       kernel = kernel,
-      terms = terms(mf))
+      terms = terms(mf),
+      initial = initial)
 }
 
 #' @export
@@ -246,14 +258,24 @@ function(
 #' @describeIn SensIAT_sim_outcome_modeler for fitting with a fixed bandwidth
 #' @export
 SensIAT_sim_outcome_modeler_fbw <-
-    function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ...){
+    function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id..,
+             initial = NULL, ...){
         id <- ensym(id)
         mf <- rlang::inject(model.frame(formula, data = data, id = !!id))
         Xi <- model.matrix(formula, data = mf)
 
         Yi <- model.response(mf)
 
-        initial = estimate_starting_coefficients(Xi, Yi)
+        if(is.null(initial)){
+            requireNamespace('MAVE', quietly = TRUE)
+            initial = coef(MAVE::mave.compute(Xi, Yi, max.dim = 1), 1)
+        } else if(is.function(initial)){
+            initial = initial(Xi, Yi)
+        } else if(is.numeric(initial)){
+            initial = initial
+        } else {
+            stop("initial must be a function, a numeric vector, or NULL")
+        }
 
         val <- SIDRnew_fixed_bandwidth(X = Xi, Y = Yi, ids= mf[['(id)']],
                             initial=initial,
@@ -270,6 +292,7 @@ SensIAT_sim_outcome_modeler_fbw <-
             ),
             class = c('SensIAT::outcome-model', 'SensIAT::Single-index-outcome-model'),
             kernel = kernel,
-            terms = terms(mf))
+            terms = terms(mf),
+            initial = initial)
     }
 

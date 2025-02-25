@@ -23,7 +23,7 @@ Compute Conditional Means
 }
 \details{
 Compute the conditional expectations needed for predictions in the models.
-Three additional values/expectations are computed:
+Two additional values/expectations are computed:
 \itemize{
 \item \verb{$E \\big[ Y(t) \\exp \\\{  \\alpha Y(t) \\\}   | A(t)=1, \\bar\{O\}(t) \\big]$}, returned as \code{E_y_past}, and
 \item \verb{$E \\big[ \\exp \\\{ \\alpha Y(t) \\\} \\  | A(t)=1, \\bar\{O\}(t) \\big]$}, returned as \code{E_exp_alphaY}.

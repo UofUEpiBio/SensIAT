@@ -27,6 +27,7 @@ Imports:
     glue,
     KernSmooth,
     MASS,
+    MAVE,
     methods,
     orthogonalsplinebasis,
     pracma,

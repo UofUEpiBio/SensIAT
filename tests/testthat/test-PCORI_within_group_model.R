@@ -10,9 +10,9 @@ test_that("Altering models", {
             End = 830,
             knots = c(60,260,460),
             outcome.args = list(
-                model=~ns(..prev_outcome.., knots=c(9/6, 16/6)) + scale(..delta_time..)
+                model=~ns(..prev_outcome.., knots=c(9/6, 16/6)) + scale(..delta_time..)-1
             )
         )
     model$models$outcome |> formula() |>
-    expect_equal(..outcome..~ns(..prev_outcome.., knots=c(9/6, 16/6)) + scale(..delta_time..), ignore_attr=TRUE)
+    expect_equal(..outcome..~ns(..prev_outcome.., knots=c(9/6, 16/6)) + scale(..delta_time..)-1, ignore_attr=TRUE)
 })

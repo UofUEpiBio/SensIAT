@@ -11,6 +11,7 @@ SensIAT_sim_outcome_modeler(
   kernel = "K2_Biweight",
   method = "nmk",
   id = ..id..,
+  initial = NULL,
   ...
 )
 
@@ -20,6 +21,7 @@ SensIAT_sim_outcome_modeler_fbw(
   kernel = "K2_Biweight",
   method = "nmk",
   id = ..id..,
+  initial = NULL,
   ...
 )
 }
@@ -34,6 +36,9 @@ Should only include follow-up data, i.e. time > 0.}
 \item{method}{The optimization method to use for the outcome model, either \code{"optim"}, \code{"nlminb"}, or \code{"nmk"}.}
 
 \item{id}{The patient identifier variable for the data.}
+
+\item{initial}{Either a vector of initial values or a function to estimate initial values.
+If NULL (default), the initial values are estimated using the \code{MAVE::mave.compute} function.}
 
 \item{...}{Currently ignored, included for future compatibility.}
 }
@@ -51,6 +56,18 @@ Outcome Modeler for \code{SensIAT} Single Index Model.
 \examples{
 # A basic example using fixed intensity bandwidth.
 object <-
+    fit_SensIAT_within_group_model(
+        group.data = SensIAT_example_data,
+        outcome_modeler = SensIAT_sim_outcome_modeler_fbw,
+        id = Subject_ID,
+        outcome = Outcome,
+        time = Time,
+        knots = c(60,260,460),
+        End = 830,
+        intensity.args=list(bandwidth=30)
+    )
+
+object.bw <-
     fit_SensIAT_within_group_model(
         group.data = SensIAT_example_data,
         outcome_modeler = SensIAT_sim_outcome_modeler,
