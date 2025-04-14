@@ -37,3 +37,4 @@ vignettes/*.html
 vignettes/*.pdf
 *.DS_Store
 docs
+inst/doc

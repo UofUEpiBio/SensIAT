@@ -32,6 +32,8 @@ function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ini
       stop("initial must be a function, a numeric vector, or NULL")
   }
 
+  if(initial[1]<0) initial <- -initial
+
   val <- SIDR_Ravinew(X = Xi, Y = Yi, index_ID= mf[['(id)']],
                       initial=initial,
                       kernel = kernel,
@@ -184,7 +186,7 @@ Cond_mean_fn_single2 <-
 
 
 #' @export
-`pcori_conditional_means.SensIAT::Single-index-outcome-model` <-
+`sensitivity_expected_values.SensIAT::Single-index-outcome-model` <-
 function(
     model,
     alpha,
@@ -266,6 +268,7 @@ SensIAT_sim_outcome_modeler_fbw <-
 
         Yi <- model.response(mf)
 
+        force(initial)
         if(is.null(initial)){
             requireNamespace('MAVE', quietly = TRUE)
             initial = coef(MAVE::mave.compute(Xi, Yi, max.dim = 1), 1)
@@ -276,6 +279,8 @@ SensIAT_sim_outcome_modeler_fbw <-
         } else {
             stop("initial must be a function, a numeric vector, or NULL")
         }
+
+        if(initial[1]<0) initial <- -initial
 
         val <- SIDRnew_fixed_bandwidth(X = Xi, Y = Yi, ids= mf[['(id)']],
                             initial=initial,

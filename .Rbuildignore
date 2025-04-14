@@ -11,3 +11,4 @@ roadmap.md
 ^docs$
 ^pkgdown$
 ^\.github$
+^Makefile$

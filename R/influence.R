@@ -304,12 +304,14 @@ compute_influence_term_2_for_all_patients <-
         uids <- unique(ids)
 
 
+        # TODO[@halpo]: expand to include other possible covariates in outcome model.
         slope <- model.matrix(
             outcome.model,
             data=tibble(
                 ..outcome..=0,
                 ..time..=c(0, 1),
                 ..prev_outcome..=0,
+                ..prev_time..=c(0,1),
                 ..delta_time..=c(0,1)
             )
         ) |> apply(2, diff)

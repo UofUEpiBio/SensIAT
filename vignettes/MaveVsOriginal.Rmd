@@ -1,0 +1,121 @@
+---
+title: "MAVE vs Original Initial Value Estimation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{MAVE vs Original Initial Value Estimation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(SensIAT)
+library(tidyverse)
+```
+
+# Introduction
+
+This vignette will illustrate the difference between minimum average variance estimation (MAVE) and the original initial value estimation method. 
+
+
+## Original Method
+
+```{r}
+system.time(
+    object.original <-
+        fit_SensIAT_within_group_model(
+            group.data = SensIAT_example_data,
+            outcome_modeler = SensIAT_sim_outcome_modeler_fbw,
+            id = Subject_ID,
+            outcome = Outcome,
+            time = Time,
+            knots = c(60,260,460),
+            End = 830,
+            intensity.args=list(bandwidth=30),
+            # specify the original method.
+            outcome.args = list(initial = SensIAT:::estimate_starting_coefficients)
+        )
+)
+```
+
+## MAVE
+```{r}
+system.time(
+    object.MAVE <-
+        fit_SensIAT_within_group_model(
+            group.data = SensIAT_example_data,
+            outcome_modeler = SensIAT_sim_outcome_modeler_fbw,
+            id = Subject_ID,
+            outcome = Outcome,
+            time = Time,
+            knots = c(60,260,460),
+            End = 830,
+            intensity.args=list(bandwidth=30)
+        )
+)
+```
+
+## Comparison
+
+```{r}
+# Expected identical
+identical(object.original$models$intensity$coefficients, 
+          object.MAVE$models$intensity$coefficients)
+
+initial.original <- attr(object.original$models$outcome, 'initial')
+initial.MAVE <- attr(object.MAVE$models$outcome, 'initial')
+
+tibble( original = initial.original
+      , MAVE = initial.MAVE
+      )
+
+# Angle between the two vectors
+acos(crossprod(initial.original, initial.MAVE) /
+     sqrt(crossprod(initial.original)) / sqrt(crossprod(initial.MAVE))) * 180 / pi
+```
+```{r}
+
+coef.original <- object.original$models$outcome$coefficients
+coef.MAVE <- object.MAVE$models$outcome$coefficients
+
+tibble(original = coef.original, MAVE = coef.MAVE)
+
+# Angle between the two vectors
+acos(crossprod(coef.original, coef.MAVE) /
+     sqrt(crossprod(coef.original)) / sqrt(crossprod(coef.MAVE))) * 180 / pi
+
+
+```
+```{r}
+object.original$models$outcome$details
+
+```
+
+```{r}
+object.MAVE$models$outcome$details
+
+```
+
+```{r}
+acos(crossprod(-coef.original, coef.MAVE) /
+     sqrt(crossprod(coef.original)) / sqrt(crossprod(coef.MAVE))) * 180 / pi
+```
+```{r}
+tibble(
+    var = rownames(initial.MAVE),
+    '-original' = -coef.original, 
+    MAVE = coef.MAVE,
+    diff = coef.original + coef.MAVE,
+    rel.diff = abs(coef.original+coef.MAVE)/abs(coef.MAVE)
+)
+```
+```{r}
+object.MAVE$models$outcome |> model.matrix() |> cor()
+```
+I think that the difference in the final estimates could be attributed to the correlation still present between `scale(time)` and `scale(delta_time)`.
