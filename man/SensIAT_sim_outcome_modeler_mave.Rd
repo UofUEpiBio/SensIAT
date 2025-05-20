@@ -25,7 +25,7 @@ Should only include follow-up data, i.e. time > 0.}
 
 \item{id}{The patient identifier variable for the data.}
 
-\item{optim.method}{The optimization method to use for the outcome model, either \code{"optim"}, \code{"nlminb"}, or \code{"nmk"}.}
+\item{...}{Additional arguments to be passed to \link{optim}.}
 }
 \value{
 Object of class \code{SensIAT::Single-index-outcome-model} which contains the outcome model portion.
