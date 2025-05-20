@@ -24,6 +24,14 @@ class SplineBasis final
 		{
 			return _knots[ _knots.length() - _order ];
 		}
+		[[nodiscard]] inline int get_order() const noexcept
+		{
+			return _order;
+		}
+		[[nodiscard]] inline int ncol() const noexcept
+		{
+			return _mdims[ 1 ];
+		}
 
 		[[nodiscard]] NumericVector evaluate( double x ) const noexcept;
 };
