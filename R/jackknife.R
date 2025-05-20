@@ -1,15 +1,16 @@
 globalVariables(c('alpha', add=TRUE))
 
-cross_validate <- function(original.object, progress = interactive()){
+cross_validate <- function(original.object, progress = interactive(), prune = TRUE){
     data <- original.object$data
     ids <- unique(pull(data, original.object$variables$id))
 
 
     run_without <- function(id){
         if(progress)on.exit(try(pb$tick(), silent = TRUE))
+        replication <-
         data |> filter(!!original.object$variables$id != id) |>
             fit_SensIAT_within_group_model(
-                outcome_modeler = attr(original.object, 'call')$outcome_modeler,
+                outcome_modeler = original.object$outcome_modeler,
                 id = !!original.object$variables$id,
                 outcome = !!original.object$variables$outcome,
                 time = !!original.object$variables$time,
@@ -20,8 +21,11 @@ cross_validate <- function(original.object, progress = interactive()){
                 outcome.args = original.object$args$outcome,
                 influence.args = original.object$args$influence,
                 spline.degree = original.object$base@order-1L
-            ) |>
-            prune_bootstrap_replication()
+            )
+        if(prune)
+            replication <- prune(replication)
+        replication$jackknife_excluded_id <- id
+        return(replication)
     }
 
     if(progress && rlang::is_installed("progress")){
@@ -30,9 +34,14 @@ cross_validate <- function(original.object, progress = interactive()){
             total = length(ids)
         )
     }
-    if(progress) pb$tick(0)
-
-    map(ids, run_without)
+    if(progress){
+        pb$tick(0)
+        on.exit(pb$terminate(), add = TRUE)
+    }
+    structure(
+        map(ids, run_without),
+        ids = ids
+    )
 }
 
 
