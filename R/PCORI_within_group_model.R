@@ -154,7 +154,6 @@ fit_SensIAT_within_group_model <- function(
         ungroup()
 
 
-    ######   Andersen-Gill model stratifying by assessment number ------
     ######   Intensity model  ##################################################
     #' @section Intensity Arguments:
     #' The `intensity.args` list may contain the following elements:
@@ -170,19 +169,20 @@ fit_SensIAT_within_group_model <- function(
     if(!is.null(intensity.args$model.modifications))
         intensity.formula <- update.formula(intensity.formula, intensity.args$model.modifications)
 
-    intensity.model <- coxph(intensity.formula, id = ..id.., data = followup_data)
-
-    baseline_intensity_all <-
-        estimate_baseline_intensity(
-            intensity.model = intensity.model,
-            data = followup_data,
-            variables = list(prev_outcome = sym("..prev_outcome..")),
-            kernel = intensity.args$kernel %||% \(x) 0.75*(1 - (x)**2) * (abs(x) < 1),
-            bandwidth = intensity.args$bandwidth
+    intensity.model <-  rlang::inject(
+        coxph(intensity.formula, id = ..id.., data = followup_data,
+                             !!!purrr::discard_at(intensity.args, c("bandwidth", "kernel", "model.modifications")))
         )
-    attr(intensity.model, 'bandwidth') <- baseline_intensity_all$bandwidth
-    attr(intensity.model, 'kernel') <- baseline_intensity_all$kernel
-    followup_data$baseline_intensity <- baseline_intensity_all$baseline_intensity
+    # baseline_intensity_all <-
+    #     estimate_baseline_intensity(
+    #         intensity.model = intensity.model,
+    #         data = followup_data,
+    #         kernel = intensity.args$kernel %||% \(x) 0.75*(1 - (x)**2) * (abs(x) < 1),
+    #         bandwidth = intensity.args$bandwidth
+    #     )
+    attr(intensity.model, 'bandwidth') <- intensity.args$bandwidth
+    attr(intensity.model, 'kernel') <- intensity.args$kernel %||% \(x) 0.75*(1 - (x)**2) * (abs(x) < 1)
+    # followup_data$baseline_intensity <- baseline_intensity_all$baseline_intensity
 
     ######   Outcome model #####################################################
     outcome.formula <-
@@ -216,15 +216,14 @@ fit_SensIAT_within_group_model <- function(
         compute_influence_terms(
             left_join(
                 data_all_with_transforms,
-                followup_data |> select('..id..', '..time..', 'baseline_intensity'),
+                followup_data |> select('..id..', '..time..'),
                 by=join_by('..id..', '..time..')
             ),
             base = base,
             alpha = a,
             outcome.model = outcome.model,
-            intensity_coef = coef(intensity.model),
-            tol = influence.args$tolerance %||% .Machine$double.eps^(1/3),
-            !!!discard_at(influence.args, 'tolerance')
+            intensity.model = intensity.model,
+            !!!influence.args
         )
     }))
 
@@ -246,6 +245,7 @@ fit_SensIAT_within_group_model <- function(
         variables = vars,
         End = End,
         influence = influence.terms,
+        outcome_modeler = outcome_modeler,
         alpha = alpha,
         coefficients = map(Beta, getElement, 'estimate'),
         coefficient.variance = map(Beta, getElement, 'variance'),
@@ -257,7 +257,7 @@ fit_SensIAT_within_group_model <- function(
         base=base,
         V_inverse = V_inverse
     ), class = "SensIAT_within_group_model",
-    call = match.call())
+    call = match.call(expand.dots = TRUE))
 }
 
 

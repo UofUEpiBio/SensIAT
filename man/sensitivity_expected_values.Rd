@@ -2,6 +2,9 @@
 % Please edit documentation in R/sensitivity_expected_values.R
 \name{sensitivity_expected_values}
 \alias{sensitivity_expected_values}
+\alias{sensitivity_expected_values.lm}
+\alias{sensitivity_expected_values.glm}
+\alias{sensitivity_expected_values.negbin}
 \title{Compute Conditional Expected Values based on Outcome Model}
 \usage{
 sensitivity_expected_values(
@@ -9,6 +12,26 @@ sensitivity_expected_values(
   alpha = 0,
   new.data = model.frame(model),
   ...
+)
+
+\method{sensitivity_expected_values}{lm}(model, alpha, new.data, ...)
+
+\method{sensitivity_expected_values}{glm}(
+  model,
+  alpha,
+  new.data,
+  ...,
+  y.max = NULL,
+  eps = .Machine$double.eps
+)
+
+\method{sensitivity_expected_values}{negbin}(
+  model,
+  alpha,
+  new.data,
+  ...,
+  y.max = NULL,
+  eps = .Machine$double.eps^(1/4)
 )
 }
 \arguments{
@@ -19,9 +42,14 @@ sensitivity_expected_values(
 \item{new.data}{Data to compute conditional means for, defaults to the model frame for the fitted model.}
 
 \item{...}{passed onto methods.}
+
+\item{y.max}{The maximum value of the outcome variable for the Poisson and Negative Binomial models.
+If omitted it is chosen from the quantile function for the distribution at 1-eps.}
+
+\item{eps}{The tolerance for the quantile function used to estimate \code{y.max}, default is \code{.Machine$double.eps}.}
 }
 \value{
-The \code{new.data} frame with additional columns \code{E_Yexp_alphaY}, and \code{E_exp_alphaY} appended.
+The \code{new.data} frame with additional columns \code{alpha}, \code{E_Yexp_alphaY}, and \code{E_exp_alphaY} appended.
 }
 \description{
 Compute Conditional Expected Values based on Outcome Model
@@ -33,4 +61,23 @@ Two additional values/expectations are computed:
 \item \verb{$E \\big[ Y(t) \\exp \\\{  \\alpha Y(t) \\\}   | A(t)=1, \\bar\{O\}(t) \\big]$}, returned as \code{E_Yexp_alphaY}, and
 \item \verb{$E \\big[ \\exp \\\{ \\alpha Y(t) \\\} \\  | A(t)=1, \\bar\{O\}(t) \\big]$}, returned as \code{E_exp_alphaY}.
 }
+
+For the methods shown here
+}
+\section{Methods (by class)}{
+\itemize{
+\item \code{sensitivity_expected_values(lm)}: (Gausian) Linear Model method
+The \link[stats:integrate]{stats::integrate} method is used to compute the conditional expectations.
+
+\item \code{sensitivity_expected_values(glm)}: Generalized Linear Model method
+
+\item \code{sensitivity_expected_values(negbin)}: Negative Binomial Model method
+
+}}
+\examples{
+model <- lm(mpg ~ as.factor(cyl)+disp+wt, data=mtcars)
+sensitivity_expected_values.lm(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
+model <- glm(cyl ~ mpg+disp+wt, data=mtcars, family=poisson())
+sensitivity_expected_values.glm(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ]) |>
+    mutate('E(y|alpha)' = E_Yexp_alphaY/E_exp_alphaY)
 }

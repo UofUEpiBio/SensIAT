@@ -203,7 +203,7 @@ function(
         return(
             purrr::map_dfr(
                 alpha,
-                `pcori_conditional_means.SensIAT::Single-index-outcome-model`,
+                `sensitivity_expected_values::Single-index-outcome-model`,
                 model = model, new.data = new.data,
                 ...
             )
@@ -253,7 +253,7 @@ function(
 
     }
 
-    tibble(new.data, alpha, E_Y_past, E_exp_alphaY, E_Yexp_alphaY)
+    tibble(new.data, alpha, E_Yexp_alphaY, E_exp_alphaY)
 }
 
 

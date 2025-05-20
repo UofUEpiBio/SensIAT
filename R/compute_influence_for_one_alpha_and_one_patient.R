@@ -43,10 +43,11 @@ function(
                 !!min(base@knots) <= !!variables$time,
                 !!variables$time <= !!max(base@knots)
             ) |>
-            pcori_conditional_means(
+            sensitivity_expected_values(
                 outcome.model, alpha, new.data = _
             ) |>
             mutate(
+                E_Y_past = E_Yexp_alphaY / E_exp_alphaY,
                 Term1_unweighted =
                     (!!(variables$outcome)-E_Y_past)/
                     (baseline_lambda*Exp_gamma* exp(-alpha*!!(variables$outcome))*E_exp_alphaY)
@@ -62,7 +63,7 @@ function(
     expected_value <- \(data, ...){
         matrix(
             outcome.model |>
-                pcori_conditional_means(..., alpha=alpha, new.data = data) |>
+                sensitivity_expected_values(..., alpha=alpha, new.data = data) |>
                 pull('E_Y_past'),
             nrow = nrow(data)
         )}

@@ -76,18 +76,11 @@ test_that("Compute Influence term1 old vs. new methods", {
         estimate_baseline_intensity(
             intensity.model = intensity.model,
             data = followup.data,
-            variables = list(
-                time = "Time",
-                id = "Subject_ID",
-                outcome = "Outcome",
-                prev_time = "prev_time",
-                prev_outcome = "prev_outcome"
-            ) |> map(rlang::sym),
             bandwidth = NULL
         )
 
     new.method <-
-        compute_influence_term_1_for_all(
+        compute_sim_influence_term_1_for_all(
             X_all = model.matrix(outcome.model),
             times_all = pull(followup.data, Time),
             outcome_all = pull(followup.data, Outcome),

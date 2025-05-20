@@ -1,14 +1,14 @@
 test_that("Compute Influence term2 old vs. new methods", {
     model.data <- SensIAT_example_data |>
-        group_by(Subject_ID) |>
-        arrange(Time) |>
-        mutate(
-            prev_time = lag(Time),
-            prev_outcome = lag(Outcome),
-            delta_time = Time - lag(Time),
+        dplyr::group_by(Subject_ID) |>
+        dplyr::arrange(Time) |>
+        dplyr::mutate(
+            prev_time = dplyr::lag(Time),
+            prev_outcome = dplyr::lag(Outcome),
+            delta_time = Time - dplyr::lag(Time),
             visit.number = seq_along(Time)
         ) |>
-        filter(!is.na(Outcome))
+        dplyr::filter(!is.na(Outcome))
 
     followup.data <- model.data |>
         filter(Time > 0)
@@ -92,7 +92,7 @@ test_that("Compute Influence term2 old vs. new methods", {
     integration_X <- model.matrix( outcome.model, data=integration_data)
 
     new.method <-
-        compute_influence_term_2_for_individual(
+        compute_sim_influence_term_2_for_individual(
             times_ind = filter(integration_data, `(id)` == 1) |> pull(`(time)`),
             X_ind = integration_X[integration_data[["(id)"]] == 1,,drop=FALSE],
             X_all = model.matrix(outcome.model),
