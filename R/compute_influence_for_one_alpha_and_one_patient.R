@@ -22,8 +22,7 @@ function(
         estimate_baseline_intensity(
             intensity.model,
             df_i[!is.na(pull(df_i, variables$prev_outcome)), ],
-            bandwidth = control$intensity.bandwidth,
-            variables = variables
+            bandwidth = control$intensity.bandwidth
         )$baseline_intensity
 
     df.in.range <- df_i |>
