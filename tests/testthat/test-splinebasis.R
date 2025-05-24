@@ -14,4 +14,10 @@ test_that("Compiled version of evalute works as expected.", {
     expect_equal(pcoriaccel_evaluate_basis(basis, 460.0), c(0, 0, 0, 0, 1))
     expect_equal(pcoriaccel_evaluate_basis(basis, 461.0), rep(NA_real_, 5))
 
+    expect_equal(pcoriaccel_evaluate_basis_mat(basis, vals), evaluate(basis, vals))
+    expect_equal(pcoriaccel_evaluate_basis_mat(basis, 60.0), matrix(c(1, 0, 0, 0, 0), nrow = 1))
+    expect_equal(pcoriaccel_evaluate_basis_mat(basis, 460.0), matrix(c(0, 0, 0, 0, 1), nrow=1))
+    expect_equal(pcoriaccel_evaluate_basis_mat(basis, 59.0), matrix(NA_real_, nrow=1, ncol=5))
+    expect_equal(pcoriaccel_evaluate_basis_mat(basis, 461.0), matrix(NA_real_, nrow=1, ncol=5))
+
 })

@@ -145,3 +145,13 @@ pcoriaccel_evaluate_basis <- function(spline_basis, x) {
     .Call(`_SensIAT_pcoriaccel_evaluate_basis`, spline_basis, x)
 }
 
+#' Compiled version of `evaluate_basis()` function (matrix version)
+#'
+#' @param spline_basis   The spline basis, S4 class `orthogonalsplinebasis::SplineBasis`
+#' @param x              numeric vector of points to evaluate
+#'
+#' @return Matrix of the basis functions evaluated at x.
+pcoriaccel_evaluate_basis_mat <- function(spline_basis, x) {
+    .Call(`_SensIAT_pcoriaccel_evaluate_basis_mat`, spline_basis, x)
+}
+

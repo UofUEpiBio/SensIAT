@@ -102,7 +102,7 @@ SplineBasis::SplineBasis( S4 backing )
 
     for( int i=0; i<x.length(); ++i )
     {
-        ret(i,_) = basis.evaluate(x[i]);
+        ret(i,_) = basis.evaluate(x(i));
     }
 
     return ret;
