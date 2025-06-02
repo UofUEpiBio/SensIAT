@@ -10,6 +10,7 @@ SensIAT_sim_outcome_modeler_mave(
   kernel = "K2_Biweight",
   mave.method = "meanMAVE",
   id = ..id..,
+  bw.selection = c("ise", "mse"),
   ...
 )
 }
@@ -24,6 +25,8 @@ Should only include follow-up data, i.e. time > 0.}
 \item{mave.method}{The method to use for the MAVE estimation.}
 
 \item{id}{The patient identifier variable for the data.}
+
+\item{bw.selection}{The method for bandwidth selection, either 'ise' for Integrated Squared Error or 'mse' for Mean Squared Error.}
 
 \item{...}{Additional arguments to be passed to \link{optim}.}
 }

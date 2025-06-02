@@ -6,6 +6,7 @@
 #' @param kernel The kernel to use for the outcome model.
 #' @param mave.method The method to use for the MAVE estimation.
 #' @param id The patient identifier variable for the data.
+#' @param bw.selection The method for bandwidth selection, either 'ise' for Integrated Squared Error or 'mse' for Mean Squared Error.
 #' @param ... Additional arguments to be passed to [optim].
 #'
 #' @return Object of class `SensIAT::Single-index-outcome-model` which contains the outcome model portion.
@@ -15,6 +16,7 @@ function(formula, data,
          kernel = "K2_Biweight",
          mave.method = "meanMAVE",
          id = ..id..,
+         bw.selection = c('ise', 'mse'),
          ...
 ){
     id <- ensym(id)
@@ -43,13 +45,28 @@ function(formula, data,
     Id_neq <- outer(ids, ids, \(x,y)as.numeric(x!=y))
     Imat <- outer(Y, unique_y, `<=`)
 
-    err <- function(log_bandwidth){
-        W <- K(D/exp(log_bandwidth)) * Id_neq
-        denom <- rowSums(W)
-        Fhat <- sweep(W %*% Imat, 1, denom, "/")
-        Fhat[is.nan(Fhat)] <- 0
-        return (sum((Imat - Fhat)^2)/length(Fhat)^2)
+    bw.selection <- match.arg(bw.selection)
+    if(bw.selection == 'ise'){
+        # Use Integrated Squared Error (ISE) for bandwidth selection
+        err <- function(log_bandwidth){
+            W <- K(D/exp(log_bandwidth)) * Id_neq
+            denom <- rowSums(W)
+            Fhat <- sweep(W %*% Imat, 1, denom, "/")
+            Fhat[is.nan(Fhat)] <- 0
+            return (sum((Imat - Fhat)^2)/length(Fhat)^2)
+        }
+    } else if(bw.selection == 'mse'){
+        # Use Mean Squared Error (MSE) for bandwidth selection
+        err <- function(log_bandwidth){
+            W <- K(D/exp(log_bandwidth)) * Id_neq
+            denom <- rowSums(W)
+            mean_Y <- c(W %*% Y) / denom
+            return (mean((Y - mean_Y)^2, na.rm = TRUE))
+        }
+    } else {
+        stop("Unknown bw.selection type. Please use either 'ise' or 'mse'.")
     }
+
     # bw_opt <- optimize(err,
     #                    interval = c(log(.Machine$double.xmin), log(.Machine$double.xmax)),
     #                    ...,
