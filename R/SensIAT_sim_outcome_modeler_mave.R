@@ -6,7 +6,8 @@
 #' @param kernel The kernel to use for the outcome model.
 #' @param mave.method The method to use for the MAVE estimation.
 #' @param id The patient identifier variable for the data.
-#' @param bw.selection The method for bandwidth selection, either 'ise' for Integrated Squared Error or 'mse' for Mean Squared Error.
+#' @param bw.selection The criteria for bandwidth selection, either 'ise' for Integrated Squared Error or 'mse' for Mean Squared Error.
+#' @param bw.method The method for bandwidth selection, either 'optim' for using optimization or 'grid' for grid search.
 #' @param ... Additional arguments to be passed to [optim].
 #'
 #' @return Object of class `SensIAT::Single-index-outcome-model` which contains the outcome model portion.
@@ -17,6 +18,7 @@ function(formula, data,
          mave.method = "meanMAVE",
          id = ..id..,
          bw.selection = c('ise', 'mse'),
+         bw.method = c('optim', 'grid'),
          ...
 ){
     id <- ensym(id)
@@ -73,7 +75,28 @@ function(formula, data,
     #                    lower = log(.Machine$double.xmin),
     #                    upper = log(.Machine$double.xmax)
     #                    )
-    bw_opt <- optim(0, err, method = "BFGS",  ...)
+    bw.method <- match.arg(bw.method)
+    sigma <- sd(Xbeta)
+    if(bw.method == 'grid'){
+        # Use grid search for bandwidth selection
+        log_bw_seq <- log(seq(0.05, 1.5, length.out = 100) * sigma)
+        err_values <- purrr::map_dbl(log_bw_seq, err)
+        best_log_bw <- log_bw_seq[which.min(err_values)]
+        bw_opt <- list(par = best_log_bw,
+                       value = min(err_values),
+                       convergence = 0,
+                       message = "Grid search completed successfully.",
+                       log_bw_seq = log_bw_seq,
+                       err_values = err_values
+                       )
+    } else if(bw.method == 'optim'){
+        # Use optimization for bandwidth selection
+        bw_opt <- optim(log(sigma), err, method = "BFGS",  ...)
+        bw_opt$initial = log(sigma)
+    } else {
+        stop("Unknown bw.method type. Please use either 'optim' or 'grid'.")
+    }
+
     structure(
         list(
             coefficients = beta_hat,

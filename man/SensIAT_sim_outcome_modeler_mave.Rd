@@ -11,6 +11,7 @@ SensIAT_sim_outcome_modeler_mave(
   mave.method = "meanMAVE",
   id = ..id..,
   bw.selection = c("ise", "mse"),
+  bw.method = c("optim", "grid"),
   ...
 )
 }
@@ -26,7 +27,9 @@ Should only include follow-up data, i.e. time > 0.}
 
 \item{id}{The patient identifier variable for the data.}
 
-\item{bw.selection}{The method for bandwidth selection, either 'ise' for Integrated Squared Error or 'mse' for Mean Squared Error.}
+\item{bw.selection}{The criteria for bandwidth selection, either 'ise' for Integrated Squared Error or 'mse' for Mean Squared Error.}
+
+\item{bw.method}{The method for bandwidth selection, either 'optim' for using optimization or 'grid' for grid search.}
 
 \item{...}{Additional arguments to be passed to \link{optim}.}
 }
