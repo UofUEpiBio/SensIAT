@@ -53,11 +53,29 @@ test_that("MAVE: grid vs. optim", {
             intensity.args=list(bandwidth=30),
             outcome.args=list(bw.method='optim', bw.selection = 'ise')
         )
+    object.mave.optimize <-
+        fit_SensIAT_within_group_model(
+            group.data = SensIAT_example_data,
+            outcome_modeler = SensIAT_sim_outcome_modeler_mave,
+            id = Subject_ID,
+            outcome = Outcome,
+            time = Time,
+            knots = c(60,260,460),
+            End = 830,
+            intensity.args=list(bandwidth=30),
+            outcome.args=list(bw.method='optimize', bw.selection = 'ise')
+        )
 
     object.mave.grid$models$outcome$bandwidth
+    object.mave.grid$models$outcome$details$value
     object.mave.optim$models$outcome$bandwidth
+    object.mave.optim$models$outcome$details$value
+    object.mave.optimize$models$outcome$bandwidth
+    object.mave.optimize$models$outcome$details$value
 
-    if(!interactive()){
+
+
+    if(interactive()){
     object.mave.grid$models$outcome$details |>
         with(tibble(log_bw_seq, err_values)) |>
         mutate(bw = exp(log_bw_seq)) |>
@@ -68,11 +86,43 @@ test_that("MAVE: grid vs. optim", {
             data = tibble(
                 'Selected' = c(object.mave.grid$models$outcome$bandwidth,
                                object.mave.optim$models$outcome$bandwidth,
-                               exp(object.mave.grid$models$outcome$details$log_bw_seq[1])/0.05
+                               exp(object.mave.optim$models$outcome$details$initial)
                                ),
                 'Method' = c('grid', 'optim', 'initial')
             ) |> mutate(Method = paste(Method, " (", format(Selected, digits = 4), ")")),
             aes(xintercept = Selected, color = Method)
         )
     }
+})
+test_that("MAVE: reestimate.coef", {
+    object.mave.wo <-
+        fit_SensIAT_within_group_model(
+            group.data = SensIAT_example_data,
+            outcome_modeler = SensIAT_sim_outcome_modeler_mave,
+            id = Subject_ID,
+            outcome = Outcome,
+            time = Time,
+            knots = c(60,260,460),
+            End = 830,
+            intensity.args=list(bandwidth=30),
+            outcome.args=list(bw.method='grid', bw.selection = 'ise', reestimate.coef = FALSE)
+        )
+    object.mave.rc <-
+        fit_SensIAT_within_group_model(
+            group.data = SensIAT_example_data,
+            outcome_modeler = SensIAT_sim_outcome_modeler_mave,
+            id = Subject_ID,
+            outcome = Outcome,
+            time = Time,
+            knots = c(60,260,460),
+            End = 830,
+            intensity.args=list(bandwidth=30),
+            outcome.args=list(bw.method='grid', bw.selection = 'ise', reestimate.coef = TRUE)
+        )
+
+    expect_identical(object.mave.wo$models$intensity$coefficients,
+                     object.mave.rc$models$intensity$coefficients)
+    expect_identical(object.mave.wo$models$outcome$bandwidth,
+                     object.mave.rc$models$outcome$bandwidth)
+    expect_true(object.mave.wo$models$outcome$details$value >= object.mave.rc$models$outcome$details.refit$fval)
 })

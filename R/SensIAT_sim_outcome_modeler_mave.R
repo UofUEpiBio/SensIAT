@@ -8,6 +8,7 @@
 #' @param id The patient identifier variable for the data.
 #' @param bw.selection The criteria for bandwidth selection, either 'ise' for Integrated Squared Error or 'mse' for Mean Squared Error.
 #' @param bw.method The method for bandwidth selection, either 'optim' for using optimization or 'grid' for grid search.
+#' @param reestimate.coef Logical indicating whether to re-estimate the coefficients of the outcome model after bandwidth selection.
 #' @param ... Additional arguments to be passed to [optim].
 #'
 #' @return Object of class `SensIAT::Single-index-outcome-model` which contains the outcome model portion.
@@ -18,7 +19,8 @@ function(formula, data,
          mave.method = "meanMAVE",
          id = ..id..,
          bw.selection = c('ise', 'mse'),
-         bw.method = c('optim', 'grid'),
+         bw.method = c('optim', 'grid', 'optimize'),
+         reestimate.coef = FALSE,
          ...
 ){
     id <- ensym(id)
@@ -28,15 +30,17 @@ function(formula, data,
     ids <- mf[['(id)']]
     unique_y <- sort(unique(Y))
 
-    if (kernel=="K2_Biweight")
+    if (kernel=="K2_Biweight"){
         K <- function(x) 15/16*(1-(x)^2)^2 * (abs(x) <= 1)
-    else if (kernel=="dnorm")
+        K1<- function(x) 3/4*(1-(x)^2) * (abs(x) <= 1)
+    } else if (kernel=="dnorm") {
         K <- function(x) dnorm(x,0,1)
-    else if (kernel=="K4_Biweight")
-        K <- function(x) 105/64*(1-3*((x)^2))*(1-(x)^2)^2 * (abs(x) <= 1)
-    else
+        K1 <- function(x) -x*dnorm(x, 0, 1)
+    } else if (kernel=="K4_Biweight"){
+        K <- function(x) 105/64*(1-3*((x)^2)) * (1-(x)^2)^2 * (abs(x) <= 1)
+    } else{
         stop("Unknown kernel type. Please use either 'K2_Biweight', 'dnorm', or 'K4_Biweight'.")
-
+    }
 
     assertthat::assert_that(requireNamespace("MAVE", quietly = TRUE))
     mave_fit <- MAVE::mave.compute(X, Y, max.dim = 1, method = mave.method)
@@ -81,32 +85,101 @@ function(formula, data,
         # Use grid search for bandwidth selection
         log_bw_seq <- log(seq(0.05, 1.5, length.out = 100) * sigma)
         err_values <- purrr::map_dbl(log_bw_seq, err)
-        best_log_bw <- log_bw_seq[which.min(err_values)]
-        bw_opt <- list(par = best_log_bw,
+        bw_opt <- log_bw_seq[which.min(err_values)]
+        bw.details <- list(par = bw_opt,
                        value = min(err_values),
                        convergence = 0,
                        message = "Grid search completed successfully.",
+                       bw.method = bw.method,
                        log_bw_seq = log_bw_seq,
                        err_values = err_values
                        )
     } else if(bw.method == 'optim'){
         # Use optimization for bandwidth selection
-        bw_opt <- optim(log(sigma), err, method = "BFGS",  ...)
-        bw_opt$initial = log(sigma)
-    } else {
+        initial <- log(sigma * 0.30)
+        bw.details <- optim(initial, err, method = "L-BFGS-B", lower = log(sigma * 0.05), upper = log(sigma * 1.5), ...)
+        bw.details$initial = initial
+        bw.details$bw.method = bw.method
+        bw_opt <- bw.details$par
+    } else if(bw.method == 'optimize'){
+        # Use optimize for bandwidth selection
+        result <- optimize(err,
+                           interval = c(log(sigma * 0.05), log(sigma * 1.5)),
+                           ...)
+        bw_opt <- result$minimum
+        bw.details <- list(minimum = result$minimum,
+                           value = result$objective,
+                           bw.method  = bw.method,
+                           interval = c(log(sigma * 0.05), log(sigma * 1.5)))
+    } else{
         stop("Unknown bw.method type. Please use either 'optim' or 'grid'.")
     }
 
-    structure(
-        list(
-            coefficients = beta_hat,
-            bandwidth = exp(bw_opt$par),
-            details = bw_opt,
-            frame = mf,
-            data = data
+    if(!reestimate.coef) {
+        return(
+            structure(
+                list(
+                    coefficients = beta_hat,
+                    bandwidth = exp(bw_opt),
+                    details = bw.details,
+                    frame = mf,
+                    data = data
+                )
+                , class = c('SensIAT::outcome-model', 'SensIAT::Single-index-outcome-model')
+                , kernel = kernel
+                , terms = terms(mf)
+            )
         )
-        , class = c('SensIAT::outcome-model', 'SensIAT::Single-index-outcome-model')
-        , kernel = kernel
-        , terms = terms(mf)
+    }
+
+    if(bw.selection == "ise") {
+        objFun <- function(beta){
+            Xbeta <- (X %*% beta)[,]
+            D <- outer(Xbeta, Xbeta, FUN = `-`)
+            W <- K(D/exp(bw_opt)) * Id_neq
+            denom <- rowSums(W)
+            Fhat <- sweep(W %*% Imat, 1, denom, "/")
+            Fhat[is.nan(Fhat)] <- 0
+            return (sum((Imat - Fhat)^2)/length(Fhat)^2)
+        }
+    } else if(bw.selection == "mse") {
+        objFun <- function(beta){
+            Xbeta <- (X %*% beta)[,]
+            D <- outer(Xbeta, Xbeta, FUN = `-`)
+            W <- K1(D/exp(bw_opt)) * Id_neq
+            denom <- rowSums(W)
+            mean_Y <- c(W %*% Y) / denom
+            return (mean((Y - mean_Y)^2, na.rm = TRUE))
+        }
+    } else {
+        stop("Unknown bw.selection type. Please use either 'ise' or 'mse'.")
+    }
+    requireNamespace("ManifoldOptim", quietly = TRUE)
+    mod <- Rcpp::Module("ManifoldOptim_module", PACKAGE = "ManifoldOptim")
+    prob <- new(mod$RProblem, objFun)
+    mani.params <- ManifoldOptim::get.manifold.params(IsCheckParams = FALSE)
+    solver.params <- ManifoldOptim::get.solver.params(IsCheckParams = FALSE)
+    maniDef <- ManifoldOptim::get.sphere.defn(length(beta_hat))
+
+    res <- ManifoldOptim::manifold.optim(prob, maniDef,
+                          mani.params = mani.params,
+                          solver.params = solver.params, x0 = beta_hat)
+    beta_hat <- res$xopt
+
+    return(
+        structure(
+            list(
+                coefficients = as.vector(res$xopt),
+                bandwidth = exp(bw_opt),
+                details = bw.details,
+                frame = mf,
+                data = data,
+                details.refit = res
+            )
+            , class = c('SensIAT::outcome-model', 'SensIAT::Single-index-outcome-model')
+            , kernel = kernel
+            , terms = terms(mf)
+        )
     )
+
 }
