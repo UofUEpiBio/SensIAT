@@ -9,6 +9,7 @@
 #' @param bw.selection The criteria for bandwidth selection, either 'ise' for Integrated Squared Error or 'mse' for Mean Squared Error.
 #' @param bw.method The method for bandwidth selection, either 'optim' for using optimization or 'grid' for grid search.
 #' @param reestimate.coef Logical indicating whether to re-estimate the coefficients of the outcome model after bandwidth selection.
+#' @param bw.range A numeric vector of length 2 indicating the range of bandwidths to consider for selection as a multiple of the standard deviation of the single index predictor.
 #' @param ... Additional arguments to be passed to [optim].
 #'
 #' @return Object of class `SensIAT::Single-index-outcome-model` which contains the outcome model portion.
@@ -20,6 +21,7 @@ function(formula, data,
          id = ..id..,
          bw.selection = c('ise', 'mse'),
          bw.method = c('optim', 'grid', 'optimize'),
+         bw.range = c(0.01, 1.5),
          reestimate.coef = FALSE,
          ...
 ){
@@ -83,7 +85,7 @@ function(formula, data,
     sigma <- sd(Xbeta)
     if(bw.method == 'grid'){
         # Use grid search for bandwidth selection
-        log_bw_seq <- log(seq(0.05, 1.5, length.out = 100) * sigma)
+        log_bw_seq <- log(seq(min(bw.range), max(bw.range), length.out = 100) * sigma)
         err_values <- purrr::map_dbl(log_bw_seq, err)
         bw_opt <- log_bw_seq[which.min(err_values)]
         bw.details <- list(par = bw_opt,
@@ -97,14 +99,14 @@ function(formula, data,
     } else if(bw.method == 'optim'){
         # Use optimization for bandwidth selection
         initial <- log(sigma * 0.30)
-        bw.details <- optim(initial, err, method = "L-BFGS-B", lower = log(sigma * 0.05), upper = log(sigma * 1.5), ...)
+        bw.details <- optim(initial, err, method = "L-BFGS-B", lower = log(sigma * min(bw.range)), upper = log(sigma * max(bw.range)), ...)
         bw.details$initial = initial
         bw.details$bw.method = bw.method
         bw_opt <- bw.details$par
     } else if(bw.method == 'optimize'){
         # Use optimize for bandwidth selection
         result <- optimize(err,
-                           interval = c(log(sigma * 0.05), log(sigma * 1.5)),
+                           interval = c(log(sigma * min(bw.range)), log(sigma * max(bw.range))),
                            ...)
         bw_opt <- result$minimum
         bw.details <- list(minimum = result$minimum,

@@ -12,6 +12,7 @@ SensIAT_sim_outcome_modeler_mave(
   id = ..id..,
   bw.selection = c("ise", "mse"),
   bw.method = c("optim", "grid", "optimize"),
+  bw.range = c(0.01, 1.5),
   reestimate.coef = FALSE,
   ...
 )
@@ -31,6 +32,8 @@ Should only include follow-up data, i.e. time > 0.}
 \item{bw.selection}{The criteria for bandwidth selection, either 'ise' for Integrated Squared Error or 'mse' for Mean Squared Error.}
 
 \item{bw.method}{The method for bandwidth selection, either 'optim' for using optimization or 'grid' for grid search.}
+
+\item{bw.range}{A numeric vector of length 2 indicating the range of bandwidths to consider for selection as a multiple of the standard deviation of the single index predictor.}
 
 \item{reestimate.coef}{Logical indicating whether to re-estimate the coefficients of the outcome model after bandwidth selection.}
 
