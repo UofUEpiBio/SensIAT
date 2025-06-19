@@ -89,20 +89,6 @@ fit_SensIAT_within_group_model <- function(
         time = time.var
     )
 
-    assert_that(is.numeric(knots))
-    if(anyDuplicated(knots)){
-        rlang::warn("Duplicate knots may be ignored.")
-        knots <- unique(knots)
-    }
-    if(is.unsorted(knots)){
-        rlang::warn("Knots are not sorted.")
-        knots <- sort(knots)
-    }
-    knots <- c(
-        rep(head(knots,1), spline.degree),
-        knots,
-        rep(tail(knots, 1), spline.degree)
-    )
 
     # Pass through Argument Lists
     intensity.args <- match.names(intensity.args, c("model.modifications", 'bandwidth'), FALSE)
@@ -199,8 +185,6 @@ fit_SensIAT_within_group_model <- function(
                         !!!purrr::discard_at(outcome.args, "model.modifications"))
         )
 
-    base <- SplineBasis(knots, order=spline.degree+1L)
-    V_inverse <- solve(GramMatrix(base))
 
     # Compute value of the influence function: -----------------------------
     #' @section Influence Arguments:
@@ -212,29 +196,15 @@ fit_SensIAT_within_group_model <- function(
     #' * **`delta`** The bin width for fixed quadrature.
     #' * **`resolution`** alternative to `delta` by specifying the number of bins.
     #' * **`fix_discontinuity`** Whether to account for the discontinuity in the influence at observation times.
-    influence.terms <- rlang::inject(purrr::map(alpha,\(a){
-        compute_influence_terms(
-            left_join(
-                data_all_with_transforms,
-                followup_data |> select('..id..', '..time..'),
-                by=join_by('..id..', '..time..')
-            ),
-            base = base,
-            alpha = a,
-            outcome.model = outcome.model,
-            intensity.model = intensity.model,
-            !!!influence.args
-        )
-    }))
-
-    # Results
-    Beta = map(influence.terms, \(IT){
-        uncorrected.beta_hat <- (colSums(IT$term1) + colSums(IT$term2))/length(IT$id)
-        estimate <- as.vector(V_inverse %*% uncorrected.beta_hat)
-        variance <- tcrossprod(V_inverse %*% (t(IT$term1 + IT$term2) - uncorrected.beta_hat))/c(length(IT$id)^2)
-        list(estimate = estimate, variance = variance)
-    })
-
+    marginal_model <- rlang::inject(SensIAT_fit_marginal_model(
+        data_all_with_transforms,
+        alpha = alpha,
+        knots = knots,
+        intensity.model = intensity.model,
+        outcome.model = outcome.model,
+        spline.degree = spline.degree,
+        !!!intensity.args
+    ))
 
     structure(list(
         models = list(
@@ -244,18 +214,18 @@ fit_SensIAT_within_group_model <- function(
         data = mf,
         variables = vars,
         End = End,
-        influence = influence.terms,
+        influence = marginal_model$influence,
         outcome_modeler = outcome_modeler,
         alpha = alpha,
-        coefficients = map(Beta, getElement, 'estimate'),
-        coefficient.variance = map(Beta, getElement, 'variance'),
+        coefficients = marginal_model$coefficients,
+        coefficient.variance = marginal_model$coefficient.variance,
         args = list(
             intensity = intensity.args,
             outcome = outcome.args,
             influence = influence.args
         ),
-        base=base,
-        V_inverse = V_inverse
+        base=marginal_model$base,
+        V_inverse = marginal_model$V_inverse
     ), class = "SensIAT_within_group_model",
     call = match.call(expand.dots = TRUE))
 }
