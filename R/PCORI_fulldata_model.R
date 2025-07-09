@@ -35,7 +35,7 @@ fit_SensIAT_fulldata_model <- function(data, trt, ...){
         full_join(
             control.predicted,
             treatment.predicted,
-            by= c('time', 'alpha'),
+            by= c('time'),
             suffix = c('_control', '_treatment')
         ) |>
             mutate(

@@ -36,5 +36,5 @@ autoplot(object) +
     # Title not included
     ggplot2::ggtitle("SensIAT within group model") +
     # Nor are bounds on reasonable values of alpha
-    ggplot2::hline(yintercept = c(1.2, 3), linetype = "dotted", weight = 2)
+    ggplot2::geom_hline(yintercept = c(1.2, 3), linetype = "dotted", linewidth = 1.5)
 }

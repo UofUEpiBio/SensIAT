@@ -45,3 +45,115 @@ autoplot.SensIAT_within_group_model <- function(object, ...) {
         col = expression(alpha)
     )
 }
+#' Plot estimates at given times for `SensIAT_withingroup_jackknife_results` objects
+#'
+#' Horizontal axis represents time, and the vertical axis represents the outcome
+#' from the model. Point plotted is the mean estimate, and the error bars
+#' show the standard error estimated from the jackknife.
+#'
+#' @param object A `SensIAT_withingroup_jackknife_results` object produced from
+#'                      `SensIAT_jackknife`.
+#' @param width Width of the dodge for position, default is half the minimum
+#'              distance between time evaluation points.
+#' @param ... Ignored.
+#' @return A `ggplot2` object.
+#' @export
+#' @examples
+#' \dontrun{
+#' fitted <-
+#' fit_SensIAT_within_group_model(
+#'     group.data = SensIAT_example_data,
+#'     outcome_modeler = SensIAT_sim_outcome_modeler,
+#'     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+#'     id = Subject_ID,
+#'     outcome = Outcome,
+#'     time = Time,
+#'     intensity.args=list(bandwidth = 30),
+#'     knots = c(60,260,460),
+#'     End = 830
+#' )
+#' jackknife.estimates <- SensIAT_jackknife(fitted, time = c(90, 180, 270, 360, 450))
+#' autoplot(jackknife.estimates)
+#' }
+autoplot.SensIAT_withingroup_jackknife_results <- function(object, width = NULL, ...) {
+
+    if(is.null(width)) {
+        width <- min(diff(sort(unique(object$time))))/2
+        # /n_distinct(object$alpha)
+    }
+
+    dodge <- ggplot2::position_dodge(width = width)
+
+    ggplot2::ggplot(data=dplyr::mutate(object, alpha_factor = factor(alpha)),
+                    ggplot2::aes(
+                        x = time, y = mean, col = alpha_factor,
+                        ymin = mean - sqrt(jackknife_var),
+                        ymax = mean + sqrt(jackknife_var),
+                        group= alpha_factor
+                    )) +
+        ggplot2::geom_point(size = 2, position = dodge) +
+        ggplot2::geom_errorbar(position = dodge) +
+        ggplot2::labs(
+            x = rlang::as_string(attr(object, "original.object")$variables$time),
+            y = expr(
+                !!rlang::as_string(attr(object, "original.object")$variables$outcome)
+                %+-% sigma),
+            col = expression(alpha)
+        )
+}
+
+#' Plot for estimated treatment effect for `SensIAT_fulldata_model` objects
+#'
+#' The horizontal and vertical axes represent the sensitivity parameter `alpha`
+#' for the control and treatment groups, respectively. The contour plot shows
+#' the estimated treatment effect at each combination of `alpha` values.
+#'
+#' @param object A `SensIAT_fulldata_model` object.
+#' @param time Time at which to plot the estimates.
+#' @param ... Additional arguments passed to `predict`.
+#'
+#' @return A `ggplot2` object.
+#' @export
+#' @examples
+#' full.object <-
+#'     fit_SensIAT_fulldata_model(
+#'         data = ARC_data,
+#'         trt = Trt == 'home_visits',
+#'         outcome_modeler = SensIAT_sim_outcome_modeler,
+#'         id = elig_pid,
+#'         outcome = Asthma_control,
+#'         time = time,
+#'         knots = c(60, 260, 460),
+#'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+#'         End = 830
+#'     )
+#' autoplot(full.object, time = 180) +
+#'      ggplot2::scale_fill_brewer(palette = "Spectral")
+autoplot.SensIAT_fulldata_model <- function(object, time, include.rugs = NA, ...) {
+    df <- predict(object, time, ...)
+
+    rslt <- ggplot2::ggplot(data = df,
+                            ggplot2::aes(x = .data$alpha_control,
+                                         y = .data$alpha_treatment,
+                                         z = .data$mean_effect)) +
+        ggplot2::geom_contour_filled() +
+        ggplot2::labs(
+            x = expression(alpha[control]),
+            y = expression(alpha[treatment]),
+            fill = "Treatment Effect"
+        )
+
+    if (length(time)> 1){
+        rslt <- rslt + ggplot2::facet_wrap(~time, scales = 'free')
+    } else {
+        rslt <- rslt + ggplot2::ggtitle(paste("Treatment Effect at Time =", time))
+    }
+
+    if(isFALSE(include.rugs)) return(rslt)
+    if(is.na(include.rugs)
+       && ( n_distinct(df$alpha_control) > 10
+          || n_distinct(df$alpha_treatment) > 10
+          )
+        ) return(rslt)
+    rslt + ggplot2::geom_rug(sides = 'bl')
+}

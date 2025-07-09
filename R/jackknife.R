@@ -60,23 +60,24 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
 #'
 #' @examples
 #' \dontrun{
-#' original.object <-
+#' object <-
 #' fit_SensIAT_within_group_model(
 #'     group.data = SensIAT_example_data,
 #'     outcome_modeler = SensIAT_sim_outcome_modeler,
 #'     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-#'     id.var = Subject_ID,
-#'     outcome.var = Outcome,
-#'     time.var = Time,
+#'     id = Subject_ID,
+#'     outcome = Outcome,
+#'     time = Time,
 #'     intensity.args=list(bandwidth = 30),
 #'     knots = c(60,260,460),
 #'     End = 830
 #' )
-#' jackknife.estimates <- SensIAT_jackknife(original.object, time = c(90, 180, 270, 360, 450))
+#' jackknife.estimates <- SensIAT_jackknife(object, time = c(90, 180, 270, 360, 450))
 #' }
 SensIAT_jackknife <- function(original.object, time, ...){
     replications <- cross_validate(original.object)
 
+    original.estimates <- predict.SensIAT_within_group_model(original.object, time=time)
     estimates <- map(replications, predict.SensIAT_within_group_model, time=time,
                      include.var=FALSE, base = original.object$base)
     estimates |> bind_rows(.id='.rep') |>
@@ -85,7 +86,11 @@ SensIAT_jackknife <- function(original.object, time, ...){
             # n = n(),
             jackknife_mean = mean(mean),
             jackknife_var = (n()-1)/n() * sum((mean-mean(mean))^2),
-        , .groups='drop')
+        , .groups='drop') |>
+        ungroup() |>
+        full_join(original.estimates, by=c('alpha', 'time')) |>
+        add_class('SensIAT_withingroup_jackknife_results') |>
+        structure(original.object = original.object)
 }
 
 
