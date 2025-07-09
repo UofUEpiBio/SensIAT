@@ -26,6 +26,11 @@ test_that("MAVE: ise vs. mse", {
 
     object.mave.ise$models$outcome$bandwidth
     object.mave.mse$models$outcome$bandwidth
+
+    expect_identical(
+        coef(object.mave.ise$models$intensity),
+        coef(object.mave.mse$models$intensity)
+    )
 })
 test_that("MAVE: grid vs. optim", {
     object.mave.grid <-
@@ -73,6 +78,14 @@ test_that("MAVE: grid vs. optim", {
     object.mave.optimize$models$outcome$details$value
 
 
+    expect_equal(
+        coef(object.mave.grid$models$outcome),
+        coef(object.mave.optim$models$outcome)
+    )
+    expect_equal(
+        coef(object.mave.grid$models$outcome),
+        coef(object.mave.optimize$models$outcome)
+    )
 
     if(interactive()){
     object.mave.grid$models$outcome$details |>
