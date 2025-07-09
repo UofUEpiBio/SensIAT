@@ -203,7 +203,8 @@ fit_SensIAT_within_group_model <- function(
         intensity.model = intensity.model,
         outcome.model = outcome.model,
         spline.degree = spline.degree,
-        !!!intensity.args
+        !!!influence.args,
+        time.vars = c('..delta_time..')
     ))
 
     structure(list(

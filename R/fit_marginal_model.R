@@ -12,22 +12,44 @@
 #' @export
 #'
 #' @examples
+#' # Create followup data with lags
 #' data_with_lags <- SensIAT_example_data |>
-#'     group_by(Subject_ID) |>
-#'     mutate(
+#'     dplyr::group_by(Subject_ID) |>
+#'     dplyr::mutate(
 #'         Prev_Outcome = lag(Outcome, default = NA_real_),
 #'         Prev_time = lag(Time, default = NA_real_),
 #'         Delta_Time = Time - Prev_time
+#'     ) |>
+#'     dplyr::filter(Time > 0)
 #'
-#'     )
+#' # Create the observation time intensity model
+#' intensity.model <-
+#'     coxph(Surv(Prev_time, Time, !is.na(Outcome)) ~ Prev_Outcome + strata(Visit),
+#'     data = data_with_lags)
 #'
-#' intensity.model <- coxph(Surv(Outcome))
+#' # Create the observed outcome model
+#' outcome.model <-
+#'     SensIAT_sim_outcome_modeler(
+#'         Outcome ~ ns(Prev_Outcome, df=3) + Delta_Time - 1,
+#'         id = Subject_ID,
+#'         data = data_with_lags)
+#'
+#' # Fit the marginal outcome model
+#' mm <- SensIAT_fit_marginal_model(
+#'     data = data_with_lags,
+#'     id = Subject_ID,
+#'     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+#'     knots = c(60, 260, 460),
+#'     intensity.model = intensity.model,
+#'     outcome.model = outcome.model)
 #'
 SensIAT_fit_marginal_model <-
-function(data, alpha,
+function(data,
+         id,
+         alpha,
          knots,
-         intensity.model,
          outcome.model,
+         intensity.model,
          spline.degree = 3L,
          ...){
 
@@ -49,9 +71,9 @@ function(data, alpha,
                     )
     stopifnot(all(needed.vars %in% names(data)))
 
-    for_each_alpha <- \(a, ...){
+    for_each_alpha <- \(a){
         compute_influence_terms(
-            data,
+            data=data, id={{id}},
             base = base,
             alpha = a,
             outcome.model = outcome.model,

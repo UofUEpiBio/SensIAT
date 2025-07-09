@@ -128,6 +128,7 @@ function(formula, data,
                     data = data
                 )
                 , class = c('SensIAT::outcome-model', 'SensIAT::Single-index-outcome-model')
+                , id = id
                 , kernel = kernel
                 , terms = terms(mf)
             )
@@ -179,6 +180,7 @@ function(formula, data,
                 details.refit = res
             )
             , class = c('SensIAT::outcome-model', 'SensIAT::Single-index-outcome-model')
+            , id = id
             , kernel = kernel
             , terms = terms(mf)
         )

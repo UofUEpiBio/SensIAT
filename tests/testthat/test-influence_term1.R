@@ -78,16 +78,15 @@ test_that("Compute Influence term1 old vs. new methods", {
             data = followup.data,
             bandwidth = NULL
         )
-
+    exp_gamma <- exp(predict(intensity.model, newdata=followup.data, type='lp', reference='zero'))
+    intensity_weights = baseline_intensity_all$baseline_intensity * exp_gamma
     new.method <-
         compute_sim_influence_term_1_for_all(
-            X_all = model.matrix(outcome.model),
             times_all = pull(followup.data, Time),
+            X_all = model.matrix(outcome.model),
             outcome_all = pull(followup.data, Outcome),
-            prev_outcome_all = pull(followup.data, prev_outcome),
-            baseline_intensity_all = baseline_intensity_all$baseline_intensity,
+            intensity_weights = intensity_weights,
             alpha = -0.6,
-            intensity_coef = coef(intensity.model),
             outcome_coef = coef(outcome.model),
             base = base,
             bandwidth = outcome.model$bandwidth,

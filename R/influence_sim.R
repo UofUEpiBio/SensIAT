@@ -1,83 +1,32 @@
-compute_sim_influence_term_1_unweighted_at_timepoint <- function(
-        time,
-        outcome,
-        Exp_gamma,
-        Xb_ind, #< individual-level covariates to be passed to pmf_estimator
-
-        y,
-        pmf,
-        alpha, #< sensitivity parameter.
-        baseline_lambda
-){
-    if (getOption('SensIAT::do_arg_checks', TRUE))
-        assert_that(
-            rlang::is_scalar_double(time), time > 0,
-            rlang::is_scalar_double(outcome),
-            rlang::is_scalar_double(Exp_gamma),
-            rlang::is_scalar_double(Xb_ind),
-            is.numeric(pmf), is.numeric(y), length(pmf) == length(y),
-            rlang::is_scalar_double(alpha),
-            rlang::is_scalar_double(baseline_lambda)
-        )
-
-    # Everything above this does not depend on alpha and could be optimized
-    E_exp_alphaY <- crossprod( exp(alpha*y), pmf )
-    E_Yexp_alphaY <- crossprod( y*exp(alpha*y), pmf )
-    E_Y_past <- E_Yexp_alphaY/E_exp_alphaY
-
-    (outcome-E_Y_past)/
-        (baseline_lambda*Exp_gamma* exp(-alpha*outcome)*E_exp_alphaY)
-}
-
-
-
 compute_sim_influence_term_1_at_timepoint <- function(
-        time,
         outcome,
-        prev_outcome,
-        Xb_ind, #< individual-level covariates to be passed to pmf_estimator
+        Xb_ind, #< individual-level linear predictor to be passed to pmf_estimator
         pmf_estimator,
-        intensity_coef,  #< single coefficient from the intensity model that is the coefficient corresponding to the intensity from the previous outcome.
         alpha, #< sensitivity parameter.
-        baseline_lambda, #< baseline intensity for the individual.
         base,
+        intensity_weight,
         y = sort(unique(outcome))
 ){
     if (getOption('SensIAT::do_arg_checks', TRUE))
         assert_that(
-            rlang::is_scalar_double(time), time > 0,
             rlang::is_scalar_double(outcome),
-            rlang::is_scalar_double(prev_outcome),
             rlang::is_scalar_double(Xb_ind),
             is.function(pmf_estimator),
-            rlang::is_scalar_double(intensity_coef),
-            rlang::is_scalar_double(alpha),
-            rlang::is_scalar_double(baseline_lambda),
-            is(base, "SplineBasis")
+            rlang::is_scalar_double(alpha)
         )
-
-    lower <- base@knots[base@order]
-    upper <- base@knots[length(base@knots) - base@order+1]
-
-    if ((time <= lower) | (time >= upper))
-        return(matrix(0, nrow=1, ncol=ncol(base)))
-
-    Exp_gamma <- exp(intensity_coef*prev_outcome)
 
     pmf <- pmf_estimator(Xb_ind)
 
     # Everything above this does not depend on alpha and could be optimized
-    Term1_unweighted <-
-        compute_sim_influence_term_1_unweighted_at_timepoint(
-            time = time,
-            outcome = outcome,
-            Exp_gamma = Exp_gamma,
-            Xb_ind = Xb_ind,
-            y = y,pmf = pmf,
-            alpha = alpha,
-            baseline_lambda = baseline_lambda
-        )
-    return(pcoriaccel_evaluate_basis(base, time) * c(Term1_unweighted))
+    E_exp_alphaY  <- as.vector(pmf %*%    exp(tcrossprod(y, alpha)) )
+    E_Yexp_alphaY <- as.vector(pmf %*% (y*exp(tcrossprod(y, alpha))))
+
+    # E_exp_alphaY <- crossprod( exp(alpha*y), pmf )[,,drop=TRUE]
+    # E_Yexp_alphaY <- crossprod( y*exp(alpha*y), pmf )[,,drop=TRUE]
+    E_Y_past <- E_Yexp_alphaY/E_exp_alphaY
+
+    (outcome-E_Y_past)/
+        (intensity_weight * exp(-alpha*outcome)*E_exp_alphaY)
 }
 
 
@@ -86,24 +35,24 @@ compute_sim_influence_term_1_for_all <-
         times_all,
         X_all,
         outcome_all,
-        prev_outcome_all,
-        baseline_intensity_all,
         alpha,
-        intensity_coef,
         outcome_coef,
+        intensity_weights,
         base,
         bandwidth,
         kernel
     ){
         if(getOption('SensIAT::do_arg_checks', TRUE))
             assert_that(
-                is.vector(times_all), is.numeric(times_all), all(times_all > 0),
-                is.matrix(X_all), is.double(X_all), nrow(X_all) == length(times_all),
-                is.vector(outcome_all), is.double(outcome_all), length(outcome_all) == nrow(X_all),
-                is.vector(prev_outcome_all), is.double(prev_outcome_all), length(prev_outcome_all) == nrow(X_all),
-                is.vector(baseline_intensity_all), is.double(baseline_intensity_all), length(baseline_intensity_all) == nrow(X_all),
-                rlang::is_scalar_double(intensity_coef),
-                is.vector(outcome_coef), is.double(outcome_coef), length(outcome_coef) == ncol(X_all),
+                is.numeric(times_all),
+                is.matrix(X_all), is.double(X_all),
+                length(times_all) == nrow(X_all),
+                is.vector(outcome_all), is.double(outcome_all),
+                length(outcome_all) == nrow(X_all),
+                is.vector(intensity_weights), is.double(intensity_weights),
+                length(intensity_weights) == nrow(X_all),
+                is.vector(outcome_coef), is.double(outcome_coef),
+                length(outcome_coef) == ncol(X_all),
                 is(base, "SplineBasis"),
                 rlang::is_scalar_double(bandwidth), bandwidth > 0,
                 rlang::is_string(kernel)
@@ -121,21 +70,25 @@ compute_sim_influence_term_1_for_all <-
                 )
             }
 
+        lower <- base@knots[base@order]
+        upper <- base@knots[length(base@knots) - base@order+1]
 
         term1 <- matrix(NA_real_, nrow=nrow(X_all), ncol=dim(base)[2])
         for (i in seq_len(nrow(X_all))) {
-            term1[i,] <-
+            if((times_all[i] <= lower) || (times_all[i] >= upper)){
+                term1[i,] <- 0
+                next
+            }
+
+            term1[i,] <- pcoriaccel_evaluate_basis(base, times_all[i]) *
                 compute_sim_influence_term_1_at_timepoint(
-                    time = times_all[i],
                     outcome = outcome_all[i],
-                    prev_outcome = prev_outcome_all[i],
                     Xb_ind = Xbeta[i],
                     pmf_estimator = pmf_estimator,
-                    intensity_coef = intensity_coef,
                     alpha = alpha,
-                    baseline_lambda = baseline_intensity_all[i],
                     base = base,
-                    y = y_seq
+                    y = y_seq,
+                    intensity_weight = intensity_weights[i]
                 )
         }
         return(term1)
@@ -283,58 +236,48 @@ compute_sim_influence_term_2_for_one_patient_fixed_approximation <-
 compute_sim_influence_term_2_for_all_patients <-
     function(
         outcome.model,
-        X_all, Y_all, outcome_coef,
-        data_all,
+        integration_data, #< includes baseline with prev_outcome, and prev_time
+                          #< replaced with the current values.
         alpha,
         base,
+        id,time, #< lazy evaluation
+        time.vars = character(), #< Not lazy evaluation, additional time variables
         ...
     ){
-        integration_data <- rlang::inject(
-            model.frame(
-                terms(outcome.model),
-                data = data_all |>
-                    dplyr::select(-..prev_outcome..) |>
-                    dplyr::mutate(
-                        ..prev_outcome..  = ..outcome..,
-                        ..delta_time..    = 0
-                    )
-                ,
-                id   = ..id..,
-                time = ..time..
-            )
-        )
-        integration_X <- model.matrix( outcome.model, data=integration_data)
-        time <- integration_data[["(time)"]]
-        ids  <- integration_data[["(id)"  ]]
+        id <- rlang::ensym(id)
+        time <- rlang::ensym(time)
+        terms <- terms(outcome.model)
+        mf <- rlang::inject(model.frame(terms, data=integration_data, id = !!id, time=!!time))
+        integration_X <- model.matrix( terms, data=mf)
+        times <- mf[["(time)"]]
+        ids  <- mf[["(id)"]]
         uids <- unique(ids)
 
+        X_all <- model.matrix(outcome.model)
+        Y_all <- model.response(model.frame(outcome.model))
 
-        # TODO[@halpo]: expand to include other possible covariates in outcome model.
-        slope <- model.matrix(
-            outcome.model,
-            data=tibble(
-                ..outcome..=0,
-                ..time..=c(0, 1),
-                ..prev_outcome..=0,
-                ..prev_time..=c(0,1),
-                ..delta_time..=c(0,1)
+        slope <-
+            compute_slope(
+                outcome.model=outcome.model,
+                time.vars = c(rlang::as_string(time), time.vars),
+                ... #< IGNORED
             )
-        ) |> apply(2, diff)
 
         term2 <- matrix(NA_real_, nrow=length(uids), ncol=dim(base)[2])
         fcnt <- vector('list', length(uids))
         estim.prec <- vector('list', length(uids))
         for (i in seq_along(uids)) {
             result <- compute_sim_influence_term_2_for_individual(
-                times_ind = time[ids == uids[i]],
+                times_ind = times[ids == uids[i]],
                 X_ind = integration_X[ids == uids[i],,drop=FALSE],
                 X_all = X_all,
                 Y_all = Y_all,
                 slope = slope,
                 alpha = alpha,
-                beta = outcome_coef,
+                beta = coef(outcome.model),
                 base = base,
                 bandwidth = outcome.model$bandwidth,
+                kernel = attr(outcome.model, 'kernel'),
                 ...
             )
 
@@ -345,83 +288,95 @@ compute_sim_influence_term_2_for_all_patients <-
         structure(term2, id = uids, fcnt = fcnt, estim.prec = estim.prec)
     }
 
-
 #' @describeIn compute_influence_terms Optimized method for the single index model.
 #' @export
 `compute_influence_terms.SensIAT::Single-index-outcome-model` <-
     function(
-        data_all_with_transforms, #< vector of times for all observations
-        base, # Spline basis
-        alpha, # Sensitivity, singular alpha value
-        outcome.model, # outcome model
-        intensity.model, # The intensity model
+        outcome.model,
+        intensity.model,
+        alpha,
+        data,
+        base,
         tolerance = .Machine$double.eps^(1/3),
+        na.action = na.fail,
+        id = NULL,
+        time = NULL,
         ...
     ){
-        ..id.. <- ..time.. <- ..prev_outcome.. <- baseline_intensity <- NULL
+        if(!missing(id))
+            id <- rlang::ensym(id)
+        if(missing(id))
+            id <- attr(outcome.model, 'id')
+        if(!missing(time))
+            time <- rlang::ensym(time)
+        if(missing(time))
+            time <- rlang::sym(rlang::f_lhs(terms(intensity.model))[[3]])
 
-        followup_data <- data_all_with_transforms |>
-            select( ..id..
+        followup_only <- data |>
+            filter(0 < !!time) |>
+            select( !!id, !!time,
                   , all_of(all.vars(terms(intensity.model)))
                   , all_of(all.vars(terms(outcome.model)))
-                  ) |>
-            model.frame(~., data=_, id = ..id.., prev_outcome = ..prev_outcome.., time = ..time..)
-        # rlang::inject(
-        #     model.frame(terms(intensity.model),
-        #                 data=data_all_with_transforms,
-        #                 id = ..id.., time = ..time..,
-        #                 prev_outcome = ..prev_outcome..,
-        #                 !!!syms(all.vars(terms(intensity.model))),
-        #                 !!!syms(all.vars(terms(outcome.model)))
-        #                 )
-        # )
-        baseline_intensity_all <-
+            ) |>
+            na.omit()
+        mf_followup    <- rlang::inject(model.frame(terms(outcome.model),
+                                                    data=followup_only,
+                                                    time = !!time,
+                                                    id = !!id))
+        X_followup     <- model.matrix(outcome.model, data=mf_followup)
+        Y_followup     <- model.response(mf_followup)
+        ids_followup   <- pull(mf_followup, "(id)")
+        times_followup <- pull(mf_followup, "(time)")
+        uids  <- sort(unique(pull(data, {{id}})))
+
+        intensity <-
             estimate_baseline_intensity(
                 intensity.model = intensity.model,
-                data = followup_data
+                data = followup_only
             )
-        followup_data$baseline_intensity <- baseline_intensity_all$baseline_intensity
+        exp_gamma <- predict(intensity.model, newdata = followup_only, type='risk', reference='zero')
+        intensity_weights <- intensity$baseline_intensity * exp_gamma
 
-        mf <- model.frame(terms(outcome.model), data=followup_data)
-        X_all <- model.matrix(terms(outcome.model),
-                              data = mf
-                              )
-        Y_all <- model.response(mf)
-        id    <- pull(followup_data, '..id..')
-        ids   <- sort(unique(pull(data_all_with_transforms, ..id..)))
-        outcome_coef <- outcome.model$coef
-        intensity_coef <- coef(intensity.model)
 
-        term1 <-
-            compute_sim_influence_term_1_for_all(
-                X_all                  = X_all,
-                times_all              = pull(followup_data, "(time)"),
-                outcome_all            = Y_all,
-                prev_outcome_all       = pull(followup_data, "(prev_outcome)"),
-                baseline_intensity_all = baseline_intensity_all$baseline_intensity,
+        term1 <- compute_sim_influence_term_1_for_all(
+                X_all                  = X_followup,
+                times_all              = times_followup,
+                outcome_all            = Y_followup,
                 alpha = alpha,
-                intensity_coef = intensity_coef,
-                outcome_coef = outcome_coef,
+                intensity_weights = intensity_weights,
+                outcome_coef = outcome.model$coef,
                 base = base,
                 bandwidth = outcome.model$bandwidth,
                 kernel = attr(outcome.model, 'kernel')
             )
+        term1.by.id <- map(uids, \(.){
+            colSums(term1[ids_followup == .,, drop=FALSE], na.rm = TRUE)
+        }) |> do.call(rbind, args=_)
+
+        outcome <- terms(outcome.model)[[2]]
+        integration_data <-
+                data |>
+                    dplyr::select(-any_of('..prev_outcome..')) |>
+                    dplyr::mutate(
+                        ..prev_outcome..  = !!outcome,
+                        ..delta_time..    = 0,
+                        ..prev_time..     = !!time,
+                    )
+
         term2 <- compute_sim_influence_term_2_for_all_patients(
             outcome.model = outcome.model,
-            X_all=X_all, Y_all=Y_all, outcome_coef=outcome_coef,
-            data_all = data_all_with_transforms,
+            integration_data = integration_data,
             alpha = alpha,
             base = base,
             tol=tolerance,
-            kernel = attr(outcome.model, 'kernel'),
+            id = !!id,
+            time = !!time,
             ...
         )
         list(
-            id = ids,
+            id = uids,
             alpha = alpha,
-            term1 = map(ids, \(.){
-                colSums(term1[id == .,, drop=FALSE])
-            }) |> do.call(rbind, args=_),
-            term2=term2
+            term1 = term1.by.id,
+            term2 = term2
         )
     }

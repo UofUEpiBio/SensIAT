@@ -11,7 +11,7 @@ function(
     mf <- if(is.null(data)){
         model.frame(intensity.model)
     } else {
-        model.frame(terms(intensity.model), data = data)
+        model.frame(terms(intensity.model), data = data, na.action=NULL)
     }
 
     new.time <- mf[[1]][,2]

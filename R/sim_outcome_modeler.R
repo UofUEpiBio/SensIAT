@@ -50,6 +50,7 @@ function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ini
       class = c('SensIAT::outcome-model', 'SensIAT::Single-index-outcome-model'),
       kernel = kernel,
       terms = terms(mf),
+      id = id,
       initial = initial)
 }
 
@@ -78,17 +79,37 @@ function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ini
 `predict.SensIAT::Single-index-outcome-model` <-
     function( object
             , newdata = NULL
-            , type = c('response', 'terms')
+            , type = c('lp', 'response', 'terms')
             , ...){
         if(is.null(newdata)) newdata = model.frame(object)
         type = match.arg(type)
 
-        frame <-
+        frame <- model.frame(object, data = newdata)
+
+        X_new <- model.matrix(terms(object), data = frame)
+
+        if(type == 'terms') return(X_new)
+
+        lp <- X_new %*% object$coef
+        if(type == 'lp') return(lp)
+
+        response <- vector('numeric', nrow(X))
 
 
-        predict(object$formula, data = newdata, ...)
+        lp0 <- model.matrix(terms(model), model$data) %*% object$coef
+        Y <- model.response(model.frame(model))
+        y <- sort(unique(Y))
 
-        if(type == 'terms'){}
+        for(i in 1:nrow(X_new)){
+          Fhat <- pcoriaccel_NW(
+            Xb = lp0, Y = Y,
+            xb = lp[k], y_seq = y,
+            h = object$bandwidth,
+            kernel = attr(object, 'kernel'))
+          pmf <- diff(c(0, Fhat))
+          response[k] <- sum(y*pmf)
+        }
+        return(response)
     }
 
 estimate_starting_coefficients <- function(X,Y, eps = 1e-7){
@@ -297,6 +318,7 @@ SensIAT_sim_outcome_modeler_fbw <-
             ),
             class = c('SensIAT::outcome-model', 'SensIAT::Single-index-outcome-model'),
             kernel = kernel,
+            id = id,
             terms = terms(mf),
             initial = initial)
     }

@@ -1,14 +1,26 @@
 
 #' Compute Influence Terms
 #'
+#' This function computes the influence terms for the marginal outcome model sensitivity analysis.
+#' It is a generic function that can handle different types of outcome models.
+#'
+#' @param outcome.model The outcome model fitted to the data.
+#' @param intensity.model The intensity model fitted to the data.
+#' @param alpha A numeric vector representing the sensitivity parameter.
+#' @param data A data frame containing the observations.
+#' @param id A variable representing the patient identifier.
+#' @param base A spline basis object.
+#' @param ... Additional arguments passed to the method.
+#'
 #' @export
 compute_influence_terms <-
 function(
-    data_all_with_transforms, #< vector of times for all observations
-    base, # Spline basis
-    alpha, # Sensitivity, singular alpha value
     outcome.model, # outcome model
     intensity.model, # The intensity model
+    alpha, # Sensitivity, singular alpha value
+    data, #< vector of times for all observations
+    id, #< Patient identifier variable
+    base, # Spline basis
     ...
 ){
     UseMethod("compute_influence_terms", outcome.model)
@@ -18,7 +30,8 @@ function(
 #' @export
 compute_influence_terms.default <-
 function(
-    time, #< vector of times for all observations
+    data, #< vector of times for all observations
+    id,
     base, # Spline basis
     alpha, # Sensitivity, recurses if length > 1
     outcome.model, # outcome model

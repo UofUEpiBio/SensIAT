@@ -26,7 +26,6 @@ test_that("MAVE: ise vs. mse", {
 
     object.mave.ise$models$outcome$bandwidth
     object.mave.mse$models$outcome$bandwidth
-
 })
 test_that("MAVE: grid vs. optim", {
     object.mave.grid <-

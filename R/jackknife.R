@@ -87,3 +87,13 @@ SensIAT_jackknife <- function(original.object, time, ...){
             jackknife_var = (n()-1)/n() * sum((mean-mean(mean))^2),
         , .groups='drop')
 }
+
+
+## TODO:
+## Give class to jackknife results object
+## Implement the autoplot function.
+# 4 plots
+# 1. within group lamp plot
+# 2. Within group jackknife plot (Adds error bars to point estimates)
+# 3. Full model effect contour plot.
+# 4. Full model jackknife plot (Adds contour significance lines to full model contour plot.)
