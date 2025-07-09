@@ -21,7 +21,7 @@ add_class <- function(x, class) {
   }
 
   # Add the new class to the object
-  class(x) <- c(existing_classes, class)
+  class(x) <- c(class, existing_classes)
 
   return(x)
 }
