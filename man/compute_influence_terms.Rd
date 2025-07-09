@@ -7,7 +7,18 @@
 \title{Compute Influence Terms}
 \usage{
 compute_influence_terms(
-  data_all_with_transforms,
+  outcome.model,
+  intensity.model,
+  alpha,
+  data,
+  id,
+  base,
+  ...
+)
+
+\method{compute_influence_terms}{default}(
+  data,
+  id,
   base,
   alpha,
   outcome.model,
@@ -15,20 +26,37 @@ compute_influence_terms(
   ...
 )
 
-\method{compute_influence_terms}{default}(time, base, alpha, outcome.model, intensity.model, ...)
-
 \method{compute_influence_terms}{`SensIAT::Single-index-outcome-model`}(
-  data_all_with_transforms,
-  base,
-  alpha,
   outcome.model,
   intensity.model,
+  alpha,
+  data,
+  base,
   tolerance = .Machine$double.eps^(1/3),
+  na.action = na.fail,
+  id = NULL,
+  time = NULL,
   ...
 )
 }
+\arguments{
+\item{outcome.model}{The outcome model fitted to the data.}
+
+\item{intensity.model}{The intensity model fitted to the data.}
+
+\item{alpha}{A numeric vector representing the sensitivity parameter.}
+
+\item{data}{A data frame containing the observations.}
+
+\item{id}{A variable representing the patient identifier.}
+
+\item{base}{A spline basis object.}
+
+\item{...}{Additional arguments passed to the method.}
+}
 \description{
-Compute Influence Terms
+This function computes the influence terms for the marginal outcome model sensitivity analysis.
+It is a generic function that can handle different types of outcome models.
 }
 \section{Methods (by class)}{
 \itemize{

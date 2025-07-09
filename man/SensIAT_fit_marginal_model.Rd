@@ -6,10 +6,11 @@
 \usage{
 SensIAT_fit_marginal_model(
   data,
+  id,
   alpha,
   knots,
-  intensity.model,
   outcome.model,
+  intensity.model,
   spline.degree = 3L,
   ...
 )
@@ -21,9 +22,9 @@ SensIAT_fit_marginal_model(
 
 \item{knots}{Location of spline knots. If a \code{SplineBasis} object is provided, it is used directly.}
 
-\item{intensity.model}{The assessment time intensity model.}
-
 \item{outcome.model}{The observed effects model.}
+
+\item{intensity.model}{The assessment time intensity model.}
 
 \item{spline.degree}{The degree of the spline basis, default is 3 (cubic splines).}
 
@@ -34,4 +35,37 @@ a list with the fitted model, including the coefficients and their variances for
 }
 \description{
 Title
+}
+\examples{
+# Create followup data with lags
+data_with_lags <- SensIAT_example_data |>
+    dplyr::group_by(Subject_ID) |>
+    dplyr::mutate(
+        Prev_Outcome = lag(Outcome, default = NA_real_),
+        Prev_time = lag(Time, default = NA_real_),
+        Delta_Time = Time - Prev_time
+    ) |>
+    dplyr::filter(Time > 0)
+
+# Create the observation time intensity model
+intensity.model <-
+    coxph(Surv(Prev_time, Time, !is.na(Outcome)) ~ Prev_Outcome + strata(Visit),
+    data = data_with_lags)
+
+# Create the observed outcome model
+outcome.model <-
+    SensIAT_sim_outcome_modeler(
+        Outcome ~ ns(Prev_Outcome, df=3) + Delta_Time - 1,
+        id = Subject_ID,
+        data = data_with_lags)
+
+# Fit the marginal outcome model
+mm <- SensIAT_fit_marginal_model(
+    data = data_with_lags,
+    id = Subject_ID,
+    alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+    knots = c(60, 260, 460),
+    intensity.model = intensity.model,
+    outcome.model = outcome.model)
+
 }

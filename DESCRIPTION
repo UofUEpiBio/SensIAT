@@ -25,6 +25,7 @@ Imports:
     assertthat,
     dplyr,
     generics,
+    ggplot2,
     glue,
     KernSmooth,
     MASS,

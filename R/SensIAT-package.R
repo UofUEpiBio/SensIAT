@@ -7,6 +7,7 @@
 #' @importFrom assertthat assert_that
 #' @importFrom assertthat is.count
 #' @importFrom generics prune
+#' @importFrom ggplot2 autoplot
 #' @importFrom glue glue
 #' @importFrom KernSmooth dpill
 #' @importFrom MASS glm.nb
