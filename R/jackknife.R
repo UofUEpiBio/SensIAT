@@ -77,7 +77,10 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
 SensIAT_jackknife <- function(original.object, time, ...){
     replications <- cross_validate(original.object)
 
-    original.estimates <- predict.SensIAT_within_group_model(original.object, time=time)
+    original.estimates <- predict.SensIAT_within_group_model(original.object, time=time, ...)
+    summarize_jackknife_replications(replications, original.object, time)
+}
+summarize_jackknife_replications <- function(replications, original.object, time){
     estimates <- map(replications, predict.SensIAT_within_group_model, time=time,
                      include.var=FALSE, base = original.object$base)
     estimates |> bind_rows(.id='.rep') |>
@@ -86,12 +89,64 @@ SensIAT_jackknife <- function(original.object, time, ...){
             # n = n(),
             jackknife_mean = mean(mean),
             jackknife_var = (n()-1)/n() * sum((mean-mean(mean))^2),
-        , .groups='drop') |>
+            , .groups='drop') |>
         ungroup() |>
         full_join(original.estimates, by=c('alpha', 'time')) |>
         add_class('SensIAT_withingroup_jackknife_results') |>
         structure(original.object = original.object)
 }
+
+#' @describeIn SensIAT_jackknife Estimate variance of the treatment effect with jackknife resampling for full data models.
+#' @export
+SensIAT_jackknife_fulldata <- function(object, time, ...){
+    replications_treatment <- cross_validate(object$treatment)
+    replications_control <- cross_validate(object$control)
+
+    summary_treatment <- summarize_jackknife_replications(replications_treatment, object$treatment, time)
+    summary_control <- summarize_jackknife_replications(replications_control, object$control, time)
+
+    full_join(
+        summary_treatment,
+        summary_control,
+        by=c('time'),
+        suffix=c('_treatment', '_control'),
+        relationship = "many-to-many"
+    ) |>
+        add_class('SensIAT_fulldata_jackknife_results') |>
+        structure(
+            original.object = object,
+            summary_treatment = summary_treatment,
+            summary_control = summary_control
+        ) |>
+        mutate(
+            mean_effect = mean_treatment - mean_control,
+            mean_effect_jackknife_var = jackknife_var_treatment + jackknife_var_control
+        )
+}
+
+#' Perform Jackknife resampling on an object.
+#'
+#' @param object An object to cross validate on.
+#' @param ... Additional arguments passed to the method.
+#'
+#' @return A data frame of the jackknife resampling results.
+#' @export
+jackknife <- function(object, ...){
+    UseMethod('jackknife')
+}
+
+#' @describeIn jackknife Perform jackknife resampling on a SensIAT_within_group_model object.
+#' @export
+jackknife.SensIAT_within_group_model <- function(object, ...){
+    SensIAT_jackknife(object, ...)
+}
+
+#' @describeIn jackknife Perform jackknife resampling on a SensIAT_fulldata_model object.
+#' @export
+jackknife.SensIAT_fulldata_model <- function(object, ...){
+    SensIAT_jackknife_fulldata(object, ...)
+}
+
 
 
 ## TODO:

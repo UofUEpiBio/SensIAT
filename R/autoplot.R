@@ -128,7 +128,7 @@ autoplot.SensIAT_withingroup_jackknife_results <- function(object, width = NULL,
 #'         End = 830
 #'     )
 #' autoplot(full.object, time = 180) +
-#'      ggplot2::scale_fill_brewer(palette = "Spectral")
+#'      ggplot2::scale_fill_brewer(palette = "Spectral", guide = 'coloursteps')
 autoplot.SensIAT_fulldata_model <- function(object, time, include.rugs = NA, ...) {
     df <- predict(object, time, ...)
 
@@ -155,5 +155,47 @@ autoplot.SensIAT_fulldata_model <- function(object, time, include.rugs = NA, ...
           || n_distinct(df$alpha_treatment) > 10
           )
         ) return(rslt)
+    rslt + ggplot2::geom_rug(sides = 'bl')
+}
+
+
+#' Plot for estimated treatment effect for `SensIAT_fulldata_jackknife_results` objects
+#'
+#' The horizontal and vertical axes represent the sensitivity parameter `alpha`
+#' for the control and treatment groups, respectively. The plot shows
+#' at each combination of `alpha` values zero if the 95% confidence interval
+#' contains zero, otherwise the bound of the confidence interval that is closest
+#' to zero.
+#'
+#' @export
+autoplot.SensIAT_fulldata_jackknife_results <- function(object, ...) {
+    rslt <- ggplot2::ggplot(data = object |>
+                                mutate(
+                                    lower_95 = mean_effect + qnorm(0.025) * sqrt(mean_effect_jackknife_var),
+                                    upper_95 = mean_effect + qnorm(0.975) * sqrt(mean_effect_jackknife_var),
+                                    plot_value = pmax(lower_95, pmin(upper_95, 0))
+                                ),
+                            ggplot2::aes(x = .data$alpha_control,
+                                         y = .data$alpha_treatment,
+                                         z = plot_value)) +
+        ggplot2::geom_contour_filled() +
+        ggplot2::labs(
+            x = expression(alpha[control]),
+            y = expression(alpha[treatment]),
+            fill = "Treatment Effect"
+        )
+
+    if (length(time)> 1){
+        rslt <- rslt + ggplot2::facet_wrap(~time, scales = 'free')
+    } else {
+        rslt <- rslt + ggplot2::ggtitle(paste("Treatment Effect at Time =", time))
+    }
+
+    if(isFALSE(include.rugs)) return(rslt)
+    if(is.na(include.rugs)
+       && ( n_distinct(df$alpha_control) > 10
+            || n_distinct(df$alpha_treatment) > 10
+       )
+    ) return(rslt)
     rslt + ggplot2::geom_rug(sides = 'bl')
 }

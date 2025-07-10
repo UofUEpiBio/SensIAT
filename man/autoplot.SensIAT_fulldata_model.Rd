@@ -35,5 +35,5 @@ full.object <-
         End = 830
     )
 autoplot(full.object, time = 180) +
-     ggplot2::scale_fill_brewer(palette = "Spectral")
+     ggplot2::scale_fill_brewer(palette = "Spectral", guide = 'coloursteps')
 }

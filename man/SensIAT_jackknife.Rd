@@ -2,9 +2,12 @@
 % Please edit documentation in R/jackknife.R
 \name{SensIAT_jackknife}
 \alias{SensIAT_jackknife}
+\alias{SensIAT_jackknife_fulldata}
 \title{Estimate response with jackknife resampling}
 \usage{
 SensIAT_jackknife(original.object, time, ...)
+
+SensIAT_jackknife_fulldata(object, time, ...)
 }
 \arguments{
 \item{original.object}{A SensIAT_within_group_model object.}
@@ -22,6 +25,11 @@ specified alpha values.
 \description{
 Estimate response with jackknife resampling
 }
+\section{Functions}{
+\itemize{
+\item \code{SensIAT_jackknife_fulldata()}: Estimate variance of the treatment effect with jackknife resampling for full data models.
+
+}}
 \examples{
 \dontrun{
 object <-
