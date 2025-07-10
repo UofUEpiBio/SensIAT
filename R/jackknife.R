@@ -77,10 +77,10 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
 SensIAT_jackknife <- function(original.object, time, ...){
     replications <- cross_validate(original.object)
 
-    original.estimates <- predict.SensIAT_within_group_model(original.object, time=time, ...)
     summarize_jackknife_replications(replications, original.object, time)
 }
 summarize_jackknife_replications <- function(replications, original.object, time){
+    original.estimates <- predict.SensIAT_within_group_model(original.object, time=time, ...)
     estimates <- map(replications, predict.SensIAT_within_group_model, time=time,
                      include.var=FALSE, base = original.object$base)
     estimates |> bind_rows(.id='.rep') |>
