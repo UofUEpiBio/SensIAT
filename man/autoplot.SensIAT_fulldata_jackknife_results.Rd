@@ -4,7 +4,16 @@
 \alias{autoplot.SensIAT_fulldata_jackknife_results}
 \title{Plot for estimated treatment effect for \code{SensIAT_fulldata_jackknife_results} objects}
 \usage{
-\method{autoplot}{SensIAT_fulldata_jackknife_results}(object, ...)
+\method{autoplot}{SensIAT_fulldata_jackknife_results}(object, ..., include.rugs = NA)
+}
+\arguments{
+\item{object}{A \code{SensIAT_fulldata_jackknife_results} object.}
+
+\item{...}{Additional arguments passed to \code{predict}.}
+
+\item{include.rugs}{If \code{TRUE}, adds rugs to the plot. If \code{FALSE}, no rugs are added.
+When \code{NA}, rugs are added only if the number of distinct values of \code{alpha_control}
+and \code{alpha_treatment} is less than or equal to 10.}
 }
 \description{
 The horizontal and vertical axes represent the sensitivity parameter \code{alpha}

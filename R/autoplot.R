@@ -167,8 +167,15 @@ autoplot.SensIAT_fulldata_model <- function(object, time, include.rugs = NA, ...
 #' contains zero, otherwise the bound of the confidence interval that is closest
 #' to zero.
 #'
+#' @param object A `SensIAT_fulldata_jackknife_results` object.
+#' @param ... Additional arguments passed to `predict`.
+#' @param include.rugs If `TRUE`, adds rugs to the plot. If `FALSE`, no rugs are added.
+#' When `NA`, rugs are added only if the number of distinct values of `alpha_control`
+#' and `alpha_treatment` is less than or equal to 10.
+#'
 #' @export
-autoplot.SensIAT_fulldata_jackknife_results <- function(object, ...) {
+autoplot.SensIAT_fulldata_jackknife_results <-
+  function(object, ..., include.rugs = NA) {
     rslt <- ggplot2::ggplot(data = object |>
                                 mutate(
                                     lower_95 = mean_effect + qnorm(0.025) * sqrt(mean_effect_jackknife_var),
@@ -184,7 +191,7 @@ autoplot.SensIAT_fulldata_jackknife_results <- function(object, ...) {
             y = expression(alpha[treatment]),
             fill = "Treatment Effect"
         )
-
+    time <- unique(object$time)
     if (length(time)> 1){
         rslt <- rslt + ggplot2::facet_wrap(~time, scales = 'free')
     } else {
@@ -193,8 +200,8 @@ autoplot.SensIAT_fulldata_jackknife_results <- function(object, ...) {
 
     if(isFALSE(include.rugs)) return(rslt)
     if(is.na(include.rugs)
-       && ( n_distinct(df$alpha_control) > 10
-            || n_distinct(df$alpha_treatment) > 10
+       && ( n_distinct(object$alpha_control) > 10
+            || n_distinct(object$alpha_treatment) > 10
        )
     ) return(rslt)
     rslt + ggplot2::geom_rug(sides = 'bl')
