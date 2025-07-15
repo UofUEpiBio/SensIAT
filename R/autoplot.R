@@ -45,6 +45,7 @@ autoplot.SensIAT_within_group_model <- function(object, ...) {
         col = expression(alpha)
     )
 }
+
 #' Plot estimates at given times for `SensIAT_withingroup_jackknife_results` objects
 #'
 #' Horizontal axis represents time, and the vertical axis represents the outcome
@@ -176,33 +177,50 @@ autoplot.SensIAT_fulldata_model <- function(object, time, include.rugs = NA, ...
 #' @export
 autoplot.SensIAT_fulldata_jackknife_results <-
   function(object, ..., include.rugs = NA) {
-    rslt <- ggplot2::ggplot(data = object |>
-                                mutate(
-                                    lower_95 = mean_effect + qnorm(0.025) * sqrt(mean_effect_jackknife_var),
-                                    upper_95 = mean_effect + qnorm(0.975) * sqrt(mean_effect_jackknife_var),
-                                    plot_value = pmax(lower_95, pmin(upper_95, 0))
-                                ),
-                            ggplot2::aes(x = .data$alpha_control,
-                                         y = .data$alpha_treatment,
-                                         z = plot_value)) +
-        ggplot2::geom_contour_filled() +
-        ggplot2::labs(
-            x = expression(alpha[control]),
-            y = expression(alpha[treatment]),
-            fill = "Treatment Effect"
-        )
-    time <- unique(object$time)
-    if (length(time)> 1){
-        rslt <- rslt + ggplot2::facet_wrap(~time, scales = 'free')
-    } else {
-        rslt <- rslt + ggplot2::ggtitle(paste("Treatment Effect at Time =", time))
-    }
+      rslt <- ggplot2::ggplot(data = object |>
+                                  mutate(
+                                      lower_95 = mean_effect + qnorm(0.025) * sqrt(mean_effect_jackknife_var),
+                                      upper_95 = mean_effect + qnorm(0.975) * sqrt(mean_effect_jackknife_var),
+                                      plot_value = pmax(lower_95, pmin(upper_95, 0))
+                                  ),
+                              ggplot2::aes(x = .data$alpha_control,
+                                           y = .data$alpha_treatment,
+                                           z = plot_value)) +
+          ggplot2::labs(
+              x = expression(alpha[control]),
+              y = expression(alpha[treatment]),
+              fill = expression(delta),
+              caption = expression(
+                paste(delta == 0, italic(' if '), 0 %in% 'CI'['95%'],
+                      plain(' otherwise '), delta ,
+                      plain(' is the bound of the 95% CI closest to zero.')))
+          )
 
-    if(isFALSE(include.rugs)) return(rslt)
-    if(is.na(include.rugs)
-       && ( n_distinct(object$alpha_control) > 10
-            || n_distinct(object$alpha_treatment) > 10
-       )
-    ) return(rslt)
+
+    if(rlang::is_installed("metR")){
+      rslt <- rslt +
+        metR::geom_contour_fill() +
+        metR::scale_fill_divergent(mid="white",low="forestgreen",high="orange")
+    } else {
+      rlang::inform("Package 'metR' is recomended for creating 'SensIAT' contour plots, please install it.",
+                    .frequency = 'once')
+      rslt <- rslt +
+          ggplot2::geom_contour_filled()
+    }
+      time <- unique(object$time)
+      if (length(time)> 1){
+          rslt <- rslt + ggplot2::facet_wrap(~time, scales = 'free')
+      } else {
+          rslt <- rslt + ggplot2::ggtitle(paste("Treatment Effect at Time =", time))
+      }
+
+      if(isFALSE(include.rugs)) return(rslt)
+      if(is.na(include.rugs)
+         && ( n_distinct(object$alpha_control) > 10
+              || n_distinct(object$alpha_treatment) > 10
+         )
+      ) return(rslt)
+
+
     rslt + ggplot2::geom_rug(sides = 'bl')
 }

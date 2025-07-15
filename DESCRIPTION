@@ -46,6 +46,7 @@ Suggests:
     dfoptim,
     inline,
     knitr,
+    metR,
     progress,
     rmarkdown,
     spelling,
