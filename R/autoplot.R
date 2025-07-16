@@ -137,12 +137,22 @@ autoplot.SensIAT_fulldata_model <- function(object, time, include.rugs = NA, ...
                             ggplot2::aes(x = .data$alpha_control,
                                          y = .data$alpha_treatment,
                                          z = .data$mean_effect)) +
-        ggplot2::geom_contour_filled() +
         ggplot2::labs(
             x = expression(alpha[control]),
             y = expression(alpha[treatment]),
             fill = "Treatment Effect"
         )
+
+    if(rlang::is_installed("metR")){
+      rslt <- rslt +
+        metR::geom_contour_fill() +
+        metR::scale_fill_divergent(mid="white",low="forestgreen",high="orange")
+    } else {
+      rlang::inform("Package 'metR' is recomended for creating 'SensIAT' contour plots, please install it.",
+                    .frequency = 'once')
+      rslt <- rslt +
+        ggplot2::geom_contour_filled()
+    }
 
     if (length(time)> 1){
         rslt <- rslt + ggplot2::facet_wrap(~time, scales = 'free')
