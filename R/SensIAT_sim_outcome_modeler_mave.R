@@ -157,6 +157,7 @@ function(formula, data,
     } else {
         stop("Unknown bw.selection type. Please use either 'ise' or 'mse'.")
     }
+    rlang::check_installed("ManifoldOptim")
     requireNamespace("ManifoldOptim", quietly = TRUE)
     mod <- Rcpp::Module("ManifoldOptim_module", PACKAGE = "ManifoldOptim")
     prob <- new(mod$RProblem, objFun)

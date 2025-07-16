@@ -46,6 +46,7 @@ Suggests:
     dfoptim,
     inline,
     knitr,
+    ManifoldOptim,
     metR,
     progress,
     rmarkdown,
