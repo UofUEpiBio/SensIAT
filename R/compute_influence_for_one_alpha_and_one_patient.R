@@ -47,10 +47,10 @@ function(
                 outcome.model, alpha, new.data = _
             ) |>
             mutate(
-                E_Y_past = E_Yexp_alphaY / E_exp_alphaY,
+                E_Y_past = .data$E_Yexp_alphaY / .data$E_exp_alphaY,
                 Term1_unweighted =
-                    (!!(variables$outcome)-E_Y_past)/
-                    (baseline_lambda*Exp_gamma* exp(-alpha*!!(variables$outcome))*E_exp_alphaY)
+                    (!!(variables$outcome)-.data$E_Y_past)/
+                    (.data$baseline_lambda*.data$Exp_gamma* exp(-alpha*!!(variables$outcome))*E_exp_alphaY)
             )
             rlang::inject(
                 with(term1_unweighted,

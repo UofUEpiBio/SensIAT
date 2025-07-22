@@ -119,8 +119,8 @@ SensIAT_jackknife_fulldata <- function(object, time, ...){
             summary_control = summary_control
         ) |>
         mutate(
-            mean_effect = mean_treatment - mean_control,
-            mean_effect_jackknife_var = jackknife_var_treatment + jackknife_var_control
+            mean_effect = .data$mean_treatment - .data$mean_control,
+            mean_effect_jackknife_var = .data$jackknife_var_treatment + .data$jackknife_var_control
         )
 }
 

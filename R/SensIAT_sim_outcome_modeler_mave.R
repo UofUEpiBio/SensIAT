@@ -75,12 +75,6 @@ function(formula, data,
         stop("Unknown bw.selection type. Please use either 'ise' or 'mse'.")
     }
 
-    # bw_opt <- optimize(err,
-    #                    interval = c(log(.Machine$double.xmin), log(.Machine$double.xmax)),
-    #                    ...,
-    #                    lower = log(.Machine$double.xmin),
-    #                    upper = log(.Machine$double.xmax)
-    #                    )
     bw.method <- match.arg(bw.method)
     sigma <- sd(Xbeta)
     if(bw.method == 'grid'){
@@ -105,7 +99,7 @@ function(formula, data,
         bw_opt <- bw.details$par
     } else if(bw.method == 'optimize'){
         # Use optimize for bandwidth selection
-        result <- optimize(err,
+        result <- stats::optimize(err,
                            interval = c(log(sigma * min(bw.range)), log(sigma * max(bw.range))),
                            ...)
         bw_opt <- result$minimum

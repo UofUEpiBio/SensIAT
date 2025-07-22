@@ -37,7 +37,7 @@ autoplot.SensIAT_within_group_model <- function(object, ...) {
   df <- predict(object, time=x, type = "response") |>
       mutate(alpha_factor = factor(alpha))
 
-  ggplot2::ggplot(data=df, ggplot2::aes(x = time, y = mean, col = alpha_factor)) +
+  ggplot2::ggplot(data=df, ggplot2::aes(x = .data$time, y = .data$mean, col = .data$alpha_factor)) +
     ggplot2::geom_line() +
     ggplot2::labs(
         x = rlang::as_string(object$variables$time),
@@ -87,18 +87,19 @@ autoplot.SensIAT_withingroup_jackknife_results <- function(object, width = NULL,
 
     ggplot2::ggplot(data=dplyr::mutate(object, alpha_factor = factor(alpha)),
                     ggplot2::aes(
-                        x = time, y = mean, col = alpha_factor,
-                        ymin = mean - sqrt(jackknife_var),
-                        ymax = mean + sqrt(jackknife_var),
-                        group= alpha_factor
+                        x = .data$time,
+                        y = .data$mean,
+                        col = .data$alpha_factor,
+                        ymin = mean - sqrt(.data$jackknife_var),
+                        ymax = mean + sqrt(.data$jackknife_var),
+                        group= .data$alpha_factor
                     )) +
         ggplot2::geom_point(size = 2, position = dodge) +
         ggplot2::geom_errorbar(position = dodge) +
         ggplot2::labs(
             x = rlang::as_string(attr(object, "original.object")$variables$time),
-            y = expr(
-                !!rlang::as_string(attr(object, "original.object")$variables$outcome)
-                %+-% sigma),
+            y = substitute(expression(outcome %+-% sigma),
+                           attr(object, "original.object")$variables),
             col = expression(alpha)
         )
 }
@@ -189,13 +190,13 @@ autoplot.SensIAT_fulldata_jackknife_results <-
   function(object, ..., include.rugs = NA) {
       rslt <- ggplot2::ggplot(data = object |>
                                   mutate(
-                                      lower_95 = mean_effect + qnorm(0.025) * sqrt(mean_effect_jackknife_var),
-                                      upper_95 = mean_effect + qnorm(0.975) * sqrt(mean_effect_jackknife_var),
-                                      plot_value = pmax(lower_95, pmin(upper_95, 0))
+                                      lower_95 = mean_effect + qnorm(0.025) * sqrt(.data$mean_effect_jackknife_var),
+                                      upper_95 = mean_effect + qnorm(0.975) * sqrt(.data$mean_effect_jackknife_var),
+                                      plot_value = pmax(.data$lower_95, pmin(.data$upper_95, 0))
                                   ),
                               ggplot2::aes(x = .data$alpha_control,
                                            y = .data$alpha_treatment,
-                                           z = plot_value)) +
+                                           z = .data$plot_value)) +
           ggplot2::labs(
               x = expression(alpha[control]),
               y = expression(alpha[treatment]),
