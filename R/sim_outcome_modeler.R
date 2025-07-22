@@ -93,11 +93,11 @@ function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ini
         lp <- X_new %*% object$coef
         if(type == 'lp') return(lp)
 
-        response <- vector('numeric', nrow(X))
+        response <- vector('numeric', nrow(X_new))
 
 
-        lp0 <- model.matrix(terms(model), model$data) %*% object$coef
-        Y <- model.response(model.frame(model))
+        lp0 <- model.matrix(terms(object), object$data) %*% object$coef
+        Y <- model.response(model.frame(object))
         y <- sort(unique(Y))
 
         for(i in 1:nrow(X_new)){
@@ -107,7 +107,7 @@ function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ini
             h = object$bandwidth,
             kernel = attr(object, 'kernel'))
           pmf <- diff(c(0, Fhat))
-          response[k] <- sum(y*pmf)
+          response[i] <- sum(y*pmf)
         }
         return(response)
     }
@@ -224,7 +224,7 @@ function(
         return(
             purrr::map_dfr(
                 alpha,
-                `sensitivity_expected_values::Single-index-outcome-model`,
+                `sensitivity_expected_values.SensIAT::Single-index-outcome-model`,
                 model = model, new.data = new.data,
                 ...
             )
