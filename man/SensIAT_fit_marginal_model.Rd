@@ -37,6 +37,7 @@ a list with the fitted model, including the coefficients and their variances for
 Title
 }
 \examples{
+library(survival)
 # Create followup data with lags
 data_with_lags <- SensIAT_example_data |>
     dplyr::group_by(Subject_ID) |>
