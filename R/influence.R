@@ -29,14 +29,6 @@ function(
 #' @describeIn compute_influence_terms Generic method which covers lm and glm outcome models.
 #' @export
 compute_influence_terms.default <-
-function(
-    data, #< vector of times for all observations
-    id,
-    base, # Spline basis
-    alpha, # Sensitivity, recurses if length > 1
-    outcome.model, # outcome model
-    intensity.model, # The intensity model
-    ...
-){
+function(outcome.model, intensity.model, alpha, data, id, base, ...){
     rlang::abort("compute_influence_terms is not implemented for this outcome model type. Please use a method that supports your model type.")
 }
