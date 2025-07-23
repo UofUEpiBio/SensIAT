@@ -52,17 +52,6 @@ globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
 #'         End = 830,
 #'         knots = c(60,260,460),
 #'     )
-#' model <-
-#'     fit_SensIAT_within_group_model(
-#'         group.data = SensIAT_example_data |> mutate(Outcome=Outcome*6),
-#'         outcome_modeler = MASS::glm.nb,
-#'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-#'         id = Subject_ID,
-#'         outcome = Outcome,
-#'         time = Time,
-#'         End = 830,
-#'         knots = c(60,260,460),
-#'     )
 #' }
 fit_SensIAT_within_group_model <- function(
         group.data,

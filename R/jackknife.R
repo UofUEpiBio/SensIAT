@@ -47,7 +47,7 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
 
 #' Estimate response with jackknife resampling
 #'
-#' @param original.object A SensIAT_within_group_model object.
+#' @param object A SensIAT_within_group_model object.
 #' @param time Time points for which to estimate the response.
 #' @param ... currently ignored.
 #'
@@ -74,10 +74,10 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
 #' )
 #' jackknife.estimates <- SensIAT_jackknife(object, time = c(90, 180, 270, 360, 450))
 #' }
-SensIAT_jackknife <- function(original.object, time, ...){
-    replications <- cross_validate(original.object)
+SensIAT_jackknife <- function(object, time, ...){
+    replications <- cross_validate(object)
 
-    summarize_jackknife_replications(replications, original.object, time, ...)
+    summarize_jackknife_replications(replications, object, time, ...)
 }
 summarize_jackknife_replications <- function(replications, original.object, time, ...){
     original.estimates <- predict.SensIAT_within_group_model(original.object, time=time, ...)

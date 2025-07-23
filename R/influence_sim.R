@@ -289,6 +289,9 @@ compute_sim_influence_term_2_for_all_patients <-
     }
 
 #' @describeIn compute_influence_terms Optimized method for the single index model.
+#' @param tolerance Numeric value indicating the tolerance for integration, default is `.Machine$double.eps^(1/3)`.
+#' @param na.action Function to handle missing values, default is `na.fail`.
+#' @param time Variable indicating the time variable in the data, by Default will be extracted from the intensity model response.
 #' @export
 `compute_influence_terms.SensIAT::Single-index-outcome-model` <-
     function(
@@ -327,7 +330,7 @@ compute_sim_influence_term_2_for_all_patients <-
         Y_followup     <- model.response(mf_followup)
         ids_followup   <- pull(mf_followup, "(id)")
         times_followup <- pull(mf_followup, "(time)")
-        uids  <- sort(unique(pull(data, {{id}})))
+        uids  <- sort(unique(ids_followup))
 
         intensity <-
             estimate_baseline_intensity(

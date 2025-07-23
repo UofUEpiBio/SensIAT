@@ -18,6 +18,8 @@ SensIAT_fit_marginal_model(
 \arguments{
 \item{data}{Data for evaluation of the model. Should match the data used to fit the intensity and outcome models.}
 
+\item{id}{The subject identifier variable in the data. Lazy evaluation is used, so it can be a symbol or a string.}
+
 \item{alpha}{Sensitivity parameter, a vector of values.}
 
 \item{knots}{Location of spline knots. If a \code{SplineBasis} object is provided, it is used directly.}

@@ -53,6 +53,12 @@ compute_influence_terms(
 \item{base}{A spline basis object.}
 
 \item{...}{Additional arguments passed to the method.}
+
+\item{tolerance}{Numeric value indicating the tolerance for integration, default is \code{.Machine$double.eps^(1/3)}.}
+
+\item{na.action}{Function to handle missing values, default is \code{na.fail}.}
+
+\item{time}{Variable indicating the time variable in the data, by Default will be extracted from the intensity model response.}
 }
 \description{
 This function computes the influence terms for the marginal outcome model sensitivity analysis.

@@ -112,6 +112,10 @@ autoplot.SensIAT_withingroup_jackknife_results <- function(object, width = NULL,
 #'
 #' @param object A `SensIAT_fulldata_model` object.
 #' @param time Time at which to plot the estimates.
+#' @param include.rugs If `TRUE`, adds rugs indicating the locations where the
+#'    sensitivity was evaluated to the plot. If `FALSE`, no rugs are added.
+#'    If `NA`, rugs are added only if the number of distinct values of
+#'    `alpha_control` and `alpha_treatment` is less than or equal to 10.
 #' @param ... Additional arguments passed to `predict`.
 #'
 #' @return A `ggplot2` object.

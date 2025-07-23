@@ -11,6 +11,11 @@
 
 \item{time}{Time at which to plot the estimates.}
 
+\item{include.rugs}{If \code{TRUE}, adds rugs indicating the locations where the
+sensitivity was evaluated to the plot. If \code{FALSE}, no rugs are added.
+If \code{NA}, rugs are added only if the number of distinct values of
+\code{alpha_control} and \code{alpha_treatment} is less than or equal to 10.}
+
 \item{...}{Additional arguments passed to \code{predict}.}
 }
 \value{

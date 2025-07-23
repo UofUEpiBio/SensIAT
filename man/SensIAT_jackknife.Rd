@@ -5,12 +5,12 @@
 \alias{SensIAT_jackknife_fulldata}
 \title{Estimate response with jackknife resampling}
 \usage{
-SensIAT_jackknife(original.object, time, ...)
+SensIAT_jackknife(object, time, ...)
 
 SensIAT_jackknife_fulldata(object, time, ...)
 }
 \arguments{
-\item{original.object}{A SensIAT_within_group_model object.}
+\item{object}{A SensIAT_within_group_model object.}
 
 \item{time}{Time points for which to estimate the response.}
 
