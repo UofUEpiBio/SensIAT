@@ -103,7 +103,7 @@ function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ini
         for(i in 1:nrow(X_new)){
           Fhat <- pcoriaccel_NW(
             Xb = lp0, Y = Y,
-            xb = lp[k], y_seq = y,
+            xb = lp[i], y_seq = y,
             h = object$bandwidth,
             kernel = attr(object, 'kernel'))
           pmf <- diff(c(0, Fhat))
