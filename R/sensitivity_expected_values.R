@@ -112,8 +112,8 @@ sensitivity_expected_values.glm <- function(model, alpha, new.data, ..., y.max =
         mu <- predict(model, newdata = new.data, type = "response")
         y <- 0:1
         pmf <- dbinom(y, size = 1, prob = mu)
-        E_exp_alphaY <- sum(exp(alpha*y)*pmf_estimator(y))
-        E_Yexp_alphaY <- sum(y*exp(alpha*y)*pmf_estimator(y))
+        E_exp_alphaY <- sum(exp(alpha*y)*pmf)
+        E_Yexp_alphaY <- sum(y*exp(alpha*y)*pmf)
     } else
     if (family(model)$family == "poisson"){
         mu <- predict(model, newdata = new.data, type = "response")

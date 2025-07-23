@@ -47,20 +47,19 @@ data_with_lags <- SensIAT_example_data |>
         Prev_Outcome = lag(Outcome, default = NA_real_),
         Prev_time = lag(Time, default = NA_real_),
         Delta_Time = Time - Prev_time
-    ) |>
-    dplyr::filter(Time > 0)
+    )
 
 # Create the observation time intensity model
 intensity.model <-
     coxph(Surv(Prev_time, Time, !is.na(Outcome)) ~ Prev_Outcome + strata(Visit),
-    data = data_with_lags)
+    data = data_with_lags |> filter(Time > 0))
 
 # Create the observed outcome model
 outcome.model <-
     SensIAT_sim_outcome_modeler(
         Outcome ~ ns(Prev_Outcome, df=3) + Delta_Time - 1,
         id = Subject_ID,
-        data = data_with_lags)
+        data = data_with_lags |> filter(Time > 0))
 
 # Fit the marginal outcome model
 mm <- SensIAT_fit_marginal_model(
@@ -69,6 +68,7 @@ mm <- SensIAT_fit_marginal_model(
     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
     knots = c(60, 260, 460),
     intensity.model = intensity.model,
+    time.vars = c('Delta_Time'),
     outcome.model = outcome.model)
 
 }

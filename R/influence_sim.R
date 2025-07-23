@@ -376,10 +376,13 @@ compute_sim_influence_term_2_for_all_patients <-
             time = !!time,
             ...
         )
-        list(
-            id = uids,
-            alpha = alpha,
-            term1 = term1.by.id,
-            term2 = term2
-        )
+        full_join(
+            tibble(id = uids, term1 = term1.by.id),
+            tibble(id = attr(term2, 'id'), term2 = term2),
+            by = 'id') |>
+            mutate(
+                term2 = ifelse(is.na(term2), 0, term2),
+                term1 = ifelse(is.na(term1), 0, term1),
+                alpha = alpha
+            )
     }
