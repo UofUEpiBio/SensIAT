@@ -20,6 +20,8 @@ The horizontal axis represents time, and the vertical axis represents the
 expected marginal outcome given the sensitivity parameter \code{alpha}.
 }
 \examples{
+# Note: example takes a few seconds to run.
+\donttest{
 object <-
     fit_SensIAT_within_group_model(
         group.data = SensIAT_example_data,
@@ -37,4 +39,5 @@ ggplot2::autoplot(object) +
     ggplot2::ggtitle("SensIAT within group model") +
     # Nor are bounds on reasonable values of alpha
     ggplot2::geom_hline(yintercept = c(1.2, 3), linetype = "dotted", linewidth = 1.5)
+}
 }

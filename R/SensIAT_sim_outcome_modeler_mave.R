@@ -5,7 +5,7 @@
 #' minimization of the cross-validated pseudo-integrated squared error.
 #' Optionally, the initial coefficients of the outcome model can be re-estimated
 #' by optimization on a spherical manifold.  This option requires the
-#' [ManifoldOptim] package.
+#' [ManifoldOptim][ManifoldOptim::manifold.optim] package.
 #'
 #' @param formula The outcome model formula
 #' @param data The data to fit the outcome model to.

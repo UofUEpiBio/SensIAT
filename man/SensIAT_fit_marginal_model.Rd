@@ -39,6 +39,8 @@ a list with the fitted model, including the coefficients and their variances for
 Title
 }
 \examples{
+# Note: example takes approximately 30 seconds to run.
+\donttest{
 library(survival)
 library(dplyr)
 library(splines)
@@ -74,4 +76,5 @@ mm <- SensIAT_fit_marginal_model(
     intensity.model = intensity.model,
     time.vars = c('..delta_time..'),
     outcome.model = outcome.model)
+}
 }

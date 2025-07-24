@@ -7,7 +7,7 @@
 #' @param new.data Data to compute conditional means for, defaults to the model frame for the fitted model.
 #' @param ... passed onto methods.
 #' @param y.max The maximum value of the outcome variable for the Poisson and Negative Binomial models.
-#'          If omitted it is chosen from the quantile function for the distribution at 1-eps.
+#'          If omitted it is chosen from the quantile function for the distribution at `1-eps`.
 #' @param eps The tolerance for the quantile function used to estimate `y.max`, default is `.Machine$double.eps`.
 #'
 #' @details
@@ -37,7 +37,6 @@ function(
 #' sensitivity_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
 #' @export
 sensitivity_expected_values.lm <- function(model, alpha, new.data, ...){
-    # lm model
     if(length(alpha) > 1L){
         return(
             purrr::list_rbind(
@@ -140,7 +139,6 @@ sensitivity_expected_values.glm <- function(model, alpha, new.data, ..., y.max =
 #' @describeIn sensitivity_expected_values Negative Binomial Model method
 #' @export
 sensitivity_expected_values.negbin <- function(model, alpha, new.data, ..., y.max = NULL, eps=.Machine$double.eps^(1/4)){
-    # glm model
     if(length(alpha) > 1L){
         return(
             purrr::list_rbind(

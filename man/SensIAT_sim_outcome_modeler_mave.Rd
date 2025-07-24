@@ -48,5 +48,5 @@ A direction is estimated using MAVE, and then the bandwidth is selected by
 minimization of the cross-validated pseudo-integrated squared error.
 Optionally, the initial coefficients of the outcome model can be re-estimated
 by optimization on a spherical manifold.  This option requires the
-\link{ManifoldOptim} package.
+\link[ManifoldOptim:manifold.optim]{ManifoldOptim} package.
 }

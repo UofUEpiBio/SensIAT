@@ -27,7 +27,7 @@ for the control and treatment groups, respectively. The contour plot shows
 the estimated treatment effect at each combination of \code{alpha} values.
 }
 \examples{
-\dontrun{
+\donttest{
 full.object <-
     fit_SensIAT_fulldata_model(
         data = SensIAT_example_fulldata,

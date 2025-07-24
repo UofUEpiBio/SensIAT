@@ -23,6 +23,8 @@ contains zero, otherwise the bound of the confidence interval that is closest
 to zero.
 }
 \examples{
+# Note: fitting the jackknife is computationally expensive,
+#       so this example is here for reference.
 \dontrun{
 full.object <-
     fit_SensIAT_fulldata_model(

@@ -58,7 +58,7 @@ It is a generic function that can handle different types of outcome models.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{compute_influence_terms(default)}: Generic method which covers lm and glm outcome models.
+\item \code{compute_influence_terms(default)}: Generic method, which throws a not implemented error.
 
 \item \code{compute_influence_terms(`SensIAT::Single-index-outcome-model`)}: Optimized method for the single index model.
 

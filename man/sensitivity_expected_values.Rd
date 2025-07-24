@@ -44,7 +44,7 @@ sensitivity_expected_values(
 \item{...}{passed onto methods.}
 
 \item{y.max}{The maximum value of the outcome variable for the Poisson and Negative Binomial models.
-If omitted it is chosen from the quantile function for the distribution at 1-eps.}
+If omitted it is chosen from the quantile function for the distribution at \code{1-eps}.}
 
 \item{eps}{The tolerance for the quantile function used to estimate \code{y.max}, default is \code{.Machine$double.eps}.}
 }

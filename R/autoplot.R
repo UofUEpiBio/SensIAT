@@ -12,6 +12,8 @@
 #' @return A `ggplot2` object.
 #' @export
 #' @examples
+#' # Note: example takes a few seconds to run.
+#' \donttest{
 #' object <-
 #'     fit_SensIAT_within_group_model(
 #'         group.data = SensIAT_example_data,
@@ -29,6 +31,7 @@
 #'     ggplot2::ggtitle("SensIAT within group model") +
 #'     # Nor are bounds on reasonable values of alpha
 #'     ggplot2::geom_hline(yintercept = c(1.2, 3), linetype = "dotted", linewidth = 1.5)
+#' }
 autoplot.SensIAT_within_group_model <- function(object, ...) {
   lower <- object$base@knots[object$base@order]
   upper <- object$base@knots[length(object$base@knots) - object$base@order + 1]
@@ -60,6 +63,8 @@ autoplot.SensIAT_within_group_model <- function(object, ...) {
 #' @return A `ggplot2` object.
 #' @export
 #' @examples
+#' # Note: fitting the jackknife is computationally expensive,
+#' #       so this example is here for reference.
 #' \dontrun{
 #' fitted <-
 #' fit_SensIAT_within_group_model(
@@ -121,7 +126,7 @@ autoplot.SensIAT_withingroup_jackknife_results <- function(object, width = NULL,
 #' @return A `ggplot2` object.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' full.object <-
 #'     fit_SensIAT_fulldata_model(
 #'         data = SensIAT_example_fulldata,
@@ -191,6 +196,8 @@ autoplot.SensIAT_fulldata_model <- function(object, time, include.rugs = NA, ...
 #'
 #' @export
 #' @examples
+#' # Note: fitting the jackknife is computationally expensive,
+#' #       so this example is here for reference.
 #' \dontrun{
 #' full.object <-
 #'     fit_SensIAT_fulldata_model(

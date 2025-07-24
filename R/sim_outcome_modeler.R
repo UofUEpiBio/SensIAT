@@ -12,7 +12,34 @@
 #'
 #' @return Object of class `SensIAT::Single-index-outcome-model` which contains the outcome model portion.
 #' @export
-#' @example inst/examples/basic.R
+#' @examples
+#' \donttest{
+#' # A basic example using fixed intensity bandwidth.
+#' object <-
+#'     fit_SensIAT_within_group_model(
+#'         group.data = SensIAT_example_data,
+#'         outcome_modeler = SensIAT_sim_outcome_modeler_fbw,
+#'         id = Subject_ID,
+#'         outcome = Outcome,
+#'         time = Time,
+#'         knots = c(60,260,460),
+#'         End = 830,
+#'         intensity.args=list(bandwidth=30)
+#'     )
+#'
+#' # A basic example using variable bandwidth but with fixed first coefficient.
+#' object.bw <-
+#'     fit_SensIAT_within_group_model(
+#'         group.data = SensIAT_example_data,
+#'         outcome_modeler = SensIAT_sim_outcome_modeler,
+#'         id = Subject_ID,
+#'         outcome = Outcome,
+#'         time = Time,
+#'         knots = c(60,260,460),
+#'         End = 830,
+#'         intensity.args=list(bandwidth=30)
+#'     )
+#' }
 SensIAT_sim_outcome_modeler <-
 function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., initial=NULL, ...){
   id <- ensym(id)

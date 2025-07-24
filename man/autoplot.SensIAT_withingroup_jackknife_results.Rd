@@ -24,6 +24,8 @@ from the model. Point plotted is the mean estimate, and the error bars
 show the standard error estimated from the jackknife.
 }
 \examples{
+# Note: fitting the jackknife is computationally expensive,
+#       so this example is here for reference.
 \dontrun{
 fitted <-
 fit_SensIAT_within_group_model(

@@ -54,6 +54,7 @@ Outcome Modeler for \code{SensIAT} Single Index Model.
 
 }}
 \examples{
+\donttest{
 # A basic example using fixed intensity bandwidth.
 object <-
     fit_SensIAT_within_group_model(
@@ -67,6 +68,7 @@ object <-
         intensity.args=list(bandwidth=30)
     )
 
+# A basic example using variable bandwidth but with fixed first coefficient.
 object.bw <-
     fit_SensIAT_within_group_model(
         group.data = SensIAT_example_data,
@@ -78,4 +80,5 @@ object.bw <-
         End = 830,
         intensity.args=list(bandwidth=30)
     )
+}
 }

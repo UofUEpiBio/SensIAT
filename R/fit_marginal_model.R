@@ -13,6 +13,8 @@
 #' @export
 #'
 #' @examples
+#' # Note: example takes approximately 30 seconds to run.
+#' \donttest{
 #' library(survival)
 #' library(dplyr)
 #' library(splines)
@@ -48,6 +50,7 @@
 #'     intensity.model = intensity.model,
 #'     time.vars = c('..delta_time..'),
 #'     outcome.model = outcome.model)
+#' }
 SensIAT_fit_marginal_model <-
 function(data,
          id,

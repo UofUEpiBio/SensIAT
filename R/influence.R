@@ -24,7 +24,7 @@ function(
     UseMethod("compute_influence_terms", outcome.model)
 }
 
-#' @describeIn compute_influence_terms Generic method which covers lm and glm outcome models.
+#' @describeIn compute_influence_terms Generic method, which throws a not implemented error.
 #' @export
 compute_influence_terms.default <-
 function(outcome.model, intensity.model, alpha, data, id, base, ...){
