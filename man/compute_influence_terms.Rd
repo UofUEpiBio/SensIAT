@@ -6,23 +6,15 @@
 \alias{compute_influence_terms.SensIAT::Single-index-outcome-model}
 \title{Compute Influence Terms}
 \usage{
-compute_influence_terms(
-  outcome.model,
-  intensity.model,
-  alpha,
-  data,
-  id,
-  base,
-  ...
-)
+compute_influence_terms(outcome.model, intensity.model, alpha, data, ...)
 
 \method{compute_influence_terms}{default}(
+  outcome.model,
+  intensity.model,
+  alpha,
   data,
   id,
   base,
-  alpha,
-  outcome.model,
-  intensity.model,
   ...
 )
 
@@ -48,11 +40,11 @@ compute_influence_terms(
 
 \item{data}{A data frame containing the observations.}
 
+\item{...}{Additional arguments passed to the method.}
+
 \item{id}{A variable representing the patient identifier.}
 
 \item{base}{A spline basis object.}
-
-\item{...}{Additional arguments passed to the method.}
 
 \item{tolerance}{Numeric value indicating the tolerance for integration, default is \code{.Machine$double.eps^(1/3)}.}
 

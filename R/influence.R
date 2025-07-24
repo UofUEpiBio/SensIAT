@@ -19,8 +19,6 @@ function(
     intensity.model, # The intensity model
     alpha, # Sensitivity, singular alpha value
     data, #< vector of times for all observations
-    id, #< Patient identifier variable
-    base, # Spline basis
     ...
 ){
     UseMethod("compute_influence_terms", outcome.model)
