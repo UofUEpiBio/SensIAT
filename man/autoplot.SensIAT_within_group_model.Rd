@@ -32,7 +32,7 @@ object <-
         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
         intensity.args=list(bandwidth=30)
     )
-autoplot(object) +
+ggplot2::autoplot(object) +
     # Title not included
     ggplot2::ggtitle("SensIAT within group model") +
     # Nor are bounds on reasonable values of alpha

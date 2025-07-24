@@ -38,6 +38,6 @@ fit_SensIAT_within_group_model(
     End = 830
 )
 jackknife.estimates <- SensIAT_jackknife(fitted, time = c(90, 180, 270, 360, 450))
-autoplot(jackknife.estimates)
+ggplot2::autoplot(jackknife.estimates)
 }
 }

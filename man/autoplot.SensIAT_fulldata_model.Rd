@@ -27,18 +27,18 @@ for the control and treatment groups, respectively. The contour plot shows
 the estimated treatment effect at each combination of \code{alpha} values.
 }
 \examples{
+\dontrun{
 full.object <-
     fit_SensIAT_fulldata_model(
-        data = ARC_data,
-        trt = Trt == 'home_visits',
+        data = SensIAT_example_fulldata,
+        trt = Treatment_group == 'treatment',
         outcome_modeler = SensIAT_sim_outcome_modeler,
-        id = elig_pid,
-        outcome = Asthma_control,
-        time = time,
+        id = Subject_ID,
+        outcome = Outcome,
+        time = Time,
         knots = c(60, 260, 460),
-        alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-        End = 830
+        alpha = c(-0.6, -0.3, 0, 0.3, 0.6)
     )
-autoplot(full.object, time = 180) +
-     ggplot2::scale_fill_brewer(palette = "Spectral", guide = 'coloursteps')
+ggplot2::autoplot(full.object, time = 180)
+}
 }

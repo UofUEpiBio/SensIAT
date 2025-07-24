@@ -30,11 +30,11 @@ function(
     UseMethod('sensitivity_expected_values')
 }
 
-#' @describeIn sensitivity_expected_values (Gausian) Linear Model method
+#' @describeIn sensitivity_expected_values (Gaussian) Linear Model method
 #' The [stats::integrate] method is used to compute the conditional expectations.
 #' @examples
 #' model <- lm(mpg ~ as.factor(cyl)+disp+wt, data=mtcars)
-#' sensitivity_expected_values.lm(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
+#' sensitivity_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
 #' @export
 sensitivity_expected_values.lm <- function(model, alpha, new.data, ...){
     # lm model
@@ -85,8 +85,8 @@ sensitivity_expected_values.lm <- function(model, alpha, new.data, ...){
 #' @describeIn sensitivity_expected_values Generalized Linear Model method
 #' @examples
 #' model <- glm(cyl ~ mpg+disp+wt, data=mtcars, family=poisson())
-#' sensitivity_expected_values.glm(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ]) |>
-#'     mutate('E(y|alpha)' = E_Yexp_alphaY/E_exp_alphaY)
+#' sensitivity_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ]) |>
+#'     dplyr::mutate('E(y|alpha)' = .data$E_Yexp_alphaY/.data$E_exp_alphaY)
 #' @export
 sensitivity_expected_values.glm <- function(model, alpha, new.data, ..., y.max = NULL, eps=.Machine$double.eps){
     # Recursion

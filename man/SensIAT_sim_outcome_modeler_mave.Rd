@@ -2,7 +2,7 @@
 % Please edit documentation in R/SensIAT_sim_outcome_modeler_mave.R
 \name{SensIAT_sim_outcome_modeler_mave}
 \alias{SensIAT_sim_outcome_modeler_mave}
-\title{Single Index Model using Mave and Optimizing Bandwidth.}
+\title{Single Index Model using MAVE and Optimizing Bandwidth.}
 \usage{
 SensIAT_sim_outcome_modeler_mave(
   formula,
@@ -29,9 +29,9 @@ Should only include follow-up data, i.e. time > 0.}
 
 \item{id}{The patient identifier variable for the data.}
 
-\item{bw.selection}{The criteria for bandwidth selection, either 'ise' for Integrated Squared Error or 'mse' for Mean Squared Error.}
+\item{bw.selection}{The criteria for bandwidth selection, either \code{'ise'} for Integrated Squared Error or \code{'mse'} for Mean Squared Error.}
 
-\item{bw.method}{The method for bandwidth selection, either 'optim' for using optimization or 'grid' for grid search.}
+\item{bw.method}{The method for bandwidth selection, either \code{'optim'} for using optimization or \code{'grid'} for grid search.}
 
 \item{bw.range}{A numeric vector of length 2 indicating the range of bandwidths to consider for selection as a multiple of the standard deviation of the single index predictor.}
 
@@ -43,5 +43,10 @@ Should only include follow-up data, i.e. time > 0.}
 Object of class \code{SensIAT::Single-index-outcome-model} which contains the outcome model portion.
 }
 \description{
-Single Index Model using Mave and Optimizing Bandwidth.
+Single index model estimation using minimum average variance estimation (MAVE).
+A direction is estimated using MAVE, and then the bandwidth is selected by
+minimization of the cross-validated pseudo-integrated squared error.
+Optionally, the initial coefficients of the outcome model can be re-estimated
+by optimization on a spherical manifold.  This option requires the
+\link{ManifoldOptim} package.
 }

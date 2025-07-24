@@ -14,24 +14,28 @@
 #'
 #' @examples
 #' library(survival)
+#' library(dplyr)
+#' library(splines)
 #' # Create followup data with lags
+#' # added variables `..prev_time..`, `..delta_time..` and `..prev_outcome..`
+#' # have special interpretations when computing the influence.
 #' data_with_lags <- SensIAT_example_data |>
 #'     dplyr::group_by(Subject_ID) |>
 #'     dplyr::mutate(
-#'         Prev_Outcome = lag(Outcome, default = NA_real_),
-#'         Prev_time = lag(Time, default = NA_real_),
-#'         Delta_Time = Time - Prev_time
+#'         ..prev_outcome.. = dplyr::lag(Outcome, default = NA_real_, order_by = Time),
+#'         ..prev_time.. = dplyr::lag(Time, default = 0, order_by = Time),
+#'         ..delta_time.. = Time - dplyr::lag(.data$Time, default = NA_real_, order_by = Time)
 #'     )
 #'
 #' # Create the observation time intensity model
 #' intensity.model <-
-#'     coxph(Surv(Prev_time, Time, !is.na(Outcome)) ~ Prev_Outcome + strata(Visit),
-#'     data = data_with_lags |> filter(Time > 0))
+#'     coxph(Surv(..prev_time.., Time, !is.na(Outcome)) ~ ..prev_outcome.. + strata(Visit),
+#'     data = data_with_lags |> dplyr::filter(.data$Time > 0))
 #'
 #' # Create the observed outcome model
 #' outcome.model <-
 #'     SensIAT_sim_outcome_modeler(
-#'         Outcome ~ ns(Prev_Outcome, df=3) + Delta_Time - 1,
+#'         Outcome ~ ns(..prev_outcome.., df=3) + ..delta_time.. - 1,
 #'         id = Subject_ID,
 #'         data = data_with_lags |> filter(Time > 0))
 #'
@@ -42,9 +46,8 @@
 #'     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
 #'     knots = c(60, 260, 460),
 #'     intensity.model = intensity.model,
-#'     time.vars = c('Delta_Time'),
+#'     time.vars = c('..delta_time..'),
 #'     outcome.model = outcome.model)
-#'
 SensIAT_fit_marginal_model <-
 function(data,
          id,

@@ -99,6 +99,9 @@ summarize_jackknife_replications <- function(replications, original.object, time
 #' @describeIn SensIAT_jackknife Estimate variance of the treatment effect with jackknife resampling for full data models.
 #' @export
 SensIAT_jackknife_fulldata <- function(object, time, ...){
+    assertthat::assert_that(is.numeric(time), length(time) > 0,
+                            msg = "time must be a numeric vector of length > 0")
+
     replications_treatment <- cross_validate(object$treatment)
     replications_control <- cross_validate(object$control)
 
@@ -111,7 +114,7 @@ SensIAT_jackknife_fulldata <- function(object, time, ...){
         by=c('time'),
         suffix=c('_treatment', '_control'),
         relationship = "many-to-many"
-    ) |>
+    ) |> as_tibble() |>
         add_class('SensIAT_fulldata_jackknife_results') |>
         structure(
             original.object = object,
@@ -135,25 +138,14 @@ jackknife <- function(object, ...){
     UseMethod('jackknife')
 }
 
-#' @describeIn jackknife Perform jackknife resampling on a SensIAT_within_group_model object.
+#' @describeIn jackknife Perform jackknife resampling on a `SensIAT_within_group_model` object.
 #' @export
 jackknife.SensIAT_within_group_model <- function(object, ...){
     SensIAT_jackknife(object, ...)
 }
 
-#' @describeIn jackknife Perform jackknife resampling on a SensIAT_fulldata_model object.
+#' @describeIn jackknife Perform jackknife resampling on a `SensIAT_fulldata_model` object.
 #' @export
 jackknife.SensIAT_fulldata_model <- function(object, ...){
     SensIAT_jackknife_fulldata(object, ...)
 }
-
-
-
-## TODO:
-## Give class to jackknife results object
-## Implement the autoplot function.
-# 4 plots
-# 1. within group lamp plot
-# 2. Within group jackknife plot (Adds error bars to point estimates)
-# 3. Full model effect contour plot.
-# 4. Full model jackknife plot (Adds contour significance lines to full model contour plot.)

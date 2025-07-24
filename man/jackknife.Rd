@@ -25,8 +25,8 @@ Perform Jackknife resampling on an object.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{jackknife(SensIAT_within_group_model)}: Perform jackknife resampling on a SensIAT_within_group_model object.
+\item \code{jackknife(SensIAT_within_group_model)}: Perform jackknife resampling on a \code{SensIAT_within_group_model} object.
 
-\item \code{jackknife(SensIAT_fulldata_model)}: Perform jackknife resampling on a SensIAT_fulldata_model object.
+\item \code{jackknife(SensIAT_fulldata_model)}: Perform jackknife resampling on a \code{SensIAT_fulldata_model} object.
 
 }}

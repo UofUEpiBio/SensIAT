@@ -24,7 +24,7 @@
 #'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
 #'         intensity.args=list(bandwidth=30)
 #'     )
-#' autoplot(object) +
+#' ggplot2::autoplot(object) +
 #'     # Title not included
 #'     ggplot2::ggtitle("SensIAT within group model") +
 #'     # Nor are bounds on reasonable values of alpha
@@ -74,7 +74,7 @@ autoplot.SensIAT_within_group_model <- function(object, ...) {
 #'     End = 830
 #' )
 #' jackknife.estimates <- SensIAT_jackknife(fitted, time = c(90, 180, 270, 360, 450))
-#' autoplot(jackknife.estimates)
+#' ggplot2::autoplot(jackknife.estimates)
 #' }
 autoplot.SensIAT_withingroup_jackknife_results <- function(object, width = NULL, ...) {
 
@@ -121,20 +121,20 @@ autoplot.SensIAT_withingroup_jackknife_results <- function(object, width = NULL,
 #' @return A `ggplot2` object.
 #' @export
 #' @examples
+#' \dontrun{
 #' full.object <-
 #'     fit_SensIAT_fulldata_model(
-#'         data = ARC_data,
-#'         trt = Trt == 'home_visits',
+#'         data = SensIAT_example_fulldata,
+#'         trt = Treatment_group == 'treatment',
 #'         outcome_modeler = SensIAT_sim_outcome_modeler,
-#'         id = elig_pid,
-#'         outcome = Asthma_control,
-#'         time = time,
+#'         id = Subject_ID,
+#'         outcome = Outcome,
+#'         time = Time,
 #'         knots = c(60, 260, 460),
-#'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-#'         End = 830
+#'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6)
 #'     )
-#' autoplot(full.object, time = 180) +
-#'      ggplot2::scale_fill_brewer(palette = "Spectral", guide = 'coloursteps')
+#' ggplot2::autoplot(full.object, time = 180)
+#' }
 autoplot.SensIAT_fulldata_model <- function(object, time, include.rugs = NA, ...) {
     df <- predict(object, time, ...)
 
@@ -190,6 +190,22 @@ autoplot.SensIAT_fulldata_model <- function(object, time, include.rugs = NA, ...
 #' and `alpha_treatment` is less than or equal to 10.
 #'
 #' @export
+#' @examples
+#' \dontrun{
+#' full.object <-
+#'     fit_SensIAT_fulldata_model(
+#'         data = SensIAT_example_fulldata,
+#'         trt = Treatment_group == 'treatment',
+#'         outcome_modeler = SensIAT_sim_outcome_modeler,
+#'         id = Subject_ID,
+#'         outcome = Outcome,
+#'         time = Time,
+#'         knots = c(60, 260, 460),
+#'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6)
+#'     )
+#' jk.full.model <- jackknife(full.object, time = 180)
+#' ggplot2::autoplot(jk.full.model)
+#' }
 autoplot.SensIAT_fulldata_jackknife_results <-
   function(object, ..., include.rugs = NA) {
       rslt <- ggplot2::ggplot(data = object |>

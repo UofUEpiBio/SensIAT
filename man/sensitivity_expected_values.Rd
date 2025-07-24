@@ -66,7 +66,7 @@ For the methods shown here
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{sensitivity_expected_values(lm)}: (Gausian) Linear Model method
+\item \code{sensitivity_expected_values(lm)}: (Gaussian) Linear Model method
 The \link[stats:integrate]{stats::integrate} method is used to compute the conditional expectations.
 
 \item \code{sensitivity_expected_values(glm)}: Generalized Linear Model method
@@ -76,8 +76,8 @@ The \link[stats:integrate]{stats::integrate} method is used to compute the condi
 }}
 \examples{
 model <- lm(mpg ~ as.factor(cyl)+disp+wt, data=mtcars)
-sensitivity_expected_values.lm(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
+sensitivity_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
 model <- glm(cyl ~ mpg+disp+wt, data=mtcars, family=poisson())
-sensitivity_expected_values.glm(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ]) |>
-    mutate('E(y|alpha)' = E_Yexp_alphaY/E_exp_alphaY)
+sensitivity_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ]) |>
+    dplyr::mutate('E(y|alpha)' = .data$E_Yexp_alphaY/.data$E_exp_alphaY)
 }

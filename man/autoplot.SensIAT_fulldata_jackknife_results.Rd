@@ -22,3 +22,20 @@ at each combination of \code{alpha} values zero if the 95\% confidence interval
 contains zero, otherwise the bound of the confidence interval that is closest
 to zero.
 }
+\examples{
+\dontrun{
+full.object <-
+    fit_SensIAT_fulldata_model(
+        data = SensIAT_example_fulldata,
+        trt = Treatment_group == 'treatment',
+        outcome_modeler = SensIAT_sim_outcome_modeler,
+        id = Subject_ID,
+        outcome = Outcome,
+        time = Time,
+        knots = c(60, 260, 460),
+        alpha = c(-0.6, -0.3, 0, 0.3, 0.6)
+    )
+jk.full.model <- jackknife(full.object, time = 180)
+ggplot2::autoplot(jk.full.model)
+}
+}
