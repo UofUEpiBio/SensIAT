@@ -1,4 +1,4 @@
-# SensIAT (development version)
+# SensIAT 0.2.0
 
 # SensIAT 0.1.1
 
