@@ -33,8 +33,6 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
             format = "  cross-validation [:bar] :current/:total(:percent) eta: :eta",
             total = length(ids)
         )
-    }
-    if(progress){
         pb$tick(0)
         on.exit(pb$terminate(), add = TRUE)
     }
