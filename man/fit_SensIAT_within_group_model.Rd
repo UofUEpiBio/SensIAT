@@ -20,7 +20,8 @@ fit_SensIAT_within_group_model(
   intensity.args = list(),
   outcome.args = list(),
   influence.args = list(),
-  spline.degree = 3
+  spline.degree = 3,
+  add.terminal.observations = TRUE
 )
 }
 \arguments{
@@ -63,6 +64,11 @@ should be a formula that will be used to modify the outcome model per, \link{upd
 See the Influence Arguments section.}
 
 \item{spline.degree}{The degree of the spline basis.}
+
+\item{add.terminal.observations}{Logical indicating whether to add terminal
+observations to the data.  If TRUE, data may not contain any \code{NA}s.
+if FALSE, data will be assumed to already include the terminal
+observations}
 }
 \value{
 a list with class \code{SensIAT-fulldata-fitted-model} with two components,

@@ -30,6 +30,10 @@ globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
 #' @param influence.args A list of optional arguments used when computing the influence.
 #'         See the Influence Arguments section.
 #' @param spline.degree The degree of the spline basis.
+#' @param add.terminal.observations Logical indicating whether to add terminal
+#'          observations to the data.  If TRUE, data may not contain any `NA`s.
+#'          if FALSE, data will be assumed to already include the terminal
+#'          observations
 #'
 #' @return
 #'  Should return everything needed to define the fit of the model.
@@ -65,7 +69,8 @@ fit_SensIAT_within_group_model <- function(
         intensity.args = list(),
         outcome.args = list(),
         influence.args = list(),
-        spline.degree = 3
+        spline.degree = 3,
+        add.terminal.observations = TRUE
 ){
     ###### Input clean and capture -------------------------------------------
     # Variables
@@ -104,6 +109,8 @@ fit_SensIAT_within_group_model <- function(
                any_of(intensity.extra.vars)) |>
         arrange(!!id.var, !!time.var)
 
+    if(add.terminal.observations && anyNA(mf)) # Ensure no NAs in the data
+            rlang::abort("Data contains missing values, cannot add terminal observations.")
     data_all_with_transforms <- mf |>
         rename(
             ..id.. = !!id.var,
@@ -114,10 +121,14 @@ fit_SensIAT_within_group_model <- function(
         mutate(
             ..visit_number.. = seq_along(..time..)
         ) |>
-        ungroup() |>
-        complete(..id.., ..visit_number..,
-                 fill = list(..time.. = End,..outcome.. = NA_real_)
-        ) |>
+        ungroup()
+    if(add.terminal.observations){
+        data_all_with_transforms <- data_all_with_transforms |>
+            complete(..id.., ..visit_number..,
+                     fill = list(..time.. = End,..outcome.. = NA_real_)
+            )
+    }
+    data_all_with_transforms <- data_all_with_transforms |>
         group_by(..id..) |>
         arrange(..id.., ..visit_number..) |>
         mutate(
@@ -138,7 +149,7 @@ fit_SensIAT_within_group_model <- function(
     #' * **`bandwidth`** The bandwidth for the intensity model kernel.
     #'
     followup_data <- data_all_with_transforms |>
-        filter(..time.. > 0, !is.na(..prev_outcome..))
+        filter(.data$..time.. > 0, !is.na(.data$..prev_outcome..))
 
     intensity.formula <- Surv(..prev_time.., ..time..,  !is.na(..outcome..)) ~ ..prev_outcome.. + strata(..visit_number..)
     if(!is.null(intensity.args$model.modifications))
