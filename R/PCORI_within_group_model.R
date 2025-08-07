@@ -102,43 +102,16 @@ fit_SensIAT_within_group_model <- function(
     intensity.extra.vars <- all.vars(intensity.args$model.modifications) |>
         setdiff(c('..id..', '..time..', '..prev_outcome..', '..delta_time..', '..visit_number..', '..outcome..'))
 
-    mf <- group.data |>
-        filter((!!time.var) <= !!End) |>
+    data_all_with_transforms <- group.data |>
         select(!!id.var, !!time.var, !!outcome.var,
                any_of(outcome.extra.vars),
                any_of(intensity.extra.vars)) |>
-        arrange(!!id.var, !!time.var)
-
-    if(add.terminal.observations && anyNA(mf)) # Ensure no NAs in the data
-            rlang::abort("Data contains missing values, cannot add terminal observations.")
-    data_all_with_transforms <- mf |>
-        rename(
-            ..id.. = !!id.var,
-            ..time.. = !!time.var,
-            ..outcome.. = !!outcome.var
-        ) |>
-        group_by(..id..) |>
-        mutate(
-            ..visit_number.. = seq_along(..time..)
-        ) |>
-        ungroup()
-    if(add.terminal.observations){
-        data_all_with_transforms <- data_all_with_transforms |>
-            complete(..id.., ..visit_number..,
-                     fill = list(..time.. = End,..outcome.. = NA_real_)
-            )
-    }
-    data_all_with_transforms <- data_all_with_transforms |>
-        group_by(..id..) |>
-        arrange(..id.., ..visit_number..) |>
-        mutate(
-            ..time..            := as.double(..time..),
-            ..prev_outcome..    := lag(..outcome.., order_by = ..time..),
-            ..prev_time..       := lag(..time.., order_by =  ..time.., default = 0),
-            ..delta_time..      := ..time.. - lag(..time.., order_by =  ..time.., default = 0)
-        ) |>
-        ungroup()
-
+        SensIAT_prepare_data(
+            id.var=!!id.var,
+            time.var = !!time.var,
+            outcome.var = !!outcome.var,
+            End = End,
+            add.terminal.observations = add.terminal.observations)
 
     ######   Intensity model  ##################################################
     #' @section Intensity Arguments:
@@ -212,7 +185,7 @@ fit_SensIAT_within_group_model <- function(
             intensity = intensity.model,
             outcome = outcome.model
         ),
-        data = mf,
+        data = data_all_with_transforms,
         variables = vars,
         End = End,
         influence = marginal_model$influence,
