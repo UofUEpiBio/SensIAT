@@ -53,4 +53,11 @@ a format suitable for the SensIAT models.
 
 SensIAT_prepare_data( SensIAT_example_data, Subject_ID, Time, Outcome, 830)
 
+exdata <- tibble::tibble(ID=rep(1:2, c(3,5)),
+                         Time=c(0, 30, 60,
+                                0, 30, 60, 90, 120),
+                         Outcome=floor(runif(8, 1, 100)))
+
+SensIAT_prepare_data(exdata, ID, Time, Outcome, 120)
+
 }
