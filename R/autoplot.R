@@ -53,7 +53,7 @@ autoplot.SensIAT_within_group_model <- function(object, ...) {
 #'
 #' Horizontal axis represents time, and the vertical axis represents the outcome
 #' from the model. Point plotted is the mean estimate, and the error bars
-#' show the standard error estimated from the jackknife.
+#' show the 95% confidence interval using the variance estimated from the jackknife.
 #'
 #' @param object A `SensIAT_withingroup_jackknife_results` object produced from
 #'                      `SensIAT_jackknife`.
@@ -95,8 +95,8 @@ autoplot.SensIAT_withingroup_jackknife_results <- function(object, width = NULL,
                         x = .data$time,
                         y = .data$mean,
                         col = .data$alpha_factor,
-                        ymin = mean - sqrt(.data$jackknife_var),
-                        ymax = mean + sqrt(.data$jackknife_var),
+                        ymin = mean + qnorm(0.025) * sqrt(.data$jackknife_var),
+                        ymax = mean + qnorm(0.975) * sqrt(.data$jackknife_var),
                         group= .data$alpha_factor
                     )) +
         ggplot2::geom_point(size = 2, position = dodge) +

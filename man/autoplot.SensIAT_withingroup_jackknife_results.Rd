@@ -21,7 +21,7 @@ A \code{ggplot2} object.
 \description{
 Horizontal axis represents time, and the vertical axis represents the outcome
 from the model. Point plotted is the mean estimate, and the error bars
-show the standard error estimated from the jackknife.
+show the 95\% confidence interval using the variance estimated from the jackknife.
 }
 \examples{
 # Note: fitting the jackknife is computationally expensive,
