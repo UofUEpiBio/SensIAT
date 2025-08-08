@@ -79,5 +79,6 @@ function(data,
         ) |>
         ungroup()
 
-    data_all_with_transforms
+    data_all_with_transforms |>
+        filter(..time.. != ..prev_time..)
 }
