@@ -1,3 +1,5 @@
+# SensIAT (development version)
+
 # SensIAT 0.2.0
 
 * New options for fitting single index outcome models:
