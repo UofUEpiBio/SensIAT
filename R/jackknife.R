@@ -2,7 +2,7 @@ globalVariables(c('alpha', add=TRUE))
 
 cross_validate <- function(original.object, progress = interactive(), prune = TRUE){
     data <- original.object$data
-    ids <- unique(pull(data, original.object$variables$id))
+    ids <- na.omit(unique(pull(data, original.object$variables$id)))
 
 
     run_without <- function(id){
