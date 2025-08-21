@@ -57,7 +57,7 @@ function(data,
             ..time.. = !!time.var,
             ..outcome.. = !!outcome.var
         ) |>
-        group_by(..id..) |>
+        group_by(..id.., !!id.var) |>
         mutate(
             ..visit_number.. = seq_along(..time..) - 1L
         ) |>
@@ -65,8 +65,12 @@ function(data,
     if(add.terminal.observations){
         data_all_with_transforms <- data_all_with_transforms |>
             complete(..id.., ..visit_number..,
-                     fill = list(..time.. = End,..outcome.. = NA_real_)
-            )
+                     fill = tibble::lst(
+                                ..time.. = End,..outcome.. = NA_real_,
+                                !!time.var := End, !!outcome.var := NA_real_
+                                 )
+            ) |>
+            mutate(!!id.var := .data$..id..)
     }
     data_all_with_transforms <- data_all_with_transforms |>
         group_by(..id..) |>
