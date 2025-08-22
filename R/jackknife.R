@@ -20,7 +20,8 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
                 intensity.args = original.object$args$intensity,
                 outcome.args = original.object$args$outcome,
                 influence.args = original.object$args$influence,
-                spline.degree = original.object$base@order-1L
+                spline.degree = original.object$base@order-1L,
+                add.terminal.observations = FALSE
             )
         if(prune)
             replication <- prune(replication)
