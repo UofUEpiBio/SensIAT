@@ -117,8 +117,12 @@ test_that("MAVE: reestimate.coef", {
             knots = c(60,260,460),
             End = 830,
             intensity.args=list(bandwidth=30),
-            outcome.args=list(bw.method='grid', bw.selection = 'ise', reestimate.coef = FALSE)
+            outcome.args=list(bw.method='optimize', bw.selection = 'ise', reestimate.coef = 0)
         )
+
+    expect_true(is.na(object.mave.wo$models$outcome$details$beta.delta))
+    expect_true(is.null(object.mave.wo$models$outcome$details$beta.last))
+
     object.mave.rc <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
@@ -129,12 +133,81 @@ test_that("MAVE: reestimate.coef", {
             knots = c(60,260,460),
             End = 830,
             intensity.args=list(bandwidth=30),
-            outcome.args=list(bw.method='grid', bw.selection = 'ise', reestimate.coef = TRUE)
+            outcome.args=list(bw.method='optimize', bw.selection = 'ise', reestimate.coef = 1)
         )
+    expect_length(object.mave.rc$models$outcome$details$bw.delta, 1)
+    expect_length(object.mave.rc$models$outcome$details$beta.delta, 5)
+
+    expect_equal(crossprod(object.mave.rc$models$outcome$coefficients)[,], 1)
 
     expect_identical(object.mave.wo$models$intensity$coefficients,
                      object.mave.rc$models$intensity$coefficients)
-    expect_identical(object.mave.wo$models$outcome$bandwidth,
-                     object.mave.rc$models$outcome$bandwidth)
-    expect_true(object.mave.wo$models$outcome$details$value >= object.mave.rc$models$outcome$details.refit$fval)
+    expect_true(object.mave.wo$models$outcome$details$bw.last$value <=
+                    object.mave.rc$models$outcome$details$beta.last$fval)
+
+
+
+
+
+
+    object.mave.rc.grid <-
+        fit_SensIAT_within_group_model(
+            group.data = SensIAT_example_data,
+            outcome_modeler = SensIAT_sim_outcome_modeler_mave,
+            id = Subject_ID,
+            outcome = Outcome,
+            time = Time,
+            knots = c(60,260,460),
+            End = 830,
+            intensity.args=list(bandwidth=30),
+            outcome.args=list(bw.method='grid', bw.selection = 'ise', reestimate.coef = 1)
+        )
+    if(object.mave.rc.grid$models$outcome$details$last.optimized == 'bandwidth'){
+        expect_true(object.mave.rc.grid$models$outcome$details$bw.last$value <=
+                        object.mave.rc.grid$models$outcome$details$beta.last$fval)
+    } else {
+        expect_true(object.mave.rc.grid$models$outcome$details$bw.last$value >=
+                        object.mave.rc.grid$models$outcome$details$beta.last$fval)
+    }
+
+    object.mave.rc.optim <-
+        fit_SensIAT_within_group_model(
+            group.data = SensIAT_example_data,
+            outcome_modeler = SensIAT_sim_outcome_modeler_mave,
+            id = Subject_ID,
+            outcome = Outcome,
+            time = Time,
+            knots = c(60,260,460),
+            End = 830,
+            intensity.args=list(bandwidth=30),
+            outcome.args=list(bw.method='optim', bw.selection = 'ise', reestimate.coef = 1)
+        )
+    if(object.mave.rc.optim$models$outcome$details$last.optimized == 'bandwidth'){
+        expect_true(object.mave.rc.optim$models$outcome$details$bw.last$value <=
+                        object.mave.rc.optim$models$outcome$details$beta.last$fval)
+    } else {
+        expect_true(object.mave.rc.optim$models$outcome$details$bw.last$value >=
+                        object.mave.rc.optim$models$outcome$details$beta.last$fval)
+    }
+
+    object.mave.rc.optimize <-
+        fit_SensIAT_within_group_model(
+            group.data = SensIAT_example_data,
+            outcome_modeler = SensIAT_sim_outcome_modeler_mave,
+            id = Subject_ID,
+            outcome = Outcome,
+            time = Time,
+            knots = c(60,260,460),
+            End = 830,
+            intensity.args=list(bandwidth=30),
+            outcome.args=list(bw.method='optimize', bw.selection = 'ise', reestimate.coef = 1)
+        )
+    if(object.mave.rc.optimize$models$outcome$details$last.optimized == 'bandwidth'){
+        expect_true(object.mave.rc.optimize$models$outcome$details$bw.last$value <=
+                object.mave.rc.optimize$models$outcome$details$beta.last$fval)
+    } else {
+        expect_true(object.mave.rc.optimize$models$outcome$details$bw.last$value >=
+                        object.mave.rc.optimize$models$outcome$details$beta.last$fval)
+    }
+
 })
