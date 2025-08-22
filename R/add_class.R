@@ -6,7 +6,8 @@
 #' @export
 #' @examples
 #' add_class(TRUE, 'flag')
-#' @export
+#'
+#' @keywords internal
 add_class <- function(x, class) {
   if (!is.character(class)) {
     stop("class must be a character vector")

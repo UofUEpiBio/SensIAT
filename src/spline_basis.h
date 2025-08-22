@@ -43,6 +43,7 @@ class SplineBasis final
 //'
 //' @return Vector of the basis functions evaluated at x.
 //'
+//' @keywords internal
 // [[Rcpp::export]]
 [[nodiscard]] NumericVector pcoriaccel_evaluate_basis(
 	S4 spline_basis, double x
@@ -54,6 +55,8 @@ class SplineBasis final
 //' @param x              numeric vector of points to evaluate
 //'
 //' @return Matrix of the basis functions evaluated at x.
+//'
+//' @keywords internal
 // [[Rcpp::export]]
 [[nodiscard]] NumericMatrix pcoriaccel_evaluate_basis_mat(
 	S4 spline_basis, NumericVector x
