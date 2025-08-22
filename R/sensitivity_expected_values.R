@@ -6,10 +6,6 @@
 #' @param alpha The sensitivity parameter
 #' @param new.data Data to compute conditional means for, defaults to the model frame for the fitted model.
 #' @param ... passed onto methods.
-#' @param y.max The maximum value of the outcome variable for the Poisson and Negative Binomial models.
-#'          If omitted it is chosen from the quantile function for the distribution at `1-eps`.
-#' @param eps The tolerance for the quantile function used to estimate `y.max`, default is `.Machine$double.eps`.
-#'
 #' @details
 #' Compute the conditional expectations needed for predictions in the models.
 #' Two additional values/expectations are computed:
@@ -82,6 +78,10 @@ sensitivity_expected_values.lm <- function(model, alpha, new.data, ...){
 
 
 #' @describeIn sensitivity_expected_values Generalized Linear Model method
+#' @param y.max The maximum value of the outcome variable for the Poisson and Negative Binomial models.
+#'          If omitted it is chosen from the quantile function for the distribution at `1-eps`.
+#' @param eps The tolerance for the quantile function used to estimate `y.max`, default is `.Machine$double.eps`.
+#'
 #' @examples
 #' model <- glm(cyl ~ mpg+disp+wt, data=mtcars, family=poisson())
 #' sensitivity_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ]) |>
