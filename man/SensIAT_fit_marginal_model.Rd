@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_marginal_model.R
 \name{SensIAT_fit_marginal_model}
 \alias{SensIAT_fit_marginal_model}
-\title{Title}
+\title{Fit the Marginal Means Model}
 \usage{
 SensIAT_fit_marginal_model(
   data,
@@ -36,7 +36,7 @@ SensIAT_fit_marginal_model(
 a list with the fitted model, including the coefficients and their variances for each alpha value.
 }
 \description{
-Title
+Fit the Marginal Means Model
 }
 \examples{
 # Note: example takes approximately 30 seconds to run.

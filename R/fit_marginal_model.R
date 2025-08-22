@@ -1,4 +1,4 @@
-#' Title
+#' Fit the Marginal Means Model
 #'
 #' @param data Data for evaluation of the model. Should match the data used to fit the intensity and outcome models.
 #' @param id The subject identifier variable in the data. Lazy evaluation is used, so it can be a symbol or a string.

@@ -36,9 +36,8 @@ Everything not treatment is considered control.}
 Preferably passed in as a single \code{tibble} that internally is
 subsetted/filtered as needed.}
 
-\item{outcome_modeler}{A separate function that may be swapped out to switch
-between negative-binomial, single index model, or another we will
-dream up in the future.}
+\item{outcome_modeler}{function for fitting the outcome model.
+Called with a formula, data argument and \code{outcome.args} list.}
 
 \item{id}{The variable that identifies the patient.}
 

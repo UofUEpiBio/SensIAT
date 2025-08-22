@@ -12,9 +12,8 @@ globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
 #' @param group.data The data for the group that is being analyzed.
 #'          Preferably passed in as a single `tibble` that internally is
 #'          subsetted/filtered as needed.
-#' @param outcome_modeler A separate function that may be swapped out to switch
-#'          between negative-binomial, single index model, or another we will
-#'          dream up in the future.
+#' @param outcome_modeler function for fitting the outcome model.
+#'          Called with a formula, data argument and `outcome.args` list.
 #' @param knots knot locations for defining the spline basis.
 #' @param id The variable that identifies the patient.
 #' @param outcome The variable that contains the outcome.
