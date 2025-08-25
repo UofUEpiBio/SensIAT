@@ -47,36 +47,12 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
 
 #' Perform Jackknife resampling on an object.
 #'
-#' @param object An object to cross validate on.
-#' @param ... Additional arguments passed to the method.
-#'
-#' @return A data frame of the jackknife resampling results.
-#' @export
-jackknife <- function(object, ...){
-    UseMethod('jackknife')
-}
-
-#' @describeIn jackknife Perform jackknife resampling on a `SensIAT_within_group_model` object.
-#' @export
-jackknife.SensIAT_within_group_model <- function(object, ...){
-    SensIAT_jackknife(object, ...)
-}
-
-#' @describeIn jackknife Perform jackknife resampling on a `SensIAT_fulldata_model` object.
-#' @export
-jackknife.SensIAT_fulldata_model <- function(object, ...){
-    SensIAT_jackknife_fulldata(object, ...)
-}
-
-
-#' Estimate response with jackknife resampling
-#'
-#' @param object A SensIAT_within_group_model object.
+#' @param object An object to cross validate on and compute jackknife estimates.
 #' @param time Time points for which to estimate the response.
-#' @param ... currently ignored.
+#' @param ... passed along.
 #'
-#' @return
-#' A `tibble` with columns alpha, time, jackknife_mean, and jackknife_var,
+#' @return A data frame of the jackknife resampling results. For `SensIAT` objects,
+#' a `tibble` with columns alpha, time, jackknife_mean, and jackknife_var,
 #' where jackknife_mean is the mean of the jackknife estimates and jackknife_var
 #' is the estimated variances of the response at the given time points for the
 #' specified alpha values.
@@ -98,11 +74,31 @@ jackknife.SensIAT_fulldata_model <- function(object, ...){
 #' )
 #' jackknife.estimates <- SensIAT_jackknife(object, time = c(90, 180, 270, 360, 450))
 #' }
-SensIAT_jackknife <- function(object, time, ...){
-    replications <- cross_validate(object)
 
+#'
+#' @param object An object to cross validate on.
+#' @param ... Additional arguments passed to the method.
+#'
+#' @export
+jackknife <- function(object, ...){
+    UseMethod('jackknife')
+}
+
+#' @describeIn jackknife Perform jackknife resampling on a `SensIAT_within_group_model` object.
+#' @export
+jackknife.SensIAT_within_group_model <- function(object, ...){
+    replications <- cross_validate(object)
     summarize_jackknife_replications(replications, object, time, ...)
 }
+SensIAT_jackknife <- jackknife.SensIAT_within_group_model
+
+#' @describeIn jackknife Perform jackknife resampling on a `SensIAT_fulldata_model` object.
+#' @export
+jackknife.SensIAT_fulldata_model <- function(object, ...){
+    SensIAT_jackknife_fulldata(object, ...)
+}
+
+
 summarize_jackknife_replications <- function(replications, original.object, time, ...){
     original.estimates <- predict.SensIAT_within_group_model(original.object, time=time, ...)
     estimates <- map(replications, predict.SensIAT_within_group_model, time=time,
@@ -120,8 +116,6 @@ summarize_jackknife_replications <- function(replications, original.object, time
         structure(original.object = original.object)
 }
 
-#' @describeIn SensIAT_jackknife Estimate variance of the treatment effect with jackknife resampling for full data models.
-#' @export
 SensIAT_jackknife_fulldata <- function(object, time, ...){
     assertthat::assert_that(is.numeric(time), length(time) > 0,
                             msg = "time must be a numeric vector of length > 0")
