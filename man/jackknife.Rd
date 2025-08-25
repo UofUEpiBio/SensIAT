@@ -41,7 +41,7 @@ Perform Jackknife Resampling on an Object
 object <-
 fit_SensIAT_within_group_model(
     group.data = SensIAT_example_data,
-    outcome_modeler = SensIAT_sim_outcome_modeler,
+    outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
     id = Subject_ID,
     outcome = Outcome,

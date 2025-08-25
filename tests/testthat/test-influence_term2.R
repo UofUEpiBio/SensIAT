@@ -22,7 +22,7 @@ test_that("Compute Influence term2 old vs. new methods", {
         ))
 
 
-    outcome.model <- SensIAT_sim_outcome_modeler(
+    outcome.model <- fit_SensIAT_single_index_fixed_coef_model(
         Outcome ~
             ns(prev_outcome, df=3) +
             scale(Time) +

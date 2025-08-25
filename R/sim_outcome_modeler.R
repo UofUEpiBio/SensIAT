@@ -31,7 +31,7 @@
 #' object.bw <-
 #'     fit_SensIAT_within_group_model(
 #'         group.data = SensIAT_example_data,
-#'         outcome_modeler = SensIAT_sim_outcome_modeler,
+#'         outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
 #'         id = Subject_ID,
 #'         outcome = Outcome,
 #'         time = Time,
@@ -40,7 +40,7 @@
 #'         intensity.args=list(bandwidth=30)
 #'     )
 #' }
-SensIAT_sim_outcome_modeler <-
+fit_SensIAT_single_index_fixed_coef_model <-
 function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., initial=NULL, ...){
   id <- ensym(id)
   mf <- rlang::inject(model.frame(formula, data = data, id = !!id))
@@ -305,7 +305,7 @@ function(
 }
 
 
-#' @describeIn SensIAT_sim_outcome_modeler for fitting with a fixed bandwidth
+#' @describeIn fit_SensIAT_single_index_fixed_coef_model for fitting with a fixed bandwidth
 #' @export
 SensIAT_sim_outcome_modeler_fbw <-
     function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id..,

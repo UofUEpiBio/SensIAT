@@ -2,7 +2,7 @@ test_that("Altering models", {
     model <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
-            outcome_modeler = SensIAT_sim_outcome_modeler,
+            outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
             alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
             id = Subject_ID,
             outcome = Outcome,
@@ -20,7 +20,7 @@ test_that("including terminal rows for intensity model", {
     model.no.terminals <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
-            outcome_modeler = SensIAT_sim_outcome_modeler,
+            outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
             alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
             id = Subject_ID,
             outcome = Outcome,
@@ -32,7 +32,7 @@ test_that("including terminal rows for intensity model", {
     model.with.terminals <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
-            outcome_modeler = SensIAT_sim_outcome_modeler,
+            outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
             alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
             id = Subject_ID,
             outcome = Outcome,
@@ -44,7 +44,7 @@ test_that("including terminal rows for intensity model", {
     model.external.terminals <-
         fit_SensIAT_within_group_model(
             group.data = add_terminal_observations(SensIAT_example_data, Subject_ID, Time, end = 830),
-            outcome_modeler = SensIAT_sim_outcome_modeler,
+            outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
             alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
             id = Subject_ID,
             outcome = Outcome,
@@ -56,7 +56,7 @@ test_that("including terminal rows for intensity model", {
     expect_error(
         fit_SensIAT_within_group_model(
             group.data = add_terminal_observations(SensIAT_example_data, Subject_ID, Time, end = 830),
-            outcome_modeler = SensIAT_sim_outcome_modeler,
+            outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
             alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
             id = Subject_ID,
             outcome = Outcome,

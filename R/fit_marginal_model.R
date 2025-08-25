@@ -36,7 +36,7 @@
 #'
 #' # Create the observed outcome model
 #' outcome.model <-
-#'     SensIAT_sim_outcome_modeler(
+#'     fit_SensIAT_single_index_fixed_coef_model(
 #'         Outcome ~ ns(..prev_outcome.., df=3) + ..delta_time.. - 1,
 #'         id = Subject_ID,
 #'         data = data_with_lags |> filter(Time > 0))

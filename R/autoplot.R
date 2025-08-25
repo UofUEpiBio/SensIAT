@@ -69,7 +69,7 @@ autoplot.SensIAT_within_group_model <- function(object, ...) {
 #' fitted <-
 #' fit_SensIAT_within_group_model(
 #'     group.data = SensIAT_example_data,
-#'     outcome_modeler = SensIAT_sim_outcome_modeler,
+#'     outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
 #'     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
 #'     id = Subject_ID,
 #'     outcome = Outcome,
@@ -131,7 +131,7 @@ autoplot.SensIAT_withingroup_jackknife_results <- function(object, width = NULL,
 #'     fit_SensIAT_fulldata_model(
 #'         data = SensIAT_example_fulldata,
 #'         trt = Treatment_group == 'treatment',
-#'         outcome_modeler = SensIAT_sim_outcome_modeler,
+#'         outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
 #'         id = Subject_ID,
 #'         outcome = Outcome,
 #'         time = Time,
@@ -203,7 +203,7 @@ autoplot.SensIAT_fulldata_model <- function(object, time, include.rugs = NA, ...
 #'     fit_SensIAT_fulldata_model(
 #'         data = SensIAT_example_fulldata,
 #'         trt = Treatment_group == 'treatment',
-#'         outcome_modeler = SensIAT_sim_outcome_modeler,
+#'         outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
 #'         id = Subject_ID,
 #'         outcome = Outcome,
 #'         time = Time,
