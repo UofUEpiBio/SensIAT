@@ -105,7 +105,7 @@ fit_SensIAT_within_group_model <- function(
         select(!!id.var, !!time.var, !!outcome.var,
                any_of(outcome.extra.vars),
                any_of(intensity.extra.vars)) |>
-        SensIAT_prepare_data(
+        prepare_SensIAT_data(
             id.var=!!id.var,
             time.var = !!time.var,
             outcome.var = !!outcome.var,

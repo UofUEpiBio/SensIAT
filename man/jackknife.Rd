@@ -16,9 +16,15 @@ jackknife(object, ...)
 \item{object}{An object to cross validate on.}
 
 \item{...}{Additional arguments passed to the method.}
+
+\item{time}{Time points for which to estimate the response.}
 }
 \value{
-A data frame of the jackknife resampling results.
+A data frame of the jackknife resampling results. For \code{SensIAT} objects,
+a \code{tibble} with columns alpha, time, jackknife_mean, and jackknife_var,
+where jackknife_mean is the mean of the jackknife estimates and jackknife_var
+is the estimated variances of the response at the given time points for the
+specified alpha values.
 }
 \description{
 Perform Jackknife resampling on an object.
@@ -30,3 +36,21 @@ Perform Jackknife resampling on an object.
 \item \code{jackknife(SensIAT_fulldata_model)}: Perform jackknife resampling on a \code{SensIAT_fulldata_model} object.
 
 }}
+\examples{
+\dontrun{
+object <-
+fit_SensIAT_within_group_model(
+    group.data = SensIAT_example_data,
+    outcome_modeler = SensIAT_sim_outcome_modeler,
+    alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+    id = Subject_ID,
+    outcome = Outcome,
+    time = Time,
+    intensity.args=list(bandwidth = 30),
+    knots = c(60,260,460),
+    End = 830
+)
+jackknife.estimates <- SensIAT_jackknife(object, time = c(90, 180, 270, 360, 450))
+}
+
+}

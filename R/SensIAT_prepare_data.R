@@ -29,16 +29,16 @@
 #' @export
 #' @examples
 #'
-#' SensIAT_prepare_data( SensIAT_example_data, Subject_ID, Time, Outcome, 830)
+#' prepare_SensIAT_data( SensIAT_example_data, Subject_ID, Time, Outcome, 830)
 #'
 #' exdata <- tibble::tibble(ID=rep(1:2, c(3,5)),
 #'                          Time=c(0, 30, 60,
 #'                                 0, 30, 60, 90, 120),
 #'                          Outcome=floor(runif(8, 1, 100)))
 #'
-#' SensIAT_prepare_data(exdata, ID, Time, Outcome, 120)
+#' prepare_SensIAT_data(exdata, ID, Time, Outcome, 120)
 #'
-SensIAT_prepare_data <-
+prepare_SensIAT_data <-
 function(data,
          id.var, time.var, outcome.var,
          End,
