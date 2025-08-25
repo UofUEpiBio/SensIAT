@@ -21,7 +21,7 @@
 #'
 #' @return Object of class `SensIAT::Single-index-outcome-model` which contains the outcome model portion.
 #' @export
-SensIAT_sim_outcome_modeler_mave <-
+fit_SensIAT_single_index_norm1coef_model <-
 function(formula, data,
          kernel = "K2_Biweight",
          mave.method = "meanMAVE",

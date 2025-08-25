@@ -26,7 +26,7 @@ test_that("MAVE: ise vs. mse", {
     object.mave.ise <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
-            outcome_modeler = SensIAT_sim_outcome_modeler_mave,
+            outcome_modeler = fit_SensIAT_single_index_norm1coef_model,
             id = Subject_ID,
             outcome = Outcome,
             time = Time,
@@ -39,7 +39,7 @@ test_that("MAVE: ise vs. mse", {
     object.mave.mse <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
-            outcome_modeler = SensIAT_sim_outcome_modeler_mave,
+            outcome_modeler = fit_SensIAT_single_index_norm1coef_model,
             id = Subject_ID,
             outcome = Outcome,
             time = Time,
@@ -59,7 +59,7 @@ test_that("MAVE: grid vs. optim", {
     object.mave.grid <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
-            outcome_modeler = SensIAT_sim_outcome_modeler_mave,
+            outcome_modeler = fit_SensIAT_single_index_norm1coef_model,
             id = Subject_ID,
             outcome = Outcome,
             time = Time,
@@ -73,7 +73,7 @@ test_that("MAVE: grid vs. optim", {
     object.mave.optim <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
-            outcome_modeler = SensIAT_sim_outcome_modeler_mave,
+            outcome_modeler = fit_SensIAT_single_index_norm1coef_model,
             id = Subject_ID,
             outcome = Outcome,
             time = Time,
@@ -87,7 +87,7 @@ test_that("MAVE: grid vs. optim", {
     object.mave.optimize <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
-            outcome_modeler = SensIAT_sim_outcome_modeler_mave,
+            outcome_modeler = fit_SensIAT_single_index_norm1coef_model,
             id = Subject_ID,
             outcome = Outcome,
             time = Time,
@@ -111,7 +111,7 @@ test_that("MAVE: reestimate.coef", {
     object.mave.wo <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
-            outcome_modeler = SensIAT_sim_outcome_modeler_mave,
+            outcome_modeler = fit_SensIAT_single_index_norm1coef_model,
             id = Subject_ID,
             outcome = Outcome,
             time = Time,
@@ -128,7 +128,7 @@ test_that("MAVE: reestimate.coef", {
     object.mave.rc <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
-            outcome_modeler = SensIAT_sim_outcome_modeler_mave,
+            outcome_modeler = fit_SensIAT_single_index_norm1coef_model,
             id = Subject_ID,
             outcome = Outcome,
             time = Time,
@@ -142,7 +142,7 @@ test_that("MAVE: reestimate.coef", {
     object.mave.rc.grid <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
-            outcome_modeler = SensIAT_sim_outcome_modeler_mave,
+            outcome_modeler = fit_SensIAT_single_index_norm1coef_model,
             id = Subject_ID,
             outcome = Outcome,
             time = Time,
@@ -156,7 +156,7 @@ test_that("MAVE: reestimate.coef", {
     object.mave.rc.optim <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
-            outcome_modeler = SensIAT_sim_outcome_modeler_mave,
+            outcome_modeler = fit_SensIAT_single_index_norm1coef_model,
             id = Subject_ID,
             outcome = Outcome,
             time = Time,
@@ -170,7 +170,7 @@ test_that("MAVE: reestimate.coef", {
     object.mave.rc.optimize <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
-            outcome_modeler = SensIAT_sim_outcome_modeler_mave,
+            outcome_modeler = fit_SensIAT_single_index_norm1coef_model,
             id = Subject_ID,
             outcome = Outcome,
             time = Time,
