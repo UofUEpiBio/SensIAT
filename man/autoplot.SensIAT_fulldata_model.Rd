@@ -2,7 +2,7 @@
 % Please edit documentation in R/autoplot.R
 \name{autoplot.SensIAT_fulldata_model}
 \alias{autoplot.SensIAT_fulldata_model}
-\title{Plot for estimated treatment effect for \code{SensIAT_fulldata_model} objects}
+\title{Plot for Estimated Treatment Effect for \code{SensIAT_fulldata_model} Objects}
 \usage{
 \method{autoplot}{SensIAT_fulldata_model}(object, time, include.rugs = NA, ...)
 }

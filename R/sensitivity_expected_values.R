@@ -17,33 +17,33 @@
 #'
 #' @return The `new.data` frame with additional columns `alpha`, `E_Yexp_alphaY`, and `E_exp_alphaY` appended.
 #' @export
-sensitivity_expected_values <-
+compute_SensIAT_expected_values <-
 function(
     model,
     alpha = 0, #< sensitivity parameter
     new.data = model.frame(model),
     ...){
-    UseMethod('sensitivity_expected_values')
+    UseMethod('compute_SensIAT_expected_values')
 }
 
-#' @describeIn sensitivity_expected_values (Gaussian) Linear Model method
+#' @describeIn compute_SensIAT_expected_values (Gaussian) Linear Model method
 #' The [stats::integrate] method is used to compute the conditional expectations.
 #' @examples
 #' model <- lm(mpg ~ as.factor(cyl)+disp+wt, data=mtcars)
-#' sensitivity_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
+#' compute_SensIAT_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
 #' @export
-sensitivity_expected_values.lm <- function(model, alpha, new.data, ...){
+compute_SensIAT_expected_values.lm <- function(model, alpha, new.data, ...){
     if(length(alpha) > 1L){
         return(
             purrr::list_rbind(
-                purrr::map(alpha, \(alpha1)sensitivity_expected_values.lm(model=model, alpha=alpha1, new.data=new.data, ...))
+                purrr::map(alpha, \(alpha1)compute_SensIAT_expected_values.lm(model=model, alpha=alpha1, new.data=new.data, ...))
             )
         )
     }
     if(nrow(new.data) > 1L){
         return(
             purrr::list_rbind(
-                purrr::map(1:nrow(new.data), \(i)sensitivity_expected_values.lm(model=model, alpha=alpha, new.data=new.data[i, , drop=FALSE], ...))
+                purrr::map(1:nrow(new.data), \(i)compute_SensIAT_expected_values.lm(model=model, alpha=alpha, new.data=new.data[i, , drop=FALSE], ...))
             )
         )
     }
@@ -77,35 +77,35 @@ sensitivity_expected_values.lm <- function(model, alpha, new.data, ...){
 }
 
 
-#' @describeIn sensitivity_expected_values Generalized Linear Model method
+#' @describeIn compute_SensIAT_expected_values Generalized Linear Model method
 #' @param y.max The maximum value of the outcome variable for the Poisson and Negative Binomial models.
 #'          If omitted it is chosen from the quantile function for the distribution at `1-eps`.
 #' @param eps The tolerance for the quantile function used to estimate `y.max`, default is `.Machine$double.eps`.
 #'
 #' @examples
 #' model <- glm(cyl ~ mpg+disp+wt, data=mtcars, family=poisson())
-#' sensitivity_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ]) |>
+#' compute_SensIAT_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ]) |>
 #'     dplyr::mutate('E(y|alpha)' = .data$E_Yexp_alphaY/.data$E_exp_alphaY)
 #' @export
-sensitivity_expected_values.glm <- function(model, alpha, new.data, ..., y.max = NULL, eps=.Machine$double.eps){
+compute_SensIAT_expected_values.glm <- function(model, alpha, new.data, ..., y.max = NULL, eps=.Machine$double.eps){
     # Recursion
     if(length(alpha) > 1L){
         return(
             purrr::list_rbind(
-                purrr::map(alpha, \(alpha1)sensitivity_expected_values.glm(model=model, alpha=alpha1, new.data=new.data, ...))
+                purrr::map(alpha, \(alpha1)compute_SensIAT_expected_values.glm(model=model, alpha=alpha1, new.data=new.data, ...))
             )
         )
     }
     if(nrow(new.data) > 1L){
         return(
             purrr::list_rbind(
-                purrr::map(1:nrow(new.data), \(i)sensitivity_expected_values.glm(model=model, alpha=alpha, new.data=new.data[i, , drop=FALSE], ...))
+                purrr::map(1:nrow(new.data), \(i)compute_SensIAT_expected_values.glm(model=model, alpha=alpha, new.data=new.data[i, , drop=FALSE], ...))
             )
         )
     }
 
     if(family(model)$family == "gaussian"){
-        return(sensitivity_expected_values.lm(model, alpha, new.data, ...))
+        return(compute_SensIAT_expected_values.lm(model, alpha, new.data, ...))
     } else
     if (family(model)$family == "binomial"){
         mu <- predict(model, newdata = new.data, type = "response")
@@ -136,20 +136,20 @@ sensitivity_expected_values.glm <- function(model, alpha, new.data, ..., y.max =
     )
 }
 
-#' @describeIn sensitivity_expected_values Negative Binomial Model method
+#' @describeIn compute_SensIAT_expected_values Negative Binomial Model method
 #' @export
-sensitivity_expected_values.negbin <- function(model, alpha, new.data, ..., y.max = NULL, eps=.Machine$double.eps^(1/4)){
+compute_SensIAT_expected_values.negbin <- function(model, alpha, new.data, ..., y.max = NULL, eps=.Machine$double.eps^(1/4)){
     if(length(alpha) > 1L){
         return(
             purrr::list_rbind(
-                purrr::map(alpha, \(alpha1)sensitivity_expected_values.negbin(model=model, alpha=alpha1, new.data=new.data, ...))
+                purrr::map(alpha, \(alpha1)compute_SensIAT_expected_values.negbin(model=model, alpha=alpha1, new.data=new.data, ...))
             )
         )
     }
     if(nrow(new.data) > 1L){
         return(
             purrr::list_rbind(
-                purrr::map(1:nrow(new.data), \(i)sensitivity_expected_values.negbin(model=model, alpha=alpha, new.data=new.data[i, , drop=FALSE], ...))
+                purrr::map(1:nrow(new.data), \(i)compute_SensIAT_expected_values.negbin(model=model, alpha=alpha, new.data=new.data[i, , drop=FALSE], ...))
             )
         )
     }

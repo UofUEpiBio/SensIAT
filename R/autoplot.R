@@ -1,9 +1,9 @@
 
 
 
-#' Plot a `SensIAT_within_group_model` object
+#' Plot a `SensIAT_within_group_model` Object
 #'
-#' This creates a lamp plot for a `SensIAT_within_group_model` object.
+#' This creates a line plot for a `SensIAT_within_group_model` object.
 #' The horizontal axis represents time, and the vertical axis represents the
 #' expected marginal outcome given the sensitivity parameter `alpha`.
 #'
@@ -49,7 +49,7 @@ autoplot.SensIAT_within_group_model <- function(object, ...) {
     )
 }
 
-#' Plot estimates at given times for `SensIAT_withingroup_jackknife_results` objects
+#' Plot Estimates at Given Times for `SensIAT_withingroup_jackknife_results` Objects
 #'
 #' Horizontal axis represents time, and the vertical axis represents the outcome
 #' from the model. Point plotted is the mean estimate, and the error bars
@@ -109,7 +109,7 @@ autoplot.SensIAT_withingroup_jackknife_results <- function(object, width = NULL,
         )
 }
 
-#' Plot for estimated treatment effect for `SensIAT_fulldata_model` objects
+#' Plot for Estimated Treatment Effect for `SensIAT_fulldata_model` Objects
 #'
 #' The horizontal and vertical axes represent the sensitivity parameter `alpha`
 #' for the control and treatment groups, respectively. The contour plot shows
@@ -180,7 +180,7 @@ autoplot.SensIAT_fulldata_model <- function(object, time, include.rugs = NA, ...
 }
 
 
-#' Plot for estimated treatment effect for `SensIAT_fulldata_jackknife_results` objects
+#' Plot for Estimated Treatment Effect for `SensIAT_fulldata_jackknife_results` Objects
 #'
 #' The horizontal and vertical axes represent the sensitivity parameter `alpha`
 #' for the control and treatment groups, respectively. The plot shows

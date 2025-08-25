@@ -2,7 +2,7 @@
 % Please edit documentation in R/autoplot.R
 \name{autoplot.SensIAT_within_group_model}
 \alias{autoplot.SensIAT_within_group_model}
-\title{Plot a \code{SensIAT_within_group_model} object}
+\title{Plot a \code{SensIAT_within_group_model} Object}
 \usage{
 \method{autoplot}{SensIAT_within_group_model}(object, ...)
 }
@@ -15,7 +15,7 @@
 A \code{ggplot2} object.
 }
 \description{
-This creates a lamp plot for a \code{SensIAT_within_group_model} object.
+This creates a line plot for a \code{SensIAT_within_group_model} object.
 The horizontal axis represents time, and the vertical axis represents the
 expected marginal outcome given the sensitivity parameter \code{alpha}.
 }

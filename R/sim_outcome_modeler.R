@@ -234,7 +234,7 @@ Cond_mean_fn_single2 <-
 
 
 #' @export
-`sensitivity_expected_values.SensIAT::Single-index-outcome-model` <-
+`compute_SensIAT_expected_values.SensIAT::Single-index-outcome-model` <-
 function(
     model,
     alpha,
@@ -251,7 +251,7 @@ function(
         return(
             purrr::map_dfr(
                 alpha,
-                `sensitivity_expected_values.SensIAT::Single-index-outcome-model`,
+                `compute_SensIAT_expected_values.SensIAT::Single-index-outcome-model`,
                 model = model, new.data = new.data,
                 ...
             )

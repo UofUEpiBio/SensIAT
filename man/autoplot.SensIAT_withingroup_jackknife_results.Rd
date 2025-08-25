@@ -2,7 +2,7 @@
 % Please edit documentation in R/autoplot.R
 \name{autoplot.SensIAT_withingroup_jackknife_results}
 \alias{autoplot.SensIAT_withingroup_jackknife_results}
-\title{Plot estimates at given times for \code{SensIAT_withingroup_jackknife_results} objects}
+\title{Plot Estimates at Given Times for \code{SensIAT_withingroup_jackknife_results} Objects}
 \usage{
 \method{autoplot}{SensIAT_withingroup_jackknife_results}(object, width = NULL, ...)
 }

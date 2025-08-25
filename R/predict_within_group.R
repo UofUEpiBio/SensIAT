@@ -1,4 +1,7 @@
-#' Predict mean and variance of the outcome for a `SensIAT` within-group model
+#' Give the Marginal Mean Estimate and its Estimated Asymptotic Variance
+#'
+#' Give the marginal mean model estimate
+#'
 #'
 #' @param object SensIAT_within_group_model object
 #' @param time Time points of interest

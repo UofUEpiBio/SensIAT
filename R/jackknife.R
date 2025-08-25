@@ -44,6 +44,31 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
 }
 
 
+
+#' Perform Jackknife resampling on an object.
+#'
+#' @param object An object to cross validate on.
+#' @param ... Additional arguments passed to the method.
+#'
+#' @return A data frame of the jackknife resampling results.
+#' @export
+jackknife <- function(object, ...){
+    UseMethod('jackknife')
+}
+
+#' @describeIn jackknife Perform jackknife resampling on a `SensIAT_within_group_model` object.
+#' @export
+jackknife.SensIAT_within_group_model <- function(object, ...){
+    SensIAT_jackknife(object, ...)
+}
+
+#' @describeIn jackknife Perform jackknife resampling on a `SensIAT_fulldata_model` object.
+#' @export
+jackknife.SensIAT_fulldata_model <- function(object, ...){
+    SensIAT_jackknife_fulldata(object, ...)
+}
+
+
 #' Estimate response with jackknife resampling
 #'
 #' @param object A SensIAT_within_group_model object.
@@ -124,27 +149,4 @@ SensIAT_jackknife_fulldata <- function(object, time, ...){
             mean_effect = .data$mean_treatment - .data$mean_control,
             mean_effect_jackknife_var = .data$jackknife_var_treatment + .data$jackknife_var_control
         )
-}
-
-#' Perform Jackknife resampling on an object.
-#'
-#' @param object An object to cross validate on.
-#' @param ... Additional arguments passed to the method.
-#'
-#' @return A data frame of the jackknife resampling results.
-#' @export
-jackknife <- function(object, ...){
-    UseMethod('jackknife')
-}
-
-#' @describeIn jackknife Perform jackknife resampling on a `SensIAT_within_group_model` object.
-#' @export
-jackknife.SensIAT_within_group_model <- function(object, ...){
-    SensIAT_jackknife(object, ...)
-}
-
-#' @describeIn jackknife Perform jackknife resampling on a `SensIAT_fulldata_model` object.
-#' @export
-jackknife.SensIAT_fulldata_model <- function(object, ...){
-    SensIAT_jackknife_fulldata(object, ...)
 }

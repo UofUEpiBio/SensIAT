@@ -43,7 +43,7 @@ function(
                 !!min(base@knots) <= !!variables$time,
                 !!variables$time <= !!max(base@knots)
             ) |>
-            sensitivity_expected_values(
+                compute_SensIAT_expected_values(
                 outcome.model, alpha, new.data = _
             ) |>
             mutate(
@@ -63,7 +63,7 @@ function(
     expected_value <- \(data, ...){
         matrix(
             outcome.model |>
-                sensitivity_expected_values(..., alpha=alpha, new.data = data) |>
+                compute_SensIAT_expected_values(..., alpha=alpha, new.data = data) |>
                 pull('E_Y_past'),
             nrow = nrow(data)
         )}

@@ -2,7 +2,7 @@
 #'
 #' A simulated dataset for use in the SensIAT tutorial, testing and documentation.
 #'
-#' @format A data frame with 779 rows and 4 variables consisting of 200
+#' @format \code{SensIAT_example_data} is a data frame with 779 rows and 4 variables consisting of 200
 #' simulated patients.  Each row in the data represents a visit for the patient.
 #' The columns are:
 #' \describe{
@@ -15,8 +15,8 @@
 
 
 #' @describeIn SensIAT_example_data A simulated dataset with both treatment and control groups.
-#' @format A data frame with 779 rows and 4 variables consisting of 200
-#' simulated patients.  Each row in the data represents a visit for the patient.
+#' @format `SensIAT_example_fulldata` is a data frame with 1614 rows and 5 variables consisting of 400
+#' simulated patients, 200 for each treatment arm.  Each row in the data represents a visit for the patient.
 #' The columns are:
 #' \describe{
 #'      \item{Subject_ID}{A unique identifier for each patient.}

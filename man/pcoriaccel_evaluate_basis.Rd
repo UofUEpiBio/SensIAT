@@ -17,3 +17,4 @@ Vector of the basis functions evaluated at x.
 \description{
 Compiled version of \code{evaluate_basis()} function
 }
+\keyword{internal}

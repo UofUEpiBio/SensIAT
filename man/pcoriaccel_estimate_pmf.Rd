@@ -22,3 +22,4 @@ pcoriaccel_estimate_pmf(Xb, Y, xi, y_seq, h, kernel = "K2_Biweight")
 \description{
 Directly estimate the probability mass function of Y.
 }
+\keyword{internal}

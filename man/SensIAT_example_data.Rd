@@ -6,7 +6,7 @@
 \alias{SensIAT_example_fulldata}
 \title{SensIAT Example Data}
 \format{
-A data frame with 779 rows and 4 variables consisting of 200
+\code{SensIAT_example_data} is a data frame with 779 rows and 4 variables consisting of 200
 simulated patients.  Each row in the data represents a visit for the patient.
 The columns are:
 \describe{
@@ -16,8 +16,8 @@ The columns are:
 \item{Outcome}{The outcome of interest.}
 }
 
-A data frame with 779 rows and 4 variables consisting of 200
-simulated patients.  Each row in the data represents a visit for the patient.
+\code{SensIAT_example_fulldata} is a data frame with 1614 rows and 5 variables consisting of 400
+simulated patients, 200 for each treatment arm.  Each row in the data represents a visit for the patient.
 The columns are:
 \describe{
 \item{Subject_ID}{A unique identifier for each patient.}

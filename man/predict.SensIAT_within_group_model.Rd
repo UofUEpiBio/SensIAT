@@ -4,7 +4,7 @@
 \name{predict.SensIAT_fulldata_model}
 \alias{predict.SensIAT_fulldata_model}
 \alias{predict.SensIAT_within_group_model}
-\title{Predict mean and variance of the outcome for a \code{SensIAT} within-group model}
+\title{Give the Marginal Mean Estimate and its Estimated Asymptotic Variance}
 \usage{
 \method{predict}{SensIAT_fulldata_model}(object, time, ...)
 
@@ -26,7 +26,7 @@ If include.var is TRUE, a \code{tibble} with columns time, mean, and var is retu
 otherwise if include.var is FALSE, only the mean vector is returned.
 }
 \description{
-Predict mean and variance of the outcome for a \code{SensIAT} within-group model
+Give the marginal mean model estimate
 }
 \section{Functions}{
 \itemize{

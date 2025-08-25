@@ -16,4 +16,6 @@ Adds an S3 class to an object
 }
 \examples{
 add_class(TRUE, 'flag')
+
 }
+\keyword{internal}

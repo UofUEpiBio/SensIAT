@@ -17,3 +17,4 @@ Matrix of the basis functions evaluated at x.
 \description{
 Compiled version of \code{evaluate_basis()} function (matrix version)
 }
+\keyword{internal}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/autoplot.R
 \name{autoplot.SensIAT_fulldata_jackknife_results}
 \alias{autoplot.SensIAT_fulldata_jackknife_results}
-\title{Plot for estimated treatment effect for \code{SensIAT_fulldata_jackknife_results} objects}
+\title{Plot for Estimated Treatment Effect for \code{SensIAT_fulldata_jackknife_results} Objects}
 \usage{
 \method{autoplot}{SensIAT_fulldata_jackknife_results}(object, ..., include.rugs = NA)
 }
