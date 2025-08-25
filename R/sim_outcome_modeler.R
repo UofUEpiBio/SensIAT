@@ -18,7 +18,7 @@
 #' object <-
 #'     fit_SensIAT_within_group_model(
 #'         group.data = SensIAT_example_data,
-#'         outcome_modeler = SensIAT_sim_outcome_modeler_fbw,
+#'         outcome_modeler = fit_SensIAT_single_index_fixed_bandwidth_model,
 #'         id = Subject_ID,
 #'         outcome = Outcome,
 #'         time = Time,
@@ -307,7 +307,7 @@ function(
 
 #' @describeIn fit_SensIAT_single_index_fixed_coef_model for fitting with a fixed bandwidth
 #' @export
-SensIAT_sim_outcome_modeler_fbw <-
+fit_SensIAT_single_index_fixed_bandwidth_model <-
     function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id..,
              initial = NULL, ...){
         id <- ensym(id)

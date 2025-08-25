@@ -2,7 +2,7 @@
 % Please edit documentation in R/sim_outcome_modeler.R
 \name{fit_SensIAT_single_index_fixed_coef_model}
 \alias{fit_SensIAT_single_index_fixed_coef_model}
-\alias{SensIAT_sim_outcome_modeler_fbw}
+\alias{fit_SensIAT_single_index_fixed_bandwidth_model}
 \title{Outcome Modeler for \code{SensIAT} Single Index Model.}
 \usage{
 fit_SensIAT_single_index_fixed_coef_model(
@@ -15,7 +15,7 @@ fit_SensIAT_single_index_fixed_coef_model(
   ...
 )
 
-SensIAT_sim_outcome_modeler_fbw(
+fit_SensIAT_single_index_fixed_bandwidth_model(
   formula,
   data,
   kernel = "K2_Biweight",
@@ -50,7 +50,7 @@ Outcome Modeler for \code{SensIAT} Single Index Model.
 }
 \section{Functions}{
 \itemize{
-\item \code{SensIAT_sim_outcome_modeler_fbw()}: for fitting with a fixed bandwidth
+\item \code{fit_SensIAT_single_index_fixed_bandwidth_model()}: for fitting with a fixed bandwidth
 
 }}
 \examples{
@@ -59,7 +59,7 @@ Outcome Modeler for \code{SensIAT} Single Index Model.
 object <-
     fit_SensIAT_within_group_model(
         group.data = SensIAT_example_data,
-        outcome_modeler = SensIAT_sim_outcome_modeler_fbw,
+        outcome_modeler = fit_SensIAT_single_index_fixed_bandwidth_model,
         id = Subject_ID,
         outcome = Outcome,
         time = Time,
