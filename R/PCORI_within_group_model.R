@@ -168,7 +168,7 @@ fit_SensIAT_within_group_model <- function(
     #' * **`delta`** The bin width for fixed quadrature.
     #' * **`resolution`** alternative to `delta` by specifying the number of bins.
     #' * **`fix_discontinuity`** Whether to account for the discontinuity in the influence at observation times.
-    marginal_model <- rlang::inject(SensIAT_fit_marginal_model(
+    marginal_model <- rlang::inject(fit_SensIAT_marginal_mean_model(
         data_all_with_transforms,
         alpha = alpha,
         knots = knots,

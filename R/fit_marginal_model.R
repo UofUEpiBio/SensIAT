@@ -42,7 +42,7 @@
 #'         data = data_with_lags |> filter(Time > 0))
 #'
 #' # Fit the marginal outcome model
-#' mm <- SensIAT_fit_marginal_model(
+#' mm <- fit_SensIAT_marginal_mean_model(
 #'     data = data_with_lags,
 #'     id = Subject_ID,
 #'     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
@@ -51,7 +51,7 @@
 #'     time.vars = c('..delta_time..'),
 #'     outcome.model = outcome.model)
 #' }
-SensIAT_fit_marginal_model <-
+fit_SensIAT_marginal_mean_model <-
 function(data,
          id,
          alpha,
