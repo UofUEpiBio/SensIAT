@@ -8,9 +8,9 @@
 \usage{
 jackknife(object, ...)
 
-\method{jackknife}{SensIAT_within_group_model}(object, ...)
+\method{jackknife}{SensIAT_within_group_model}(object, time, ...)
 
-\method{jackknife}{SensIAT_fulldata_model}(object, ...)
+\method{jackknife}{SensIAT_fulldata_model}(object, time, ...)
 }
 \arguments{
 \item{object}{An object to cross validate on.}

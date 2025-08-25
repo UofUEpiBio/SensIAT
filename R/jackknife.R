@@ -86,7 +86,7 @@ jackknife <- function(object, ...){
 
 #' @describeIn jackknife Perform jackknife resampling on a `SensIAT_within_group_model` object.
 #' @export
-jackknife.SensIAT_within_group_model <- function(object, ...){
+jackknife.SensIAT_within_group_model <- function(object, time, ...){
     replications <- cross_validate(object)
     summarize_jackknife_replications(replications, object, time, ...)
 }
@@ -94,8 +94,8 @@ SensIAT_jackknife <- jackknife.SensIAT_within_group_model
 
 #' @describeIn jackknife Perform jackknife resampling on a `SensIAT_fulldata_model` object.
 #' @export
-jackknife.SensIAT_fulldata_model <- function(object, ...){
-    SensIAT_jackknife_fulldata(object, ...)
+jackknife.SensIAT_fulldata_model <- function(object, time, ...){
+    SensIAT_jackknife_fulldata(object, time, ...)
 }
 
 
