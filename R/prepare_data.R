@@ -1,4 +1,4 @@
-#' Prepare data for SensIAT analysis
+#' Prepare Data for Sensitivity Analysis with Irregular Assessment Times
 #'
 #' This function prepares the data for SensIAT analysis by transforming it into
 #' a format suitable for the SensIAT models.
