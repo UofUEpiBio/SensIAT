@@ -2,7 +2,7 @@
 % Please edit documentation in R/prepare_data.R
 \name{prepare_SensIAT_data}
 \alias{prepare_SensIAT_data}
-\title{Prepare data for SensIAT analysis}
+\title{Prepare Data for Sensitivity Analysis with Irregular Assessment Times}
 \usage{
 prepare_SensIAT_data(
   data,
