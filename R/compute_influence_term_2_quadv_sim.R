@@ -75,23 +75,3 @@ function(
             estim.prec = purrr::map_dbl(period.integrals, getElement, 'estim.prec')
         )
 }
-if(F){
-    library(ARCdata)
-    fitted.trt.sim <-
-     fit_SensIAT_within_group_model(
-         group.data = filter(ARC_data, Trt=='home_visits'),
-         outcome_modeler = SensIAT_sim_outcome_modeler,
-         id.var = elig_pid,
-         outcome.var = Asthma_control,
-         time.var = time,
-         End = 830
-     )
-    time.quadv <- system.time({
-            pred.quadv <- predict(fitted.trt.sim, time = c(90, 180),
-             alpha = c(0),
-             intensity.bandwidth = 30,
-             knots=c(60,60,60,60,260,460,460,460,460),
-             integration.method = 'quadv'
-            )
-    })
-}
