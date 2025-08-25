@@ -4,7 +4,7 @@
 \alias{jackknife}
 \alias{jackknife.SensIAT_within_group_model}
 \alias{jackknife.SensIAT_fulldata_model}
-\title{Perform Jackknife resampling on an object.}
+\title{Perform Jackknife Resampling on an Object}
 \usage{
 jackknife(object, ...)
 
@@ -27,7 +27,7 @@ is the estimated variances of the response at the given time points for the
 specified alpha values.
 }
 \description{
-Perform Jackknife resampling on an object.
+Perform Jackknife Resampling on an Object
 }
 \section{Methods (by class)}{
 \itemize{

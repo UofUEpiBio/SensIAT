@@ -45,7 +45,7 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
 
 
 
-#' Perform Jackknife resampling on an object.
+#' Perform Jackknife Resampling on an Object
 #'
 #' @param object An object to cross validate on and compute jackknife estimates.
 #' @param time Time points for which to estimate the response.
