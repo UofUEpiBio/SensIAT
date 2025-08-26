@@ -1,5 +1,13 @@
 # SensIAT (development version)
 
+* Conformed most names to standard of starting with verbs.
+* Documentation fixes and updates.
+* Removed unnecessarily exported functions.
+* Updated single index model with norm 1 coefficients to allow for multiple iterations.
+* Various bug fixes.
+* Source code cleanup.
+
+
 # SensIAT 0.2.0
 
 * New options for fitting single index outcome models:
