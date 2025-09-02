@@ -1,6 +1,4 @@
-This is a feature update adding more options for single index model fitting.
-
-This is a resubmission for one made during the CRAN maintainers August vacation.
+This is an update for consistent naming across functions alongside small feature improvements.
 
 ## R CMD check results
 
