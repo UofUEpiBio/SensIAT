@@ -23,6 +23,7 @@ run_MAVE_expectations <- function(mave.model){
     }
 }
 test_that("MAVE: ise vs. mse", {
+    testthat::skip_on_cran()
     object.mave.ise <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
@@ -56,6 +57,7 @@ test_that("MAVE: ise vs. mse", {
     )
 })
 test_that("MAVE: grid vs. optim", {
+    testthat::skip_on_cran()
     object.mave.grid <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
@@ -108,6 +110,7 @@ test_that("MAVE: grid vs. optim", {
     )
 })
 test_that("MAVE: reestimate.coef", {
+    testthat::skip_on_cran()
     object.mave.wo <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
