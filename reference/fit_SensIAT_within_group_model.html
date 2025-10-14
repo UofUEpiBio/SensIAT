@@ -9,7 +9,7 @@ variance for the given group."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">SensIAT</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,7 +31,7 @@ variance for the given group."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Produce fitted model for group (treatment or control)</h1>
-      <small class="dont-index">Source: <a href="https://github.com/UofUEpiBio/SensIAT/blob/v0.2.0/R/PCORI_fulldata_model.R" class="external-link"><code>R/PCORI_fulldata_model.R</code></a>, <a href="https://github.com/UofUEpiBio/SensIAT/blob/v0.2.0/R/PCORI_within_group_model.R" class="external-link"><code>R/PCORI_within_group_model.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/UofUEpiBio/SensIAT/blob/v0.3.0/R/fulldata_model.R" class="external-link"><code>R/fulldata_model.R</code></a>, <a href="https://github.com/UofUEpiBio/SensIAT/blob/v0.3.0/R/within_group_model.R" class="external-link"><code>R/within_group_model.R</code></a></small>
       <div class="d-none name"><code>fit_SensIAT_within_group_model.Rd</code></div>
     </div>
 
@@ -85,9 +85,8 @@ subsetted/filtered as needed.</p></dd>
 
 
 <dt id="arg-outcome-modeler">outcome_modeler<a class="anchor" aria-label="anchor" href="#arg-outcome-modeler"></a></dt>
-<dd><p>A separate function that may be swapped out to switch
-between negative-binomial, single index model, or another we will
-dream up in the future.</p></dd>
+<dd><p>function for fitting the outcome model.
+Called with a formula, data argument and <code>outcome.args</code> list.</p></dd>
 
 
 <dt id="arg-id">id<a class="anchor" aria-label="anchor" href="#arg-id"></a></dt>
@@ -189,7 +188,7 @@ treatment or control group.</p>
 <span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span></span></span>
 <span class="r-in"><span>    <span class="fu">fit_SensIAT_within_group_model</span><span class="op">(</span></span></span>
 <span class="r-in"><span>        group.data <span class="op">=</span> <span class="va">SensIAT_example_data</span>,</span></span>
-<span class="r-in"><span>        outcome_modeler <span class="op">=</span> <span class="va">SensIAT_sim_outcome_modeler</span>,</span></span>
+<span class="r-in"><span>        outcome_modeler <span class="op">=</span> <span class="va">fit_SensIAT_single_index_fixed_coef_model</span>,</span></span>
 <span class="r-in"><span>        alpha <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.6</span>, <span class="op">-</span><span class="fl">0.3</span>, <span class="fl">0</span>, <span class="fl">0.3</span>, <span class="fl">0.6</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>        id <span class="op">=</span> <span class="va">Subject_ID</span>,</span></span>
 <span class="r-in"><span>        outcome <span class="op">=</span> <span class="va">Outcome</span>,</span></span>

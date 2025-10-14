@@ -5,21 +5,19 @@
 <url><loc>https://uofuepibio.github.io/SensIAT/authors.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/index.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/news/index.html</loc></url>
-<url><loc>https://uofuepibio.github.io/SensIAT/reference/Cond_mean_fn.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/SensIAT-package.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/SensIAT_example_data.html</loc></url>
-<url><loc>https://uofuepibio.github.io/SensIAT/reference/SensIAT_fit_marginal_model.html</loc></url>
-<url><loc>https://uofuepibio.github.io/SensIAT/reference/SensIAT_jackknife.html</loc></url>
-<url><loc>https://uofuepibio.github.io/SensIAT/reference/SensIAT_prepare_data.html</loc></url>
-<url><loc>https://uofuepibio.github.io/SensIAT/reference/SensIAT_sim_outcome_modeler.html</loc></url>
-<url><loc>https://uofuepibio.github.io/SensIAT/reference/SensIAT_sim_outcome_modeler_mave.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/add_class.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/add_terminal_observations.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/autoplot.SensIAT_fulldata_jackknife_results.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/autoplot.SensIAT_fulldata_model.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/autoplot.SensIAT_within_group_model.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/autoplot.SensIAT_withingroup_jackknife_results.html</loc></url>
+<url><loc>https://uofuepibio.github.io/SensIAT/reference/compute_SensIAT_expected_values.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/compute_influence_terms.html</loc></url>
+<url><loc>https://uofuepibio.github.io/SensIAT/reference/fit_SensIAT_marginal_mean_model.html</loc></url>
+<url><loc>https://uofuepibio.github.io/SensIAT/reference/fit_SensIAT_single_index_fixed_coef_model.html</loc></url>
+<url><loc>https://uofuepibio.github.io/SensIAT/reference/fit_SensIAT_single_index_norm1coef_model.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/fit_SensIAT_within_group_model.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/index.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/jackknife.html</loc></url>
@@ -32,7 +30,7 @@
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/pcoriaccel_evaluate_basis_mat.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/pcoriaccel_integrate_simp.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/predict.SensIAT_within_group_model.html</loc></url>
-<url><loc>https://uofuepibio.github.io/SensIAT/reference/sensitivity_expected_values.html</loc></url>
+<url><loc>https://uofuepibio.github.io/SensIAT/reference/prepare_SensIAT_data.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/roadmap.html</loc></url>
 </urlset>
 
