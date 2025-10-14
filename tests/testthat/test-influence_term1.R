@@ -22,7 +22,7 @@ test_that("Compute Influence term1 old vs. new methods", {
         ))
 
 
-    outcome.model <- SensIAT_sim_outcome_modeler(
+    outcome.model <- fit_SensIAT_single_index_fixed_coef_model(
         Outcome ~
             ns(prev_outcome, df=3) +
             scale(Time) +
@@ -76,25 +76,17 @@ test_that("Compute Influence term1 old vs. new methods", {
         estimate_baseline_intensity(
             intensity.model = intensity.model,
             data = followup.data,
-            variables = list(
-                time = "Time",
-                id = "Subject_ID",
-                outcome = "Outcome",
-                prev_time = "prev_time",
-                prev_outcome = "prev_outcome"
-            ) |> map(rlang::sym),
             bandwidth = NULL
         )
-
+    exp_gamma <- exp(predict(intensity.model, newdata=followup.data, type='lp', reference='zero'))
+    intensity_weights = baseline_intensity_all$baseline_intensity * exp_gamma
     new.method <-
-        compute_influence_term_1_for_all(
-            X_all = model.matrix(outcome.model),
+        compute_sim_influence_term_1_for_all(
             times_all = pull(followup.data, Time),
+            X_all = model.matrix(outcome.model),
             outcome_all = pull(followup.data, Outcome),
-            prev_outcome_all = pull(followup.data, prev_outcome),
-            baseline_intensity_all = baseline_intensity_all$baseline_intensity,
+            intensity_weights = intensity_weights,
             alpha = -0.6,
-            intensity_coef = coef(intensity.model),
             outcome_coef = coef(outcome.model),
             base = base,
             bandwidth = outcome.model$bandwidth,

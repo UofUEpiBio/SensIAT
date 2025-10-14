@@ -2,7 +2,7 @@
 object <-
     fit_SensIAT_within_group_model(
         group.data = SensIAT_example_data,
-        outcome_modeler = SensIAT_sim_outcome_modeler_fbw,
+        outcome_modeler = fit_SensIAT_single_index_fixed_bandwidth_model,
         id = Subject_ID,
         outcome = Outcome,
         time = Time,
@@ -14,7 +14,7 @@ object <-
 object.bw <-
     fit_SensIAT_within_group_model(
         group.data = SensIAT_example_data,
-        outcome_modeler = SensIAT_sim_outcome_modeler,
+        outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
         id = Subject_ID,
         outcome = Outcome,
         time = Time,

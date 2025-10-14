@@ -12,8 +12,35 @@
 #'
 #' @return Object of class `SensIAT::Single-index-outcome-model` which contains the outcome model portion.
 #' @export
-#' @example inst/examples/basic.R
-SensIAT_sim_outcome_modeler <-
+#' @examples
+#' \donttest{
+#' # A basic example using fixed intensity bandwidth.
+#' object <-
+#'     fit_SensIAT_within_group_model(
+#'         group.data = SensIAT_example_data,
+#'         outcome_modeler = fit_SensIAT_single_index_fixed_bandwidth_model,
+#'         id = Subject_ID,
+#'         outcome = Outcome,
+#'         time = Time,
+#'         knots = c(60,260,460),
+#'         End = 830,
+#'         intensity.args=list(bandwidth=30)
+#'     )
+#'
+#' # A basic example using variable bandwidth but with fixed first coefficient.
+#' object.bw <-
+#'     fit_SensIAT_within_group_model(
+#'         group.data = SensIAT_example_data,
+#'         outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
+#'         id = Subject_ID,
+#'         outcome = Outcome,
+#'         time = Time,
+#'         knots = c(60,260,460),
+#'         End = 830,
+#'         intensity.args=list(bandwidth=30)
+#'     )
+#' }
+fit_SensIAT_single_index_fixed_coef_model <-
 function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., initial=NULL, ...){
   id <- ensym(id)
   mf <- rlang::inject(model.frame(formula, data = data, id = !!id))
@@ -50,6 +77,7 @@ function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ini
       class = c('SensIAT::outcome-model', 'SensIAT::Single-index-outcome-model'),
       kernel = kernel,
       terms = terms(mf),
+      id = id,
       initial = initial)
 }
 
@@ -78,17 +106,37 @@ function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., ini
 `predict.SensIAT::Single-index-outcome-model` <-
     function( object
             , newdata = NULL
-            , type = c('response', 'terms')
+            , type = c('lp', 'response', 'terms')
             , ...){
         if(is.null(newdata)) newdata = model.frame(object)
         type = match.arg(type)
 
-        frame <-
+        frame <- model.frame(object, data = newdata)
+
+        X_new <- model.matrix(terms(object), data = frame)
+
+        if(type == 'terms') return(X_new)
+
+        lp <- X_new %*% object$coef
+        if(type == 'lp') return(lp)
+
+        response <- vector('numeric', nrow(X_new))
 
 
-        predict(object$formula, data = newdata, ...)
+        lp0 <- model.matrix(terms(object), object$data) %*% object$coef
+        Y <- model.response(model.frame(object))
+        y <- sort(unique(Y))
 
-        if(type == 'terms'){}
+        for(i in 1:nrow(X_new)){
+          Fhat <- pcoriaccel_NW(
+            Xb = lp0, Y = Y,
+            xb = lp[i], y_seq = y,
+            h = object$bandwidth,
+            kernel = attr(object, 'kernel'))
+          pmf <- diff(c(0, Fhat))
+          response[i] <- sum(y*pmf)
+        }
+        return(response)
     }
 
 estimate_starting_coefficients <- function(X,Y, eps = 1e-7){
@@ -186,7 +234,7 @@ Cond_mean_fn_single2 <-
 
 
 #' @export
-`sensitivity_expected_values.SensIAT::Single-index-outcome-model` <-
+`compute_SensIAT_expected_values.SensIAT::Single-index-outcome-model` <-
 function(
     model,
     alpha,
@@ -203,7 +251,7 @@ function(
         return(
             purrr::map_dfr(
                 alpha,
-                `pcori_conditional_means.SensIAT::Single-index-outcome-model`,
+                `compute_SensIAT_expected_values.SensIAT::Single-index-outcome-model`,
                 model = model, new.data = new.data,
                 ...
             )
@@ -253,13 +301,13 @@ function(
 
     }
 
-    tibble(new.data, alpha, E_Y_past, E_exp_alphaY, E_Yexp_alphaY)
+    tibble(new.data, alpha, E_Yexp_alphaY, E_exp_alphaY)
 }
 
 
-#' @describeIn SensIAT_sim_outcome_modeler for fitting with a fixed bandwidth
+#' @describeIn fit_SensIAT_single_index_fixed_coef_model for fitting with a fixed bandwidth
 #' @export
-SensIAT_sim_outcome_modeler_fbw <-
+fit_SensIAT_single_index_fixed_bandwidth_model <-
     function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id..,
              initial = NULL, ...){
         id <- ensym(id)
@@ -297,6 +345,7 @@ SensIAT_sim_outcome_modeler_fbw <-
             ),
             class = c('SensIAT::outcome-model', 'SensIAT::Single-index-outcome-model'),
             kernel = kernel,
+            id = id,
             terms = terms(mf),
             initial = initial)
     }

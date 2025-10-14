@@ -115,6 +115,7 @@ pcoriaccel_compute_influence_term_2_quadv_sim_via_matrix <- function(X, Y, times
 #' @param h bandwidth of the kernel
 #' @param kernel character string specifying the kernel to use, either `"dnorm"`, `"K2_Biweight"`, or `"K4_Biweight"`
 #'
+#' @keywords internal
 pcoriaccel_estimate_pmf <- function(Xb, Y, xi, y_seq, h, kernel = "K2_Biweight") {
     .Call(`_SensIAT_pcoriaccel_estimate_pmf`, Xb, Y, xi, y_seq, h, kernel)
 }
@@ -141,7 +142,20 @@ pcoriaccel_integrate_simp <- function(integrand, lo, hi, tol = 1.490116e-08) {
 #'
 #' @return Vector of the basis functions evaluated at x.
 #'
+#' @keywords internal
 pcoriaccel_evaluate_basis <- function(spline_basis, x) {
     .Call(`_SensIAT_pcoriaccel_evaluate_basis`, spline_basis, x)
+}
+
+#' Compiled version of `evaluate_basis()` function (matrix version)
+#'
+#' @param spline_basis   The spline basis, S4 class `orthogonalsplinebasis::SplineBasis`
+#' @param x              numeric vector of points to evaluate
+#'
+#' @return Matrix of the basis functions evaluated at x.
+#'
+#' @keywords internal
+pcoriaccel_evaluate_basis_mat <- function(spline_basis, x) {
+    .Call(`_SensIAT_pcoriaccel_evaluate_basis_mat`, spline_basis, x)
 }
 

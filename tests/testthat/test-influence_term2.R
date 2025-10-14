@@ -1,14 +1,14 @@
 test_that("Compute Influence term2 old vs. new methods", {
     model.data <- SensIAT_example_data |>
-        group_by(Subject_ID) |>
-        arrange(Time) |>
-        mutate(
-            prev_time = lag(Time),
-            prev_outcome = lag(Outcome),
-            delta_time = Time - lag(Time),
+        dplyr::group_by(Subject_ID) |>
+        dplyr::arrange(Time) |>
+        dplyr::mutate(
+            prev_time = dplyr::lag(Time),
+            prev_outcome = dplyr::lag(Outcome),
+            delta_time = Time - dplyr::lag(Time),
             visit.number = seq_along(Time)
         ) |>
-        filter(!is.na(Outcome))
+        dplyr::filter(!is.na(Outcome))
 
     followup.data <- model.data |>
         filter(Time > 0)
@@ -22,7 +22,7 @@ test_that("Compute Influence term2 old vs. new methods", {
         ))
 
 
-    outcome.model <- SensIAT_sim_outcome_modeler(
+    outcome.model <- fit_SensIAT_single_index_fixed_coef_model(
         Outcome ~
             ns(prev_outcome, df=3) +
             scale(Time) +
@@ -75,40 +75,26 @@ test_that("Compute Influence term2 old vs. new methods", {
     )
     # ----
 
-    integration_data <-
-        model.frame(
-            terms(outcome.model),
-            data = model.data |>
-                dplyr::select(-prev_outcome) |>
-                dplyr::mutate(
-                    prev_outcome  = Outcome,
-                    delta_time    = 0
-                )
-            ,
-            id   = Subject_ID,
-            time = Time
-        )
-
-    integration_X <- model.matrix( outcome.model, data=integration_data)
-
     new.method <-
-        compute_influence_term_2_for_individual(
-            times_ind = filter(integration_data, `(id)` == 1) |> pull(`(time)`),
-            X_ind = integration_X[integration_data[["(id)"]] == 1,,drop=FALSE],
-            X_all = model.matrix(outcome.model),
-            Y_all = model.response(model.frame(outcome.model)),
-            slope = c(0,0,0,1/centering.statistics[,'sd', drop=TRUE]),
+        compute_sim_influence_term_2_for_all_patients(
+            outcome.model,
+            integration_data = model.data |>
+                filter(Subject_ID == 1) |>
+                mutate(
+                    prev_outcome = Outcome,
+                    delta_time = 0
+                ),
             alpha = -0.6,
-            beta = coef(outcome.model),
             base = base,
-            bandwidth = outcome.model$bandwidth,
-            tol = 1e-6
+            id = Subject_ID, time=Time,
+            time.vars = c('delta_time')
         )
+
 
     expect_true(
         all.equal(
             old.method[[1, 'term2']][[1]],
-            new.method,
+            new.method[1,,drop=FALSE],
             check.attributes = FALSE,
             tolerance = 1e-6
         )

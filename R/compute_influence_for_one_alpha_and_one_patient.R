@@ -22,8 +22,7 @@ function(
         estimate_baseline_intensity(
             intensity.model,
             df_i[!is.na(pull(df_i, variables$prev_outcome)), ],
-            bandwidth = control$intensity.bandwidth,
-            variables = variables
+            bandwidth = control$intensity.bandwidth
         )$baseline_intensity
 
     df.in.range <- df_i |>
@@ -44,13 +43,14 @@ function(
                 !!min(base@knots) <= !!variables$time,
                 !!variables$time <= !!max(base@knots)
             ) |>
-            pcori_conditional_means(
+                compute_SensIAT_expected_values(
                 outcome.model, alpha, new.data = _
             ) |>
             mutate(
+                E_Y_past = .data$E_Yexp_alphaY / .data$E_exp_alphaY,
                 Term1_unweighted =
-                    (!!(variables$outcome)-E_Y_past)/
-                    (baseline_lambda*Exp_gamma* exp(-alpha*!!(variables$outcome))*E_exp_alphaY)
+                    (!!(variables$outcome)-.data$E_Y_past)/
+                    (.data$baseline_lambda*.data$Exp_gamma* exp(-alpha*!!(variables$outcome))*E_exp_alphaY)
             )
             rlang::inject(
                 with(term1_unweighted,
@@ -63,7 +63,7 @@ function(
     expected_value <- \(data, ...){
         matrix(
             outcome.model |>
-                pcori_conditional_means(..., alpha=alpha, new.data = data) |>
+                compute_SensIAT_expected_values(..., alpha=alpha, new.data = data) |>
                 pull('E_Y_past'),
             nrow = nrow(data)
         )}

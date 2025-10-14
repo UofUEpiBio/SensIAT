@@ -24,6 +24,14 @@ class SplineBasis final
 		{
 			return _knots[ _knots.length() - _order ];
 		}
+		[[nodiscard]] inline int get_order() const noexcept
+		{
+			return _order;
+		}
+		[[nodiscard]] inline int ncol() const noexcept
+		{
+			return _mdims[ 1 ];
+		}
 
 		[[nodiscard]] NumericVector evaluate( double x ) const noexcept;
 };
@@ -35,7 +43,22 @@ class SplineBasis final
 //'
 //' @return Vector of the basis functions evaluated at x.
 //'
+//' @keywords internal
 // [[Rcpp::export]]
 [[nodiscard]] NumericVector pcoriaccel_evaluate_basis(
 	S4 spline_basis, double x
 );
+
+//' Compiled version of `evaluate_basis()` function (matrix version)
+//'
+//' @param spline_basis   The spline basis, S4 class `orthogonalsplinebasis::SplineBasis`
+//' @param x              numeric vector of points to evaluate
+//'
+//' @return Matrix of the basis functions evaluated at x.
+//'
+//' @keywords internal
+// [[Rcpp::export]]
+[[nodiscard]] NumericMatrix pcoriaccel_evaluate_basis_mat(
+	S4 spline_basis, NumericVector x
+);
+

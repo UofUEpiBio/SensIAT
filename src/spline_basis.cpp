@@ -92,3 +92,19 @@ SplineBasis::SplineBasis( S4 backing )
 	SplineBasis basis(spline_basis);
 	return basis.evaluate(x);
 }
+
+[[nodiscard]] NumericMatrix pcoriaccel_evaluate_basis_mat(
+        S4 spline_basis, NumericVector x
+) {
+    SplineBasis basis(spline_basis);
+
+    NumericMatrix ret(x.length(), basis.ncol());
+
+    for( int i=0; i<x.length(); ++i )
+    {
+        ret(i,_) = basis.evaluate(x(i));
+    }
+
+    return ret;
+}
+

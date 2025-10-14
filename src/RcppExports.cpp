@@ -163,6 +163,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// pcoriaccel_evaluate_basis_mat
+[[nodiscard]] NumericMatrix pcoriaccel_evaluate_basis_mat(S4 spline_basis, NumericVector x);
+RcppExport SEXP _SensIAT_pcoriaccel_evaluate_basis_mat(SEXP spline_basisSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< S4 >::type spline_basis(spline_basisSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(pcoriaccel_evaluate_basis_mat(spline_basis, x));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_SensIAT_pcoriaccel_NW_basic", (DL_FUNC) &_SensIAT_pcoriaccel_NW_basic, 5},
@@ -176,6 +188,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_SensIAT_pcoriaccel_estimate_pmf", (DL_FUNC) &_SensIAT_pcoriaccel_estimate_pmf, 6},
     {"_SensIAT_pcoriaccel_integrate_simp", (DL_FUNC) &_SensIAT_pcoriaccel_integrate_simp, 4},
     {"_SensIAT_pcoriaccel_evaluate_basis", (DL_FUNC) &_SensIAT_pcoriaccel_evaluate_basis, 2},
+    {"_SensIAT_pcoriaccel_evaluate_basis_mat", (DL_FUNC) &_SensIAT_pcoriaccel_evaluate_basis_mat, 2},
     {NULL, NULL, 0}
 };
 

@@ -1,28 +1,31 @@
-prune_outcome_model <- function(outcome.model){
-    list(
-        coefficients = outcome.model$coefficients,
-        bandwidth = outcome.model$bandwidth
-    )
+
+#' @export
+`prune.SensIAT::Single-index-outcome-model` <- function(tree, ...){
+    tree$frame <- tree$data <- NULL
+    attr(tree, 'terms') <- NULL
+    add_class(tree, 'pruned-SensIAT::Single-index-outcome-model')
 }
-prune_intensity_model <- function(intensity.model){
-    list(
-        coefficients = intensity.model$coefficients,
-        bandwidth = attr(intensity.model, 'bandwidth')
-    )
+
+#' @export
+prune.default <- function(tree, ...){
+    tree
 }
-prune_bootstrap_replication <- function(object){
-    structure(
-        list(
-            coefficients = object$coefficients,
-            coefficient.variance = object$coefficient.variance,
-            intensity.bandwidth = object$intensity.bandwidth,
-            outcome = prune_outcome_model(object$outcome.model),
-            intensity = prune_intensity_model(object$intensity.model),
-            alpha = object$alpha),
-        class = c(
-            'pcori_bootstrap_replication',
-            paste('pruned-', oldClass(object)),
-            oldClass(object)
-        )
-    )
+
+#' @export
+prune.coxph <- function(tree, ...){
+    tree
+}
+
+
+#' @export
+prune.SensIAT_within_group_model <- function(tree, ...){
+    tree$base <- NULL
+    tree$data <- NULL
+    tree$V_inverse <- NULL
+    tree$influence <- NULL
+    tree$args <- NULL
+
+    tree$models <- lapply(X=tree$models, FUN=prune, ...)
+
+    add_class(tree, 'pruned-SensIAT_within_group_model')
 }

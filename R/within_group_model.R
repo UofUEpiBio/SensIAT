@@ -12,9 +12,8 @@ globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
 #' @param group.data The data for the group that is being analyzed.
 #'          Preferably passed in as a single `tibble` that internally is
 #'          subsetted/filtered as needed.
-#' @param outcome_modeler A separate function that may be swapped out to switch
-#'          between negative-binomial, single index model, or another we will
-#'          dream up in the future.
+#' @param outcome_modeler function for fitting the outcome model.
+#'          Called with a formula, data argument and `outcome.args` list.
 #' @param knots knot locations for defining the spline basis.
 #' @param id The variable that identifies the patient.
 #' @param outcome The variable that contains the outcome.
@@ -30,6 +29,10 @@ globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
 #' @param influence.args A list of optional arguments used when computing the influence.
 #'         See the Influence Arguments section.
 #' @param spline.degree The degree of the spline basis.
+#' @param add.terminal.observations Logical indicating whether to add terminal
+#'          observations to the data.  If TRUE, data may not contain any `NA`s.
+#'          if FALSE, data will be assumed to already include the terminal
+#'          observations
 #'
 #' @return
 #'  Should return everything needed to define the fit of the model.
@@ -44,18 +47,7 @@ globalVariables(c('..visit_number..', 'term1', 'term2', 'IF', 'IF_ortho',
 #' model <-
 #'     fit_SensIAT_within_group_model(
 #'         group.data = SensIAT_example_data,
-#'         outcome_modeler = SensIAT_sim_outcome_modeler,
-#'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-#'         id = Subject_ID,
-#'         outcome = Outcome,
-#'         time = Time,
-#'         End = 830,
-#'         knots = c(60,260,460),
-#'     )
-#' model <-
-#'     fit_SensIAT_within_group_model(
-#'         group.data = SensIAT_example_data |> mutate(Outcome=Outcome*6),
-#'         outcome_modeler = MASS::glm.nb,
+#'         outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
 #'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
 #'         id = Subject_ID,
 #'         outcome = Outcome,
@@ -76,7 +68,8 @@ fit_SensIAT_within_group_model <- function(
         intensity.args = list(),
         outcome.args = list(),
         influence.args = list(),
-        spline.degree = 3
+        spline.degree = 3,
+        add.terminal.observations = TRUE
 ){
     ###### Input clean and capture -------------------------------------------
     # Variables
@@ -89,20 +82,6 @@ fit_SensIAT_within_group_model <- function(
         time = time.var
     )
 
-    assert_that(is.numeric(knots))
-    if(anyDuplicated(knots)){
-        rlang::warn("Duplicate knots may be ignored.")
-        knots <- unique(knots)
-    }
-    if(is.unsorted(knots)){
-        rlang::warn("Knots are not sorted.")
-        knots <- sort(knots)
-    }
-    knots <- c(
-        rep(head(knots,1), spline.degree),
-        knots,
-        rep(tail(knots, 1), spline.degree)
-    )
 
     # Pass through Argument Lists
     intensity.args <- match.names(intensity.args, c("model.modifications", 'bandwidth'), FALSE)
@@ -122,39 +101,17 @@ fit_SensIAT_within_group_model <- function(
     intensity.extra.vars <- all.vars(intensity.args$model.modifications) |>
         setdiff(c('..id..', '..time..', '..prev_outcome..', '..delta_time..', '..visit_number..', '..outcome..'))
 
-    mf <- group.data |>
-        filter((!!time.var) <= !!End) |>
+    data_all_with_transforms <- group.data |>
         select(!!id.var, !!time.var, !!outcome.var,
                any_of(outcome.extra.vars),
                any_of(intensity.extra.vars)) |>
-        arrange(!!id.var, !!time.var)
+        prepare_SensIAT_data(
+            id.var=!!id.var,
+            time.var = !!time.var,
+            outcome.var = !!outcome.var,
+            End = End,
+            add.terminal.observations = add.terminal.observations)
 
-    data_all_with_transforms <- mf |>
-        rename(
-            ..id.. = !!id.var,
-            ..time.. = !!time.var,
-            ..outcome.. = !!outcome.var
-        ) |>
-        group_by(..id..) |>
-        mutate(
-            ..visit_number.. = seq_along(..time..)
-        ) |>
-        ungroup() |>
-        complete(..id.., ..visit_number..,
-                 fill = list(..time.. = End,..outcome.. = NA_real_)
-        ) |>
-        group_by(..id..) |>
-        arrange(..id.., ..visit_number..) |>
-        mutate(
-            ..time..            := as.double(..time..),
-            ..prev_outcome..    := lag(..outcome.., order_by = ..time..),
-            ..prev_time..       := lag(..time.., order_by =  ..time.., default = 0),
-            ..delta_time..      := ..time.. - lag(..time.., order_by =  ..time.., default = 0)
-        ) |>
-        ungroup()
-
-
-    ######   Andersen-Gill model stratifying by assessment number ------
     ######   Intensity model  ##################################################
     #' @section Intensity Arguments:
     #' The `intensity.args` list may contain the following elements:
@@ -164,25 +121,26 @@ fit_SensIAT_within_group_model <- function(
     #' * **`bandwidth`** The bandwidth for the intensity model kernel.
     #'
     followup_data <- data_all_with_transforms |>
-        filter(..time.. > 0, !is.na(..prev_outcome..))
+        filter(.data$..time.. > 0, !is.na(.data$..prev_outcome..))
 
     intensity.formula <- Surv(..prev_time.., ..time..,  !is.na(..outcome..)) ~ ..prev_outcome.. + strata(..visit_number..)
     if(!is.null(intensity.args$model.modifications))
         intensity.formula <- update.formula(intensity.formula, intensity.args$model.modifications)
 
-    intensity.model <- coxph(intensity.formula, id = ..id.., data = followup_data)
-
-    baseline_intensity_all <-
-        estimate_baseline_intensity(
-            intensity.model = intensity.model,
-            data = followup_data,
-            variables = list(prev_outcome = sym("..prev_outcome..")),
-            kernel = intensity.args$kernel %||% \(x) 0.75*(1 - (x)**2) * (abs(x) < 1),
-            bandwidth = intensity.args$bandwidth
+    intensity.model <-  rlang::inject(
+        coxph(intensity.formula, id = ..id.., data = followup_data,
+                             !!!purrr::discard_at(intensity.args, c("bandwidth", "kernel", "model.modifications")))
         )
-    attr(intensity.model, 'bandwidth') <- baseline_intensity_all$bandwidth
-    attr(intensity.model, 'kernel') <- baseline_intensity_all$kernel
-    followup_data$baseline_intensity <- baseline_intensity_all$baseline_intensity
+    # baseline_intensity_all <-
+    #     estimate_baseline_intensity(
+    #         intensity.model = intensity.model,
+    #         data = followup_data,
+    #         kernel = intensity.args$kernel %||% \(x) 0.75*(1 - (x)**2) * (abs(x) < 1),
+    #         bandwidth = intensity.args$bandwidth
+    #     )
+    attr(intensity.model, 'bandwidth') <- intensity.args$bandwidth
+    attr(intensity.model, 'kernel') <- intensity.args$kernel %||% \(x) 0.75*(1 - (x)**2) * (abs(x) < 1)
+    # followup_data$baseline_intensity <- baseline_intensity_all$baseline_intensity
 
     ######   Outcome model #####################################################
     outcome.formula <-
@@ -199,8 +157,6 @@ fit_SensIAT_within_group_model <- function(
                         !!!purrr::discard_at(outcome.args, "model.modifications"))
         )
 
-    base <- SplineBasis(knots, order=spline.degree+1L)
-    V_inverse <- solve(GramMatrix(base))
 
     # Compute value of the influence function: -----------------------------
     #' @section Influence Arguments:
@@ -212,52 +168,39 @@ fit_SensIAT_within_group_model <- function(
     #' * **`delta`** The bin width for fixed quadrature.
     #' * **`resolution`** alternative to `delta` by specifying the number of bins.
     #' * **`fix_discontinuity`** Whether to account for the discontinuity in the influence at observation times.
-    influence.terms <- rlang::inject(purrr::map(alpha,\(a){
-        compute_influence_terms(
-            left_join(
-                data_all_with_transforms,
-                followup_data |> select('..id..', '..time..', 'baseline_intensity'),
-                by=join_by('..id..', '..time..')
-            ),
-            base = base,
-            alpha = a,
-            outcome.model = outcome.model,
-            intensity_coef = coef(intensity.model),
-            tol = influence.args$tolerance %||% .Machine$double.eps^(1/3),
-            !!!discard_at(influence.args, 'tolerance')
-        )
-    }))
-
-    # Results
-    Beta = map(influence.terms, \(IT){
-        uncorrected.beta_hat <- (colSums(IT$term1) + colSums(IT$term2))/length(IT$id)
-        estimate <- as.vector(V_inverse %*% uncorrected.beta_hat)
-        variance <- tcrossprod(V_inverse %*% (t(IT$term1 + IT$term2) - uncorrected.beta_hat))/c(length(IT$id)^2)
-        list(estimate = estimate, variance = variance)
-    })
-
+    marginal_model <- rlang::inject(fit_SensIAT_marginal_mean_model(
+        data_all_with_transforms,
+        alpha = alpha,
+        knots = knots,
+        intensity.model = intensity.model,
+        outcome.model = outcome.model,
+        spline.degree = spline.degree,
+        !!!influence.args,
+        time.vars = c('..delta_time..')
+    ))
 
     structure(list(
         models = list(
             intensity = intensity.model,
             outcome = outcome.model
         ),
-        data = mf,
+        data = data_all_with_transforms,
         variables = vars,
         End = End,
-        influence = influence.terms,
+        influence = marginal_model$influence,
+        outcome_modeler = outcome_modeler,
         alpha = alpha,
-        coefficients = map(Beta, getElement, 'estimate'),
-        coefficient.variance = map(Beta, getElement, 'variance'),
+        coefficients = marginal_model$coefficients,
+        coefficient.variance = marginal_model$coefficient.variance,
         args = list(
             intensity = intensity.args,
             outcome = outcome.args,
             influence = influence.args
         ),
-        base=base,
-        V_inverse = V_inverse
+        base=marginal_model$base,
+        V_inverse = marginal_model$V_inverse
     ), class = "SensIAT_within_group_model",
-    call = match.call())
+    call = match.call(expand.dots = TRUE))
 }
 
 

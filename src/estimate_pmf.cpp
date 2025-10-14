@@ -67,6 +67,7 @@ template< class Tfloat, KernelType kernel > [[nodiscard]] inline static
 //' @param h bandwidth of the kernel
 //' @param kernel character string specifying the kernel to use, either `"dnorm"`, `"K2_Biweight"`, or `"K4_Biweight"`
 //'
+//' @keywords internal
 // [[Rcpp::export]]
 [[nodiscard]] NumericVector pcoriaccel_estimate_pmf(
 	NumericVector Xb, NumericVector Y,

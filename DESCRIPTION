@@ -1,6 +1,6 @@
 Package: SensIAT
 Title: Sensitivity Analysis for Irregular Assessment Times
-Version: 0.1.1.9000
+Version: 0.3.0.9000
 Authors@R: c(
     person("Andrew", "Redd", , "andrew.redd@hsc.utah.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-6149-2438")),
@@ -24,6 +24,8 @@ RoxygenNote: 7.3.2
 Imports: 
     assertthat,
     dplyr,
+    generics,
+    ggplot2,
     glue,
     KernSmooth,
     MASS,
@@ -43,11 +45,13 @@ Imports:
 Suggests: 
     dfoptim,
     inline,
-    knitr,
+    ManifoldOptim,
+    metR,
     progress,
     rmarkdown,
     spelling,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    tidyverse
 Config/testthat/edition: 3
 Depends: 
     R (>= 4.4.0)
@@ -56,4 +60,3 @@ LinkingTo: Rcpp
 SystemRequirements: C++17
 URL: https://github.com/UofUEpiBio/SensIAT, https://uofuepibio.github.io/SensIAT/
 BugReports: https://github.com/UofUEpiBio/SensIAT/issues
-VignetteBuilder: knitr
