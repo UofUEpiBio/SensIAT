@@ -1,3 +1,5 @@
+# SensIAT (development version)
+
 # SensIAT 0.3.0
 
 * Conformed most names to standard of starting with verbs.
