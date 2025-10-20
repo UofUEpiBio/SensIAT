@@ -4,7 +4,6 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
     data <- original.object$data
     ids <- na.omit(unique(pull(data, original.object$variables$id)))
 
-
     run_without <- function(id){
         if(progress)on.exit(try(pb$tick(), silent = TRUE))
         replication <-
@@ -28,7 +27,6 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
         replication$jackknife_excluded_id <- id
         return(replication)
     }
-
     if(progress && rlang::is_installed("progress")){
         pb <- progress::progress_bar$new(
             format = "  cross-validation [:bar] :current/:total(:percent) eta: :eta",
@@ -37,10 +35,18 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
         pb$tick(0)
         on.exit(pb$terminate(), add = TRUE)
     }
-    structure(
-        map(ids, run_without),
-        ids = ids
-    )
+
+    if(rlang::is_installed("furrr")){
+        structure(
+            furrr::future_map(ids, run_without, .options = furrr::furrr_options(seed = TRUE)),
+            ids = ids
+        )
+    } else {
+        structure(
+            map(ids, run_without),
+            ids = ids
+        )
+    }
 }
 
 
@@ -72,7 +78,7 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
 #'     knots = c(60,260,460),
 #'     End = 830
 #' )
-#' jackknife.estimates <- SensIAT_jackknife(object, time = c(90, 180, 270, 360, 450))
+#' jackknife.estimates <- jackknife(object, time = c(90, 180, 270, 360, 450))
 #' }
 
 #'

@@ -1,4 +1,6 @@
 test_that("Altering models", {
+    ruinf(1)
+    old.seed <- .Random.seed
     model <-
         fit_SensIAT_within_group_model(
             group.data = SensIAT_example_data,
@@ -13,6 +15,7 @@ test_that("Altering models", {
                 model=~ns(..prev_outcome.., knots=c(9/6, 16/6)) + scale(..delta_time..)-1
             )
         )
+    expect_identical(old.seed, .Random.seed)
     model$models$outcome |> formula() |>
     expect_equal(..outcome..~ns(..prev_outcome.., knots=c(9/6, 16/6)) + scale(..delta_time..)-1, ignore_attr=TRUE)
 })

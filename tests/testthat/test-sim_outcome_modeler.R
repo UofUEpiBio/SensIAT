@@ -1,5 +1,10 @@
 test_that("outcome model structure", {
+    runif(1)
+    old.seed <- .Random.seed
     source(system.file("examples/basic.R", package='SensIAT'))
+    new.seed <- .Random.seed
+    expect_identical(old.seed, new.seed)
+
     expect_s3_class(object, 'SensIAT_within_group_model')
     expect_contains(
         names(object),
