@@ -50,7 +50,7 @@ fit_SensIAT_within_group_model(
     knots = c(60,260,460),
     End = 830
 )
-jackknife.estimates <- SensIAT_jackknife(object, time = c(90, 180, 270, 360, 450))
+jackknife.estimates <- jackknife(object, time = c(90, 180, 270, 360, 450))
 }
 
 }

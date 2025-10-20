@@ -1,5 +1,5 @@
 test_that("Altering models", {
-    ruinf(1)
+    runif(1)
     old.seed <- .Random.seed
     model <-
         fit_SensIAT_within_group_model(
