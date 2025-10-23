@@ -123,7 +123,7 @@ functions:</li>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="fitting-with-different-loss-and-link-functions">Fitting with Different Loss and Link Functions<a class="anchor" aria-label="anchor" href="#fitting-with-different-loss-and-link-functions"></a>
+<h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a>
 </h2>
 <p>The estimate for the treatment group marginal mean function,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>μ</mi><mo accent="true">̂</mo></mover><mrow><mi>ℒ</mi><mo>,</mo><mi>g</mi></mrow></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msup><mi>g</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mo minsize="1.2" maxsize="1.2" stretchy="false" form="prefix">{</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mover><mi>𝛃</mi><mo accent="true">̂</mo></mover><mo minsize="1.2" maxsize="1.2" stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\widehat\mu_{\mathcal{L}, g}(t) = g^{-1}\big\{\boldsymbol{B}(t)^\prime \widehat{\boldsymbol{\beta}}\big\}</annotation></semantics></math>
@@ -150,10 +150,6 @@ where</p>
 </annotation></semantics></math> The
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mrow><mi>ℒ</mi><mo>,</mo><mi>g</mi></mrow></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>;</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">W_{\mathcal{L}, g}(t;\boldsymbol{\beta})</annotation></semantics></math>
 term depends on the choice of loss function and link function.</p>
-</div>
-<div class="section level2">
-<h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a>
-</h2>
 <div class="section level3">
 <h3 id="squared-error-loss-in-the-transformed-space">Squared Error Loss in the Transformed Space<a class="anchor" aria-label="anchor" href="#squared-error-loss-in-the-transformed-space"></a>
 </h3>
@@ -196,6 +192,150 @@ g(\mu) = \log\left(\frac{\mu}{1-\mu}\right),
 </annotation></semantics></math><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mi>∂</mi><mi>g</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mi>∂</mi><mi>z</mi></mrow></mfrac><mo>=</mo><mfrac><mn>1</mn><mrow><mi>z</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mfrac><mo>,</mo></mrow><annotation encoding="application/x-tex">\frac{\partial g(z)}{\partial z} = \frac{1}{z(1-z)},
 </annotation></semantics></math><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mn>1</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>;</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msubsup><mi>𝐕</mi><mn>1</mn><mrow><mo>−</mo><mn>1</mn></mrow></msubsup><mi>𝐁</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><msup><mrow><mo stretchy="true" form="prefix">{</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">}</mo></mrow><mrow><mo>−</mo><mn>1</mn></mrow></msup><mi>.</mi></mrow><annotation encoding="application/x-tex"> 
 W_1(t;\boldsymbol{\beta}) = \boldsymbol{V}_1^{-1}\boldsymbol{B}(t) \left\{\boldsymbol{B}(t)^\prime \boldsymbol{\beta} \left(1-\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)\right\}^{-1}.
+</annotation></semantics></math></p>
+</div>
+</div>
+<div class="section level3">
+<h3 id="squared-error-loss-in-the-original-space">Squared error loss in the original space<a class="anchor" aria-label="anchor" href="#squared-error-loss-in-the-original-space"></a>
+</h3>
+<p>For squared error loss in the original space,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ℒ</mi><mn>2</mn></msub><annotation encoding="application/x-tex">\mathcal{L}_2</annotation></semantics></math>,
+in general we have
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mrow><msub><mi>ℒ</mi><mn>2</mn></msub><mo>,</mo><mi>g</mi></mrow></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>;</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>W</mi><mn>2</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>;</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>𝐕</mi><mn>2</mn></msub><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mrow><mo>−</mo><mn>1</mn></mrow></msup><mfrac><mrow><mi>∂</mi><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mi>∂</mi><mi>𝛃</mi></mrow></mfrac><mo>,</mo><mspace width="1.0em"></mspace><msub><mi>𝐕</mi><mn>2</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msubsup><mo>∫</mo><mrow><mi>t</mi><mo>=</mo><msub><mi>t</mi><mn>1</mn></msub></mrow><msub><mi>t</mi><mn>2</mn></msub></msubsup><mfrac><mrow><mi>∂</mi><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mi>∂</mi><mi>𝛃</mi></mrow></mfrac><mfrac><mrow><mi>∂</mi><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mi>∂</mi><msup><mi>𝛃</mi><mi>′</mi></msup></mrow></mfrac><mi>d</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">
+    W_{\mathcal{L}_2,g}(t;\boldsymbol{\beta}) = W_2(t;\boldsymbol{\beta}) = 
+        \boldsymbol{V}_2(\boldsymbol{\beta})^{-1} \frac{\partial s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta})}{\partial \boldsymbol{\beta}} 
+    , \quad 
+    \boldsymbol{V}_2(\boldsymbol{\beta}) = \int_{t=t_1}^{t_2} 
+        \frac{\partial s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta})}{\partial \boldsymbol{\beta}} 
+        \frac{\partial s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta})}{\partial \boldsymbol{\beta}^\prime}  
+        dt
+</annotation></semantics></math></p>
+<div class="section level4">
+<h4 id="identity-link-1">Identity Link<a class="anchor" aria-label="anchor" href="#identity-link-1"></a>
+</h4>
+<p>For the identity link,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>z</mi></mrow><annotation encoding="application/x-tex">s(z) = z</annotation></semantics></math>,
+so
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo>,</mo></mrow><annotation encoding="application/x-tex">
+s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}) = \boldsymbol{B}(t)^\prime \boldsymbol{\beta},
+</annotation></semantics></math><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mi>∂</mi><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mi>∂</mi><mi>𝛃</mi></mrow></mfrac><mo>=</mo><mi>𝐁</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">
+\frac{\partial s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta})}{\partial \boldsymbol{\beta}}  =  \boldsymbol{B}(t),
+</annotation></semantics></math> and
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mn>2</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>;</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msubsup><mi>𝐕</mi><mn>2</mn><mrow><mo>−</mo><mn>1</mn></mrow></msubsup><mi>𝐁</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">
+W_2(t;\boldsymbol{\beta}) = \boldsymbol{V}_2^{-1}\boldsymbol{B}(t),
+</annotation></semantics></math> where
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐕</mi><mn>2</mn></msub><mo>=</mo><msubsup><mo>∫</mo><mrow><mi>t</mi><mo>=</mo><msub><mi>t</mi><mn>1</mn></msub></mrow><msub><mi>t</mi><mn>2</mn></msub></msubsup><mi>𝐁</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>d</mi><mi>t</mi><mi>.</mi></mrow><annotation encoding="application/x-tex">
+\boldsymbol{V}_2 = \int_{t=t_1}^{t_2} \boldsymbol{B}(t) \boldsymbol{B}(t)^\prime dt.
+</annotation></semantics></math></p>
+</div>
+<div class="section level4">
+<h4 id="log-link-1">Log Link<a class="anchor" aria-label="anchor" href="#log-link-1"></a>
+</h4>
+<p>For the log link,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">s(z) = \exp(z)</annotation></semantics></math>,
+so
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">
+s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}) = \exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right),
+</annotation></semantics></math><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mi>∂</mi><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mi>∂</mi><mi>𝛃</mi></mrow></mfrac><mo>=</mo><mi>𝐁</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">
+\frac{\partial s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta})}{\partial \boldsymbol{\beta}}  =  \boldsymbol{B}(t) \exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right),
+</annotation></semantics></math> and
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mn>2</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>;</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>𝐕</mi><mn>2</mn></msub><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mrow><mo>−</mo><mn>1</mn></mrow></msup><mi>𝐁</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">
+W_2(t;\boldsymbol{\beta}) = \boldsymbol{V}_2(\boldsymbol{\beta})^{-1} \boldsymbol{B}(t) \exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right),
+</annotation></semantics></math> where
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐕</mi><mn>2</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msubsup><mo>∫</mo><mrow><mi>t</mi><mo>=</mo><msub><mi>t</mi><mn>1</mn></msub></mrow><msub><mi>t</mi><mn>2</mn></msub></msubsup><mi>𝐁</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>d</mi><mi>t</mi><mi>.</mi></mrow><annotation encoding="application/x-tex">
+\boldsymbol{V}_2(\boldsymbol{\beta}) = \int_{t=t_1}^{t_2} \boldsymbol{B}(t) \boldsymbol{B}(t)^\prime \exp\left(2\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right) dt.
+</annotation></semantics></math></p>
+</div>
+<div class="section level4">
+<h4 id="logit-link-1">Logit Link<a class="anchor" aria-label="anchor" href="#logit-link-1"></a>
+</h4>
+<p>For the logit link,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mfrac><mrow><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mn>1</mn><mo>+</mo><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mfrac></mrow><annotation encoding="application/x-tex">s(z) = \frac{\exp(z)}{1+\exp(z)}</annotation></semantics></math>,
+so
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mfrac><mrow><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mn>1</mn><mo>+</mo><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mfrac><mo>,</mo></mrow><annotation encoding="application/x-tex">
+s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}) = \frac{\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)}{1+\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)},
+</annotation></semantics></math><span class="math display">$$
+\frac{\partial s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta})}{\partial
+\boldsymbol{\beta}}  =  \boldsymbol{B}(t)
+\frac{\exp\left(\boldsymbol{B}(t)^\prime
+\bold{\beta}\right)}{\left\{1+\exp\left(\boldsymbol{B}(t)^\prime
+\boldsymbol{\beta}\right)\right\}^2},
+$$</span> and <span class="math display">$$
+W_2(t;\boldsymbol{\beta}) = \boldsymbol{V}_2(\boldsymbol{\beta})^{-1}
+\boldsymbol{B}(t) \frac{\exp\left(\boldsymbol{B}(t)^\prime
+\bold{\beta}\right)}{\left\{1+\exp\left(\boldsymbol{B}(t)^\prime
+\bold{\beta}\right)\right\}^2},
+$$</span> where
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐕</mi><mn>2</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msubsup><mo>∫</mo><mrow><mi>t</mi><mo>=</mo><msub><mi>t</mi><mn>1</mn></msub></mrow><msub><mi>t</mi><mn>2</mn></msub></msubsup><mi>𝐁</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mfrac><mrow><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><msup><mrow><mo stretchy="true" form="prefix">{</mo><mn>1</mn><mo>+</mo><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">}</mo></mrow><mn>4</mn></msup></mfrac><mi>d</mi><mi>t</mi><mi>.</mi></mrow><annotation encoding="application/x-tex">
+\boldsymbol{V}_2(\boldsymbol{\beta}) = \int_{t=t_1}^{t_2} \boldsymbol{B}(t) \boldsymbol{B}(t)^\prime \frac{\exp\left(2\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)}{\left\{1+\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)\right\}^4} dt.
+</annotation></semantics></math></p>
+</div>
+</div>
+<div class="section level3">
+<h3 id="quasi-likelihood-loss">Quasi-likelihood Loss<a class="anchor" aria-label="anchor" href="#quasi-likelihood-loss"></a>
+</h3>
+<p>For quasi-likelihood loss,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ℒ</mi><mn>3</mn></msub><annotation encoding="application/x-tex">\mathcal{L}_3</annotation></semantics></math>,
+in general we have
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mrow><msub><mi>ℒ</mi><mn>3</mn></msub><mo>,</mo><mi>g</mi></mrow></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>;</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>W</mi><mn>3</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>;</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>𝐕</mi><mn>3</mn></msub><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mrow><mo>−</mo><mn>1</mn></mrow></msup><mi>𝐁</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="1.0em"></mspace><msub><mi>𝐕</mi><mn>3</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msubsup><mo>∫</mo><mrow><mi>t</mi><mo>=</mo><msub><mi>t</mi><mn>1</mn></msub></mrow><msub><mi>t</mi><mn>2</mn></msub></msubsup><mi>𝐁</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><msub><mrow><mfrac><mrow><mi>∂</mi><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mi>∂</mi><mi>z</mi></mrow></mfrac><mo stretchy="true" form="postfix">|</mo></mrow><mrow><mi>z</mi><mo>=</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi></mrow></msub><mi>d</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">
+    W_{\mathcal{L}_3,g}(t;\boldsymbol{\beta}) = W_3(t;\boldsymbol{\beta}) = 
+        \boldsymbol{V}_3(\boldsymbol{\beta})^{-1} 
+        \boldsymbol{B}(t) 
+    , \quad 
+    \boldsymbol{V}_3(\boldsymbol{\beta}) = \int_{t=t_1}^{t_2} 
+        \boldsymbol{B}(t) 
+        \boldsymbol{B}(t) ^ \prime
+        \left.
+            \frac{\partial s(z)}{\partial z} 
+        \right|_{z=\boldsymbol{B}(t)^\prime \boldsymbol{\beta}}
+        dt
+</annotation></semantics></math></p>
+<div class="section level4">
+<h4 id="identity-link-2">Identity Link<a class="anchor" aria-label="anchor" href="#identity-link-2"></a>
+</h4>
+<p>For the identity link,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>z</mi></mrow><annotation encoding="application/x-tex">s(z) = z</annotation></semantics></math>,
+so
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mi>∂</mi><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mi>∂</mi><mi>z</mi></mrow></mfrac><mo>≡</mo><mn>1</mn><mo>,</mo></mrow><annotation encoding="application/x-tex">
+\frac{\partial s(z)}{\partial z} \equiv 1,
+</annotation></semantics></math> and
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mn>3</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>;</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msubsup><mi>𝐕</mi><mn>3</mn><mrow><mo>−</mo><mn>1</mn></mrow></msubsup><mi>𝐁</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">
+W_3(t;\boldsymbol{\beta}) = \boldsymbol{V}_3^{-1}\boldsymbol{B}(t),
+</annotation></semantics></math> where
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐕</mi><mn>3</mn></msub><mo>=</mo><msubsup><mo>∫</mo><mrow><mi>t</mi><mo>=</mo><msub><mi>t</mi><mn>1</mn></msub></mrow><msub><mi>t</mi><mn>2</mn></msub></msubsup><mi>𝐁</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>d</mi><mi>t</mi><mi>.</mi></mrow><annotation encoding="application/x-tex">
+\boldsymbol{V}_3 = \int_{t=t_1}^{t_2} \boldsymbol{B}(t) \boldsymbol{B}(t)^\prime dt.
+</annotation></semantics></math></p>
+</div>
+<div class="section level4">
+<h4 id="log-link-2">Log Link<a class="anchor" aria-label="anchor" href="#log-link-2"></a>
+</h4>
+<p>For the log link,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">s(z) = \exp(z)</annotation></semantics></math>,
+so
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mi>∂</mi><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mi>∂</mi><mi>z</mi></mrow></mfrac><mo>=</mo><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">
+\frac{\partial s(z)}{\partial z} = \exp(z),
+</annotation></semantics></math> and
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mn>3</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>;</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>𝐕</mi><mn>3</mn></msub><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mrow><mo>−</mo><mn>1</mn></mrow></msup><mi>𝐁</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">
+W_3(t;\boldsymbol{\beta}) = \boldsymbol{V}_3(\boldsymbol{\beta})^{-1} \boldsymbol{B}(t),
+</annotation></semantics></math> where
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐕</mi><mn>3</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msubsup><mo>∫</mo><mrow><mi>t</mi><mo>=</mo><msub><mi>t</mi><mn>1</mn></msub></mrow><msub><mi>t</mi><mn>2</mn></msub></msubsup><mi>𝐁</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>d</mi><mi>t</mi><mi>.</mi></mrow><annotation encoding="application/x-tex">
+\boldsymbol{V}_3(\boldsymbol{\beta}) = \int_{t=t_1}^{t_2} \boldsymbol{B}(t) \boldsymbol{B}(t)^\prime \exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right) dt.
+</annotation></semantics></math></p>
+</div>
+<div class="section level4">
+<h4 id="logit-link-2">Logit Link<a class="anchor" aria-label="anchor" href="#logit-link-2"></a>
+</h4>
+<p>For the logit link,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mfrac><mrow><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mn>1</mn><mo>+</mo><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mfrac></mrow><annotation encoding="application/x-tex">s(z) = \frac{\exp(z)}{1+\exp(z)}</annotation></semantics></math>,
+so
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mi>∂</mi><mi>s</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mi>∂</mi><mi>z</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><msup><mrow><mo stretchy="true" form="prefix">{</mo><mn>1</mn><mo>+</mo><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>z</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">}</mo></mrow><mn>2</mn></msup></mfrac><mo>,</mo></mrow><annotation encoding="application/x-tex">
+\frac{\partial s(z)}{\partial z} = \frac{\exp(z)}{\left\{1+\exp(z)\right\}^2},
+</annotation></semantics></math> and
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mn>3</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>;</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>𝐕</mi><mn>3</mn></msub><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mrow><mo>−</mo><mn>1</mn></mrow></msup><mi>𝐁</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">
+W_3(t;\boldsymbol{\beta}) = \boldsymbol{V}_3(\boldsymbol{\beta})^{-1} \boldsymbol{B}(t),
+</annotation></semantics></math> where
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐕</mi><mn>3</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msubsup><mo>∫</mo><mrow><mi>t</mi><mo>=</mo><msub><mi>t</mi><mn>1</mn></msub></mrow><msub><mi>t</mi><mn>2</mn></msub></msubsup><mi>𝐁</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mfrac><mrow><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><msup><mrow><mo stretchy="true" form="prefix">{</mo><mn>1</mn><mo>+</mo><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐁</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>′</mi></msup><mi>𝛃</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">}</mo></mrow><mn>2</mn></msup></mfrac><mi>d</mi><mi>t</mi><mi>.</mi></mrow><annotation encoding="application/x-tex">
+\boldsymbol{V}_3(\boldsymbol{\beta}) = \int_{t=t_1}^{t_2} \boldsymbol{B}(t) \boldsymbol{B}(t)^\prime \frac{\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)}{\left\{1+\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)\right\}^2} dt.
 </annotation></semantics></math></p>
 </div>
 </div>

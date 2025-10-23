@@ -3,7 +3,7 @@ pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   loss_and_links: loss_and_links.html
-last_built: 2025-10-20T17:34Z
+last_built: 2025-10-23T23:23Z
 urls:
   reference: https://uofuepibio.github.io/SensIAT/reference
   article: https://uofuepibio.github.io/SensIAT/articles
