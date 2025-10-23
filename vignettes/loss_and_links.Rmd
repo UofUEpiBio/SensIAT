@@ -32,7 +32,7 @@ In the SensIAT package, we have implemented the following link functions:
 * Log link: $g(\mu) = \log(\mu)$, $s(z) = \exp(z)$,
 * Logit link: $g(\mu) = \log\left(\frac{\mu}{1-\mu}\right)$, $s(z) = \frac{\exp(z)}{1+\exp(z)}$.
 
-# Fitting with Different Loss and Link Functions
+# Details
 
 The estimate for the treatment group marginal mean function, $\widehat\mu_{\mathcal{L}, g}(t) = g^{-1}\big\{\boldsymbol{B}(t)^\prime \widehat{\boldsymbol{\beta}}\big\}$ is found by solving $\frac{1}{n}\sum_{i=1}^n \widehat{\boldsymbol{\Psi}}_{\mathcal{L},g}(\boldsymbol{O}_i;\boldsymbol{\beta}) = 0$, for $\beta$, where
 
@@ -54,7 +54,6 @@ $$
 $$
 The $W_{\mathcal{L}, g}(t;\boldsymbol{\beta})$ term depends on the choice of loss function and link function.
 
-# Details
 
 ## Squared Error Loss in the Transformed Space
 
@@ -92,4 +91,132 @@ $$
 $$ 
 W_1(t;\boldsymbol{\beta}) = \boldsymbol{V}_1^{-1}\boldsymbol{B}(t) \left\{\boldsymbol{B}(t)^\prime \boldsymbol{\beta} \left(1-\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)\right\}^{-1}.
 $$
+
+## Squared error loss in the original space
+For squared error loss in the original space, $\mathcal{L}_2$, in general we have
+$$
+    W_{\mathcal{L}_2,g}(t;\boldsymbol{\beta}) = W_2(t;\boldsymbol{\beta}) = 
+        \boldsymbol{V}_2(\boldsymbol{\beta})^{-1} \frac{\partial s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta})}{\partial \boldsymbol{\beta}} 
+    , \quad 
+    \boldsymbol{V}_2(\boldsymbol{\beta}) = \int_{t=t_1}^{t_2} 
+        \frac{\partial s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta})}{\partial \boldsymbol{\beta}} 
+        \frac{\partial s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta})}{\partial \boldsymbol{\beta}^\prime}  
+        dt
+$$
+
+### Identity Link
+
+For the identity link, $s(z) = z$, so 
+$$
+s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}) = \boldsymbol{B}(t)^\prime \boldsymbol{\beta},
+$$
+$$
+\frac{\partial s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta})}{\partial \boldsymbol{\beta}}  =  \boldsymbol{B}(t),
+$$
+and 
+$$
+W_2(t;\boldsymbol{\beta}) = \boldsymbol{V}_2^{-1}\boldsymbol{B}(t),
+$$
+where
+$$
+\boldsymbol{V}_2 = \int_{t=t_1}^{t_2} \boldsymbol{B}(t) \boldsymbol{B}(t)^\prime dt.
+$$
+
+
+### Log Link
+For the log link, $s(z) = \exp(z)$, so
+$$
+s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}) = \exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right),
+$$
+$$
+\frac{\partial s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta})}{\partial \boldsymbol{\beta}}  =  \boldsymbol{B}(t) \exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right),
+$$
+and
+$$
+W_2(t;\boldsymbol{\beta}) = \boldsymbol{V}_2(\boldsymbol{\beta})^{-1} \boldsymbol{B}(t) \exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right),
+$$
+where
+$$
+\boldsymbol{V}_2(\boldsymbol{\beta}) = \int_{t=t_1}^{t_2} \boldsymbol{B}(t) \boldsymbol{B}(t)^\prime \exp\left(2\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right) dt.
+$$
+
+
+
+### Logit Link
+For the logit link, $s(z) = \frac{\exp(z)}{1+\exp(z)}$, so
+$$
+s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}) = \frac{\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)}{1+\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)},
+$$
+$$
+\frac{\partial s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta})}{\partial \boldsymbol{\beta}}  =  \boldsymbol{B}(t) \frac{\exp\left(\boldsymbol{B}(t)^\prime \bold{\beta}\right)}{\left\{1+\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)\right\}^2},
+$$
+and
+$$
+W_2(t;\boldsymbol{\beta}) = \boldsymbol{V}_2(\boldsymbol{\beta})^{-1} \boldsymbol{B}(t) \frac{\exp\left(\boldsymbol{B}(t)^\prime \bold{\beta}\right)}{\left\{1+\exp\left(\boldsymbol{B}(t)^\prime \bold{\beta}\right)\right\}^2},
+$$
+where
+$$
+\boldsymbol{V}_2(\boldsymbol{\beta}) = \int_{t=t_1}^{t_2} \boldsymbol{B}(t) \boldsymbol{B}(t)^\prime \frac{\exp\left(2\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)}{\left\{1+\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)\right\}^4} dt.
+$$
+
+
+## Quasi-likelihood Loss
+For quasi-likelihood loss, $\mathcal{L}_3$, in general we have
+$$
+    W_{\mathcal{L}_3,g}(t;\boldsymbol{\beta}) = W_3(t;\boldsymbol{\beta}) = 
+        \boldsymbol{V}_3(\boldsymbol{\beta})^{-1} 
+        \boldsymbol{B}(t) 
+    , \quad 
+    \boldsymbol{V}_3(\boldsymbol{\beta}) = \int_{t=t_1}^{t_2} 
+        \boldsymbol{B}(t) 
+        \boldsymbol{B}(t) ^ \prime
+        \left.
+            \frac{\partial s(z)}{\partial z} 
+        \right|_{z=\boldsymbol{B}(t)^\prime \boldsymbol{\beta}}
+        dt
+$$
+
+
+### Identity Link
+For the identity link, $s(z) = z$, so
+$$
+\frac{\partial s(z)}{\partial z} \equiv 1,
+$$
+and
+$$
+W_3(t;\boldsymbol{\beta}) = \boldsymbol{V}_3^{-1}\boldsymbol{B}(t),
+$$
+where
+$$
+\boldsymbol{V}_3 = \int_{t=t_1}^{t_2} \boldsymbol{B}(t) \boldsymbol{B}(t)^\prime dt.
+$$
+
+### Log Link
+For the log link, $s(z) = \exp(z)$, so
+$$
+\frac{\partial s(z)}{\partial z} = \exp(z),
+$$
+and
+$$
+W_3(t;\boldsymbol{\beta}) = \boldsymbol{V}_3(\boldsymbol{\beta})^{-1} \boldsymbol{B}(t),
+$$
+where
+$$
+\boldsymbol{V}_3(\boldsymbol{\beta}) = \int_{t=t_1}^{t_2} \boldsymbol{B}(t) \boldsymbol{B}(t)^\prime \exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right) dt.
+$$ 
+
+### Logit Link
+For the logit link, $s(z) = \frac{\exp(z)}{1+\exp(z)}$, so
+$$
+\frac{\partial s(z)}{\partial z} = \frac{\exp(z)}{\left\{1+\exp(z)\right\}^2},
+$$
+and
+$$
+W_3(t;\boldsymbol{\beta}) = \boldsymbol{V}_3(\boldsymbol{\beta})^{-1} \boldsymbol{B}(t),
+$$
+where
+$$
+\boldsymbol{V}_3(\boldsymbol{\beta}) = \int_{t=t_1}^{t_2} \boldsymbol{B}(t) \boldsymbol{B}(t)^\prime \frac{\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)}{\left\{1+\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)\right\}^2} dt.
+$$  
+
 
