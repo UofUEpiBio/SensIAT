@@ -122,7 +122,7 @@ compute_SensIAT_expected_values.glm <- function(model, alpha, new.data, ..., y.m
         y <- seq(0, y.max)
         pmf <- dpois(0:y.max, lambda = mu)
         E_exp_alphaY <- sum(exp(alpha*y)*pmf)
-        E_Yexp_alphaY <- sum(y*exp(alpha*y)*pmf)
+        E_Yexp_alphaY <- sum(y * exp(alpha*y)*pmf)
     } else {
         stop("Model family not supported")
     }

@@ -37,7 +37,7 @@ In the SensIAT package, we have implemented the following link functions:
 The estimate for the treatment group marginal mean function, $\widehat\mu_{\mathcal{L}, g}(t) = g^{-1}\big\{\boldsymbol{B}(t)^\prime \widehat{\boldsymbol{\beta}}\big\}$ is found by solving $\frac{1}{n}\sum_{i=1}^n \widehat{\boldsymbol{\Psi}}_{\mathcal{L},g}(\boldsymbol{O}_i;\boldsymbol{\beta}) = 0$, for $\beta$, where
 
 $$
-   \widehat{\boldsymbol{\Psi}}_j(\boldsymbol{O}_i;\boldsymbol{\beta})
+   \widehat{\boldsymbol{\Psi}}_{\mathcal{L},g}(\boldsymbol{O}_i;\boldsymbol{\beta})
     =
     \sum_{k=1}^{K_i}  \Bigg\{ W_{\mathcal{L}, g}(T_{ik};\boldsymbol{\beta})\frac{\big[Y_i(T_{ik}) - \widehat{\mathbb{E}} \big\{Y(T_{ik}) \mid  \overline{\boldsymbol{O}}_i(T_{ik}) \big\} \big] }{\widehat{\rho}
     \big \{T_{ik} \mid \overline{\boldsymbol{O}}_i(T_{ik}), Y_i(T_{ik}) \big\}} \Bigg\}  
@@ -53,7 +53,7 @@ $$
     \right]dt
 $$
 The $W_{\mathcal{L}, g}(t;\boldsymbol{\beta})$ term depends on the choice of loss function and link function.
-
+Then we solve $\frac{1}{n}\sum_{i=1}^n \widehat{\boldsymbol{\Psi}}_{\mathcal{L},g}(\boldsymbol{O}_i;\boldsymbol{\beta}) = 0$ for $\beta$ using a vectorized root-finding algorithm.
 
 ## Squared Error Loss in the Transformed Space
 
@@ -78,8 +78,12 @@ $$
 
 $$\frac{\partial g(z)}{\partial z} = \frac{1}{z},$$ 
 $$ 
-W_1(t;\boldsymbol{\beta}) = \boldsymbol{V}_1^{-1}\boldsymbol{B}(t) \left\{\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right\}^{-1}.
+W_1(t;\boldsymbol{\beta}) = 
+    \frac{\boldsymbol{V}_1^{-1}\boldsymbol{B}(t)} {\boldsymbol{B}(t)^\prime \boldsymbol{\beta}}.
 $$
+
+
+
 
 ### Logit Link
 For the logit link,
@@ -148,11 +152,14 @@ $$
 s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}) = \frac{\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)}{1+\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)},
 $$
 $$
-\frac{\partial s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta})}{\partial \boldsymbol{\beta}}  =  \boldsymbol{B}(t) \frac{\exp\left(\boldsymbol{B}(t)^\prime \bold{\beta}\right)}{\left\{1+\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)\right\}^2},
+\frac{\partial s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta})}{\partial \boldsymbol{\beta}}  =  \boldsymbol{B}(t) \frac{\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)}{\left\{1+\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)\right\}^2},
 $$
 and
 $$
-W_2(t;\boldsymbol{\beta}) = \boldsymbol{V}_2(\boldsymbol{\beta})^{-1} \boldsymbol{B}(t) \frac{\exp\left(\boldsymbol{B}(t)^\prime \bold{\beta}\right)}{\left\{1+\exp\left(\boldsymbol{B}(t)^\prime \bold{\beta}\right)\right\}^2},
+W_2(t;\boldsymbol{\beta}) = 
+\boldsymbol{V}_2(\boldsymbol{\beta})^{-1} \boldsymbol{B}(t) 
+\frac{ \exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)}
+     { \left\{1+\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)\right\}^2},
 $$
 where
 $$
