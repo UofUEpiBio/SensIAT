@@ -3,6 +3,7 @@
 #' @inheritParams fit_SensIAT_marginal_mean_model
 #' @param loss The loss function to use. Options are "lp_mse", "mean_mse", and "quasi-likelihood".
 #' @param link The link function to use. Options are "identity", "log", and "logit".
+#' @param term2_method Method for computing term2 influence components. Options are "fast" (default, optimized closure-based integrand) and "original" (standard implementation).
 #'
 #' @examples
 #' data_with_lags <- SensIAT_example_data |>
@@ -61,7 +62,8 @@ function(
     BBsolve.control = list(
         maxit = 1000,
         tol = 1e-6
-    )
+    ),
+    term2_method = c("fast", "original")
 )
 {
     time <- rlang::eval_tidy({time}, data)
@@ -73,6 +75,7 @@ function(
     # match arguments
     loss <- match.arg(loss)
     link <- match.arg(link)
+    term2_method <- match.arg(term2_method)
 
     if(link == "identity"){
         return(
@@ -185,28 +188,39 @@ function(
 
 
         compute_term2_for_patient <- function(patient_id) {
-            data_i <- data[id == patient_id, ]
-            term2_integrand <- function(t) {
-                weight <- W(t, beta)
-                expected <- compute_SensIAT_expected_values(
-                    model = outcome.model,
+            patient_data <- data[id == patient_id, ]
+            if (term2_method == "fast") {
+                compute_term2_influence_fast(
+                    patient_data = patient_data,
+                    outcome_model = outcome.model,
+                    base = base,
                     alpha = alpha,
-                    new.data = impute_data(t, data_i)
+                    marginal_beta = beta,
+                    V_inv = V.inv,
+                    tmin = tmin,
+                    tmax = tmax,
+                    impute_fn = impute_data,
+                    inv_link = inv.link
                 )
-                B <- pcoriaccel_evaluate_basis(base, t)
-                weight * as.numeric(expected$E_Yexp_alphaY/expected$E_exp_alphaY - inv.link(crossprod(B, beta)))
+            } else {
+                compute_term2_influence_original(
+                    patient_data = patient_data,
+                    outcome_model = outcome.model,
+                    base = base,
+                    alpha = alpha,
+                    marginal_beta = beta,
+                    V_inv = V.inv,
+                    tmin = tmin,
+                    tmax = tmax,
+                    impute_fn = impute_data,
+                    inv_link = inv.link
+                )
             }
-            rslt <- pcoriaccel_integrate_simp(
-                term2_integrand,
-                tmin,
-                tmax
-            )
-            rslt$Q
         }
 
         term2.by.patient <- map(unique(id), compute_term2_for_patient)
 
-        reduce(term2.by.patient, `+`) + reduce(term1.by.observation,)
+    reduce(term2.by.patient, `+`) + reduce(term1.by.observation, `+`)
     }
 
     influence(rep(1/ncol(base), ncol(base)))
