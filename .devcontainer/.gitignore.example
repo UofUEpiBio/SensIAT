@@ -1,0 +1,19 @@
+# .gitignore entries for devcontainer
+# (add these to your root .gitignore if not already present)
+
+# RStudio files
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# Build artifacts
+*.tar.gz
+*.o
+*.so
+*.dll
+
+# Temporary files
+*~
+*.swp
+*.swo
