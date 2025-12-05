@@ -6,15 +6,19 @@
 \usage{
 fit_SensIAT_marginal_mean_model_generalized(
   data,
+  time,
   id,
   alpha,
   knots,
   outcome.model,
   intensity.model,
+  impute_data,
   loss = c("lp_mse", "mean_mse", "quasi-likelihood"),
   link = c("identity", "log", "logit"),
   spline.degree = 3L,
-  ...
+  ...,
+  BBsolve.control = list(maxit = 1000, tol = 1e-06),
+  term2_method = c("fast", "original")
 )
 }
 \arguments{
@@ -37,6 +41,8 @@ fit_SensIAT_marginal_mean_model_generalized(
 \item{spline.degree}{The degree of the spline basis, default is 3 (cubic splines).}
 
 \item{...}{Additional arguments passed to \code{compute_influence_terms}.}
+
+\item{term2_method}{Method for computing term2 influence components. Options are "fast" (default, optimized closure-based integrand) and "original" (standard implementation).}
 }
 \description{
 Fit the marginal mean model for generalize outcomes.
@@ -62,20 +68,22 @@ outcome.model <-
         id = Subject_ID,
         data = data_with_lags |> filter(Time > 0))
 fit_SensIAT_marginal_mean_model_generalized(
-   data = data_with_lags, Subject_ID,
+   data = data_with_lags,
+   time = data_with_lags$Time,
+   id = data_with_lags$Subject_ID,
    alpha = 0,
    knots = c(60, 260, 460),
    outcome.model = outcome.model,
    intensity.model = intensity.model,
    loss = 'lp_mse',
-   link = 'log')
-impute_data = \(t, df){
+   link = 'log',
+   impute_data = \(t, df){
     data_wl <- df |>
-        mutate(..prev_time.. = Time,
-               ..prev_outcome.. = Outcome,
-               ..delta_time.. = 0)
-    extrapolate_from_last_observation(t, data_wl, 'Time', slopes = c('..delta_time..' = 1))
-}
+           mutate(..prev_time.. = Time,
+                  ..prev_outcome.. = Outcome,
+                  ..delta_time.. = 0)
+       extrapolate_from_last_observation(t, data_wl, 'Time', slopes = c('..delta_time..' = 1))
+   })
 time = data_with_lags$Time
 id = data_with_lags$Subject_ID
 

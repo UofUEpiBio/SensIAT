@@ -38,6 +38,7 @@
 #' @importFrom stats dnorm
 #' @importFrom stats dpois
 #' @importFrom stats family
+#' @importFrom stats formula
 #' @importFrom stats model.frame
 #' @importFrom stats model.matrix
 #' @importFrom stats model.response

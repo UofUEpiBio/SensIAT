@@ -6,6 +6,8 @@
 #' @param term2_method Method for computing term2 influence components. Options are "fast" (default, optimized closure-based integrand) and "original" (standard implementation).
 #'
 #' @examples
+#' library(survival)
+#' 
 #' data_with_lags <- SensIAT_example_data |>
 #'     dplyr::group_by(Subject_ID) |>
 #'     dplyr::mutate(
@@ -55,7 +57,7 @@ function(
     outcome.model,
     intensity.model,
     impute_data,
-    loss = c("lp_mse", "mean_mse", "quasi-likelihood"),
+    loss = c("lp_mse", "quasi-likelihood"),
     link = c("identity", "log", "logit"),
     spline.degree = 3L,
     ..., #< passed to impute_data
@@ -115,7 +117,7 @@ function(
             W <- function(t, beta){
                 B <- pcoriaccel_evaluate_basis(base, t)
                 mu <-  as.numeric(B %*% beta)
-                (V.inv %*% B)/mu
+                (V.inv %*% B) / exp(mu)
             }
         } else if(link == 'logit'){
             link.fun = function(mu) log(mu / (1 - mu))
@@ -127,20 +129,20 @@ function(
         } else {
             stop("Unsupported link function for lp_mse loss.")
         }
-    } else if(loss == 'mean_mse'){
-        if(link == 'log'){
-            link.fun = log
-            inv.link = exp
-            d1.inv.link = exp
-        } else if(link == 'logit'){
-            link.fun = function(mu) log(mu / (1 - mu))
-            inv.link = function(eta) exp(eta) / (1 + exp(eta))
-            d1.inv.link = function(eta) {
-                exp(eta) / ((1 + exp(eta))^2)
-            }
-        } else {
-            stop("Unsupported link function for mean_mse loss.")
-        }
+    # } else if(loss == 'mean_mse'){
+    #     if(link == 'log'){
+    #         link.fun = log
+    #         inv.link = exp
+    #         d1.inv.link = exp
+    #     } else if(link == 'logit'){
+    #         link.fun = function(mu) log(mu / (1 - mu))
+    #         inv.link = function(eta) exp(eta) / (1 + exp(eta))
+    #         d1.inv.link = function(eta) {
+    #             exp(eta) / ((1 + exp(eta))^2)
+    #         }
+    #     } else {
+    #         stop("Unsupported link function for mean_mse loss.")
+    #     }
     } else if(loss == 'quasi-likelihood'){
         if(link == 'log'){
             link.fun = log
@@ -225,7 +227,7 @@ function(
 
     influence(rep(1/ncol(base), ncol(base)))
     time <- system.time(
-        solution <- BB::BBsolve(
+        solution <- BB::sane(
             par = rep(1/ncol(base), ncol(base)),
             fn = influence,
             control = BBsolve.control

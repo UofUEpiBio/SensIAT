@@ -82,21 +82,76 @@ compute_term2_influence_fast <- function(
     impute_fn,
     inv_link
 ) {
+  # Extract outcome variable name from the model formula
+  outcome_var <- as.character(rlang::f_lhs(formula(outcome_model)))
+  
+  # Get times and outcomes from patient_data
+  # The patient_data should have the outcome variable
+  patient_outcomes <- patient_data[[outcome_var]]
+  
+  # For time, we need to find it. Common patterns: Time, time, t, T
+  # Or we can look for the column that's not the outcome
+  time_candidates <- c("Time", "time", "t", "T", "obstime", "obs_time")
+  time_var <- NULL
+  for (candidate in time_candidates) {
+    if (candidate %in% names(patient_data)) {
+      time_var <- candidate
+      break
+    }
+  }
+  
+  # If still not found, take the first numeric column that's not the outcome
+  if (is.null(time_var)) {
+    numeric_cols <- names(patient_data)[sapply(patient_data, is.numeric)]
+    time_var <- setdiff(numeric_cols, outcome_var)[1]
+  }
+  
+  if (is.null(time_var) || is.na(time_var)) {
+    stop("Could not identify time variable in patient_data")
+  }
+  
+  patient_times <- patient_data[[time_var]]
+  
+  # Remove NA observations
+  valid_idx <- !is.na(patient_outcomes)
+  patient_times <- patient_times[valid_idx]
+  patient_outcomes <- patient_outcomes[valid_idx]
+  
   # Build fast integrand using closure-based optimization
   integrand_fast <- make_term2_integrand_fast(
     outcome.model = outcome_model,
     base = base,
     alpha = alpha,
-    patient_times = patient_data$Time,
-    patient_outcomes = patient_data$Outcome,
+    patient_times = patient_times,
+    patient_outcomes = patient_outcomes,
     marginal_beta = marginal_beta,
     V_inv = V_inv
   )
 
-  rslt <- pcoriaccel_integrate_simp(
-    integrand_fast,
-    tmin,
-    tmax
-  )
-  rslt$Q
+  # Split integration into segments at observation times to handle discontinuities
+  # Integration segments: [tmin, t1], [t1, t2], ..., [t_{n-1}, tmax]
+  obs_times_in_range <- patient_times[patient_times >= tmin & patient_times <= tmax]
+  
+  # Create breakpoints for integration
+  breakpoints <- sort(unique(c(tmin, obs_times_in_range, tmax)))
+  
+  # Integrate over each segment and sum
+  total_integral <- rep(0, ncol(base))
+  
+  for (i in seq_len(length(breakpoints) - 1)) {
+    seg_min <- breakpoints[i]
+    seg_max <- breakpoints[i + 1]
+    
+    # Skip zero-length segments
+    if (abs(seg_max - seg_min) < 1e-10) next
+    
+    rslt <- pcoriaccel_integrate_simp(
+      integrand_fast,
+      seg_min,
+      seg_max
+    )
+    total_integral <- total_integral + rslt$Q
+  }
+  
+  total_integral
 }
