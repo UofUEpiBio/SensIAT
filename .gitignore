@@ -9,6 +9,8 @@ tests/*_output.RData
 .lintr
 # R Environment Variables
 .Renviron
+# Development configuration files
+.Rprofile
 # Project and IDE files
 pcoriRPackage.Rproj
 .vscode/

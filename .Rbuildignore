@@ -13,3 +13,4 @@ roadmap.md
 ^\.github$
 ^Makefile$
 .devcontainer
+^\.Rprofile$
