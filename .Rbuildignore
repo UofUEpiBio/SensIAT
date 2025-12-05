@@ -14,3 +14,4 @@ roadmap.md
 ^Makefile$
 .devcontainer
 ^\.Rprofile$
+^codecov\.yml$
