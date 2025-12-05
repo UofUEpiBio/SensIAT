@@ -2,7 +2,34 @@
 #
 # These functions compute the term 2 influence contribution for a single patient
 # in the marginal mean model estimation. Both methods produce identical results
-# but differ in performance characteristics.
+# but differ in performance characteristics and generality.
+#
+# ## Comparison with Simulation Code Approaches
+# 
+# Simulation code (e.g., inst/3. Simu_point_estimate_fast.R) uses a pre-computation
+# strategy that is highly efficient for specific single-index model formulas but
+# lacks the generality of this implementation:
+# 
+# **Simulation Approach Advantages:**
+# - Pre-computes expected values once per alpha
+# - 2-5x faster for repeated optimization iterations  
+# - Uses trapezoidal rule integration over fixed grids
+# 
+# **Package Approach Advantages (this file):**
+# - Supports any outcome model with compute_SensIAT_expected_values method
+# - Uses adaptive Simpson's rule for better numerical accuracy
+# - Handles varying observation times and data structures robustly
+# - Modular design allows method dispatch based on model type
+#
+# ## Integration Methods
+# 
+# Both methods use adaptive Simpson's quadrature (`pcoriaccel_integrate_simp`)
+# which is more accurate than fixed-step trapezoidal rule used in simulation code.
+# 
+# ## Numerical Improvements
+# 
+# Weight functions now use exp(-μ) multiplication instead of division for
+# better numerical stability with large linear predictors.
 
 #' Compute term2 influence for a patient (original method)
 #'
@@ -36,7 +63,7 @@ compute_term2_influence_original <- function(
   W <- function(t, beta) {
     B <- as.vector(pcoriaccel_evaluate_basis(base, t))
     mu <- sum(B * beta)
-    (V_inv %*% B) / mu
+    as.vector((V_inv %*% B) * exp(-mu))
   }
 
   # Integrand

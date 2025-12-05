@@ -1,9 +1,36 @@
 #' Fit the marginal mean model for generalize outcomes.
 #'
+#' This function uses adaptive Simpson's rule for integration and supports multiple
+#' outcome model types (single-index, GLM, linear models) through the generic
+#' `compute_SensIAT_expected_values` interface. The implementation includes
+#' numerical stability improvements (exp(-μ) multiplication vs division) and
+#' caching optimizations for repeated expected value computations.
+#'
 #' @inheritParams fit_SensIAT_marginal_mean_model
 #' @param loss The loss function to use. Options are "lp_mse", "mean_mse", and "quasi-likelihood".
 #' @param link The link function to use. Options are "identity", "log", and "logit".
 #' @param term2_method Method for computing term2 influence components. Options are "fast" (default, optimized closure-based integrand) and "original" (standard implementation).
+#'
+#' @details
+#' ## Integration Method
+#' The function uses adaptive Simpson's quadrature (`pcoriaccel_integrate_simp`) 
+#' for numerical integration, which automatically adjusts step sizes based on 
+#' local function behavior.
+#' 
+#' ## Outcome Model Compatibility
+#' Unlike simulation code that assumes specific single-index model formulas, this 
+#' function supports any outcome model with a `compute_SensIAT_expected_values` 
+#' method, including:
+#' - Single-index models (`fit_SensIAT_single_index_*_model`)  
+#' - Generalized linear models (GLM)
+#' - Linear models (LM)
+#' - Negative binomial models
+#' 
+#' ## Performance Optimizations
+#' - Expected values for term1 are cached (depend only on alpha, not beta)
+#' - Weight functions use numerically stable exp(-μ) multiplication
+#' - Fast method uses closure-based integration with reduced allocations
+#'
 #'
 #' @examples
 #' library(survival)
@@ -117,7 +144,7 @@ function(
             W <- function(t, beta){
                 B <- pcoriaccel_evaluate_basis(base, t)
                 mu <-  as.numeric(B %*% beta)
-                (V.inv %*% B) / exp(mu)
+                as.vector((V.inv %*% B) * exp(-mu))
             }
         } else if(link == 'logit'){
             link.fun = function(mu) log(mu / (1 - mu))
@@ -178,11 +205,17 @@ function(
     influence = function(beta){
         valid.time <- time[fu] >= tmin & time[fu] <= tmax
         weights <- purrr::map( time[fu][valid.time], W, beta=beta )
-        expected <- compute_SensIAT_expected_values(
-            model = outcome.model,
-            alpha = alpha,
-            new.data = data[fu,][valid.time, ]
-        )
+        
+        # Cache expected values for term1 (they only depend on alpha, not beta)
+        if (!exists(".expected_cache", envir = environment(influence))) {
+            .expected_cache <- compute_SensIAT_expected_values(
+                model = outcome.model,
+                alpha = alpha,
+                new.data = data[fu,][valid.time, ]
+            )
+            assign(".expected_cache", .expected_cache, envir = environment(influence))
+        }
+        expected <- get(".expected_cache", envir = environment(influence))
 
         term1.deviation.by.observation <- (Y[fu][valid.time] - expected$E_Yexp_alphaY/expected$E_exp_alphaY)/intensity_weights[valid.time]
 
