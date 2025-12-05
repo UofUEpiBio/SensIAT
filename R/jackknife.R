@@ -7,7 +7,7 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
     run_without <- function(id){
         if(progress)on.exit(try(pb$tick(), silent = TRUE))
         replication <-
-        data |> filter(!!original.object$variables$id != id) |>
+        data |> filter(!!original.object$variables$id != !!id) |>
             fit_SensIAT_within_group_model(
                 outcome_modeler = original.object$outcome_modeler,
                 id = !!original.object$variables$id,
