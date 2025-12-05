@@ -1,7 +1,7 @@
 
 [![R-CMD-check](https://github.com/UofUEpiBio/SensIAT/actions/workflows/r.yml/badge.svg)](https://github.com/UofUEpiBio/SensIAT/actions/workflows/r.yml)
-<!-- badges: start --> [![CRAN
-status](https://www.r-pkg.org/badges/version/SensIAT)](https://CRAN.R-project.org/package=SensIAT)
+<!-- badges: start --> 
+[![CRAN status](https://www.r-pkg.org/badges/version/SensIAT)](https://CRAN.R-project.org/package=SensIAT)
 <!-- badges: end -->
 
 # SensIAT

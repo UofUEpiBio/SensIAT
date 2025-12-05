@@ -12,3 +12,4 @@ roadmap.md
 ^pkgdown$
 ^\.github$
 ^Makefile$
+^codecov\.yml$
