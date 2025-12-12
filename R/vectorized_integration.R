@@ -12,7 +12,8 @@
 #' @param V_inv Inverse Gram matrix for base
 #' @param tmin Lower integration bound
 #' @param tmax Upper integration bound
-#' @param impute_fn Function to impute data at time t
+#' @param variables List of variable names (time, outcome, prev_outcome, etc.)
+#' @param centering Centering statistics for standardization
 #' @param inv_link Inverse link function
 #' @param tol Integration tolerance
 #'
@@ -32,12 +33,14 @@ compute_term2_influence_vectorized <- function(
     V_inv,
     tmin,
     tmax,
-    impute_fn,
+    variables,
+    centering,
     inv_link,
     tol = 1.490116e-08
 ) {
   stopifnot(is.numeric(alpha_vec), length(alpha_vec) > 0)
-  stopifnot(is.function(impute_fn), is.function(inv_link))
+  stopifnot(is.function(inv_link))
+  stopifnot(is.list(variables), is.matrix(centering))
   
   # Create wrapper function for compute_SensIAT_expected_values that handles vectorized alpha
   compute_expected_values_fn <- function(alpha, new.data) {
@@ -73,8 +76,9 @@ compute_term2_influence_vectorized <- function(
     function(lower, upper) {
       
       # Impute at piece boundaries (like original method)
-      lower_data <- impute_fn(lower, patient_data)
-      upper_data <- impute_fn(upper, patient_data)
+      # CRITICAL: Use right=FALSE for lower bound, right=TRUE for upper bound
+      lower_data <- impute_patient_df(lower, patient_data, variables = variables, centering = centering, right = FALSE)
+      upper_data <- impute_patient_df(upper, patient_data, variables = variables, centering = centering, right = TRUE)
       
       # Get Xbeta at boundaries using outcome model
       # Extract model formula and compute linear predictors
@@ -92,7 +96,6 @@ compute_term2_influence_vectorized <- function(
         xb_interpolated <- (1 - a) * xb_lower + a * xb_upper
         
         # Return a data frame with the interpolated linear predictor
-        # The compute_expected_values_fn will use this
         data.frame(xb = xb_interpolated)
       }
       

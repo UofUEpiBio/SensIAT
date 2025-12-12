@@ -84,7 +84,7 @@ test_that("vectorized integration matches original for alpha = 0", {
     base = base,
     control = pcori_control(
       integration.method = 'quadv',
-      tol = 1e-6
+      tol = 1.490116e-08
     ),
     centering = centering.statistics
   )
@@ -109,17 +109,6 @@ test_that("vectorized integration matches original for alpha = 0", {
   cat("  tmax:", tmax, "\n")
   cat("  Patient observation times:", sort(unique(df_i$Time)), "\n")
 
-  # Use the internal impute_patient_df function (available in testthat context)
-  impute_fn <- function(t, data) {
-    impute_patient_df(
-      eval.times = t,
-      df_i = data,
-      variables = variables,
-      centering = centering.statistics,
-      right = TRUE
-    )
-  }
-
   inv_link <- function(x) x
 
   # Test vectorized method
@@ -132,7 +121,8 @@ test_that("vectorized integration matches original for alpha = 0", {
       V_inv = V_inv,
       tmin = tmin,
       tmax = tmax,
-      impute_fn = impute_fn,
+      variables = variables,
+      centering = centering.statistics,
       inv_link = inv_link
     )
   
