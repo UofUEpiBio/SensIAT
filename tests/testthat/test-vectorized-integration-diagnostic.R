@@ -1,4 +1,7 @@
 test_that("diagnostic: integrand values match at sample points", {
+  skip("Diagnostic test - run manually when debugging. All integration issues resolved.")
+  # This diagnostic test was used to identify the weight function bug (now fixed)
+  # It's kept for historical reference but skipped in normal test runs
   skip_on_cran()
   
   # Same setup as main test

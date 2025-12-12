@@ -1,3 +1,6 @@
+# Debug output control - set SENSIAT_TEST_DEBUG=1 to enable
+test_debug <- Sys.getenv("SENSIAT_TEST_DEBUG", "0") == "1"
+
 test_that("vectorized integration matches original for alpha = 0", {
   skip_on_cran()
   # Re-enabled after fixing weight function to use B(t) instead of V_inv %*% B(t)
@@ -104,10 +107,12 @@ test_that("vectorized integration matches original for alpha = 0", {
   tmin <- base@knots[base@order]
   tmax <- base@knots[length(base@knots) - base@order + 1]
   
-  cat("\nIntegration bounds:\n")
-  cat("  tmin:", tmin, "\n")
-  cat("  tmax:", tmax, "\n")
-  cat("  Patient observation times:", sort(unique(df_i$Time)), "\n")
+  if (test_debug) {
+    cat("\nIntegration bounds:\n")
+    cat("  tmin:", tmin, "\n")
+    cat("  tmax:", tmax, "\n")
+    cat("  Patient observation times:", sort(unique(df_i$Time)), "\n")
+  }
 
   inv_link <- function(x) x
 
@@ -129,9 +134,11 @@ test_that("vectorized integration matches original for alpha = 0", {
   vectorized_term2 <- vectorized_result$alpha_0$Q
 
   # Debug output
-  cat("\nCurrent method term2:", current_term2, "\n")
-  cat("Vectorized method term2:", vectorized_term2, "\n")
-  cat("Difference:", current_term2 - vectorized_term2, "\n")
+  if (test_debug) {
+    cat("\nCurrent method term2:", current_term2, "\n")
+    cat("Vectorized method term2:", vectorized_term2, "\n")
+    cat("Difference:", current_term2 - vectorized_term2, "\n")
+  }
 
   # Compare the results
   expect_equal(length(current_term2), length(vectorized_term2))

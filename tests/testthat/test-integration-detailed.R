@@ -1,3 +1,6 @@
+# Debug output control - set SENSIAT_TEST_DEBUG=1 to enable
+test_debug <- Sys.getenv("SENSIAT_TEST_DEBUG", "0") == "1"
+
 test_that("piecewise integration matches original method exactly", {
   # Use exact setup from test-vectorized-integration-simple.R
   model.data <- SensIAT_example_data |>
@@ -68,16 +71,20 @@ test_that("piecewise integration matches original method exactly", {
   observation_times <- sort(unique(df_i$Time))
   times <- unique(c(tmin, observation_times[observation_times > tmin & observation_times < tmax], tmax))
 
-  cat("\nIntegration setup:\n")
-  cat("  tmin:", tmin, "tmax:", tmax, "\n")
-  cat("  Observation times:", observation_times, "\n")
-  cat("  Piece boundaries:", times, "\n\n")
+  if (test_debug) {
+    cat("\nIntegration setup:\n")
+    cat("  tmin:", tmin, "tmax:", tmax, "\n")
+    cat("  Observation times:", observation_times, "\n")
+    cat("  Piece boundaries:", times, "\n\n")
+  }
 
   # For FIRST piece [60, 214], manually compute what original method does
   lower <- times[1]
   upper <- times[2]
 
-  cat(sprintf("Testing piece [%.0f, %.0f]:\n", lower, upper))
+  if (test_debug) {
+    cat(sprintf("Testing piece [%.0f, %.0f]:\n", lower, upper))
+  }
 
   # Impute at boundaries using impute_patient_df (available in testthat)
   lower_df <- impute_patient_df(
@@ -99,14 +106,18 @@ test_that("piecewise integration matches original method exactly", {
   xb_lower <- as.numeric(model.matrix(terms(outcome.model), data = lower_df) %*% outcome.model$coef)
   xb_upper <- as.numeric(model.matrix(terms(outcome.model), data = upper_df) %*% outcome.model$coef)
 
-  cat(sprintf("  xb_lower = %.4f, xb_upper = %.4f\n", xb_lower, xb_upper))
+  if (test_debug) {
+    cat(sprintf("  xb_lower = %.4f, xb_upper = %.4f\n", xb_lower, xb_upper))
+  }
 
   # Test integrand at middle of piece
   t_mid <- (lower + upper) / 2
   a_mid <- (t_mid - lower) / (upper - lower)
   xb_mid_interp <- (1 - a_mid) * xb_lower + a_mid * xb_upper
 
-  cat(sprintf("  At t=%.1f (midpoint): a=%.3f, xb_interpolated=%.4f\n", t_mid, a_mid, xb_mid_interp))
+  if (test_debug) {
+    cat(sprintf("  At t=%.1f (midpoint): a=%.3f, xb_interpolated=%.4f\n", t_mid, a_mid, xb_mid_interp))
+  }
 
   # Compute pmf and expected value at midpoint
   mf <- model.frame(outcome.model)
@@ -128,8 +139,10 @@ test_that("piecewise integration matches original method exactly", {
 
   # Integrand at midpoint (for alpha=0, marginal_mean=0)
   integrand_mid <- B_mid * E_Y_mid
-  cat(sprintf("  Integrand(%.1f) = [%.4f, %.4f, %.4f, %.4f, %.4f]\n\n", t_mid,
-              integrand_mid[1], integrand_mid[2], integrand_mid[3], integrand_mid[4], integrand_mid[5]))
+  if (test_debug) {
+    cat(sprintf("  Integrand(%.1f) = [%.4f, %.4f, %.4f, %.4f, %.4f]\n\n", t_mid,
+                integrand_mid[1], integrand_mid[2], integrand_mid[3], integrand_mid[4], integrand_mid[5]))
+  }
 
   # Now test what the original pracma::quadv does for this piece
   integrand_fn_original <- function(time) {
