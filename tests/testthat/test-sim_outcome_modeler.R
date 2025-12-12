@@ -18,7 +18,9 @@ test_that("outcome model structure", {
     expect_true(is.list(object$influence))
     expect_length(object$influence, length(object$alpha))
     expect_true(is.list(object$influence[[1]]))
-    expect_named(object$influence[[1]], c('term1', 'term2', 'id', 'alpha'), ignore.order=TRUE)
+    expect_named(object$influence[[1]], 
+                 c("term1", "term2", "id", "alpha"), 
+                 ignore.order=TRUE)
 
     expect_true(is.list(object$models))
     expect_named(object$models, c('intensity', 'outcome'), ignore.order=TRUE)

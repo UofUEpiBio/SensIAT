@@ -175,6 +175,25 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// integrate_term2_vectorized_alpha
+List integrate_term2_vectorized_alpha(Function compute_expected_values_fn, Function impute_fn, Function weight_fn, Function marginal_mean_fn, NumericVector alpha_vec, double tmin, double tmax, SEXP patient_data, double tol);
+RcppExport SEXP _SensIAT_integrate_term2_vectorized_alpha(SEXP compute_expected_values_fnSEXP, SEXP impute_fnSEXP, SEXP weight_fnSEXP, SEXP marginal_mean_fnSEXP, SEXP alpha_vecSEXP, SEXP tminSEXP, SEXP tmaxSEXP, SEXP patient_dataSEXP, SEXP tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Function >::type compute_expected_values_fn(compute_expected_values_fnSEXP);
+    Rcpp::traits::input_parameter< Function >::type impute_fn(impute_fnSEXP);
+    Rcpp::traits::input_parameter< Function >::type weight_fn(weight_fnSEXP);
+    Rcpp::traits::input_parameter< Function >::type marginal_mean_fn(marginal_mean_fnSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type alpha_vec(alpha_vecSEXP);
+    Rcpp::traits::input_parameter< double >::type tmin(tminSEXP);
+    Rcpp::traits::input_parameter< double >::type tmax(tmaxSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type patient_data(patient_dataSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(integrate_term2_vectorized_alpha(compute_expected_values_fn, impute_fn, weight_fn, marginal_mean_fn, alpha_vec, tmin, tmax, patient_data, tol));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_SensIAT_pcoriaccel_NW_basic", (DL_FUNC) &_SensIAT_pcoriaccel_NW_basic, 5},
@@ -189,6 +208,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_SensIAT_pcoriaccel_integrate_simp", (DL_FUNC) &_SensIAT_pcoriaccel_integrate_simp, 4},
     {"_SensIAT_pcoriaccel_evaluate_basis", (DL_FUNC) &_SensIAT_pcoriaccel_evaluate_basis, 2},
     {"_SensIAT_pcoriaccel_evaluate_basis_mat", (DL_FUNC) &_SensIAT_pcoriaccel_evaluate_basis_mat, 2},
+    {"_SensIAT_integrate_term2_vectorized_alpha", (DL_FUNC) &_SensIAT_integrate_term2_vectorized_alpha, 9},
     {NULL, NULL, 0}
 };
 

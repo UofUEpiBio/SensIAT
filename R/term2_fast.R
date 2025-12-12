@@ -94,7 +94,7 @@ make_term2_integrand_fast <- function(
   W_fun <- function(t) {
     B <- as.vector(pcoriaccel_evaluate_basis(base, t))
     mu <- sum(B * marginal_beta) # linear predictor on link scale per current code
-    as.vector((V_inv %*% B) * exp(-mu))
+    (V_inv %*% B) * exp(-mu)
   }
 
   # Build integrand closure (no data.frame allocations per call)
