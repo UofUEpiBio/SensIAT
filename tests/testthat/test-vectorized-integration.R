@@ -1,4 +1,5 @@
 test_that("vectorized integration matches original for linear model", {
+  skip("Deprecated test - API changed to use variables/centering instead of impute_fn/inv_link. See test-vectorized-integration-simple.R for current tests.")
   skip_on_cran()
   
   # Generate synthetic data for testing
@@ -18,11 +19,11 @@ test_that("vectorized integration matches original for linear model", {
   outcome_model <- lm(Outcome ~ prev_outcome_lag1 + delta_time_lag1, data = patient_data)
   
   # Create spline basis for marginal model
-  knots <- c(25, 50, 75)
+  knots <- c(25, 25, 25, 25, 50, 75, 75, 75, 75)
   base <- orthogonalsplinebasis::SplineBasis(knots = knots, order = 4L)
   
   # Generate synthetic marginal beta coefficients
-  n_basis <- ncol(base@basis) 
+  n_basis <- ncol(base) 
   marginal_beta <- rnorm(n_basis, mean = 0, sd = 0.5)
   
   # Compute Gram matrix inverse
@@ -84,6 +85,7 @@ test_that("vectorized integration matches original for linear model", {
 })
 
 test_that("vectorized integration matches original for GLM Poisson", {
+  skip("Deprecated test - API changed to use variables/centering instead of impute_fn/inv_link. See test-vectorized-integration-simple.R for current tests.")
   skip_on_cran()
   
   # Generate synthetic data for Poisson GLM
@@ -156,6 +158,7 @@ test_that("vectorized integration matches original for GLM Poisson", {
 })
 
 test_that("vectorized integration handles edge cases correctly", {
+  skip("Deprecated test - API changed to use variables/centering instead of impute_fn/inv_link. See test-vectorized-integration-simple.R for current tests.")
   skip_on_cran()
   
   # Test with single alpha value
@@ -219,6 +222,7 @@ test_that("vectorized integration handles edge cases correctly", {
 })
 
 test_that("vectorized integration performance scales well with number of alphas", {
+  skip("Deprecated test - API changed to use variables/centering instead of impute_fn/inv_link. See test-vectorized-integration-simple.R for current tests.")
   skip_on_cran()
   skip_if(Sys.getenv("SKIP_PERFORMANCE_TESTS") == "true", "Performance tests skipped")
   
