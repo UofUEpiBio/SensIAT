@@ -67,12 +67,10 @@ compute_term2_influence_vectorized <- function(
   
   # Integrate piecewise between consecutive observation times
   # For each piece, impute at boundaries and linearly interpolate
-  cat(sprintf("\nPiecewise integration: %d pieces\n", length(times) - 1))
   period_results <- purrr::map2(
     head(times, -1), 
     tail(times, -1), 
     function(lower, upper) {
-      cat(sprintf("  Piece [%.1f, %.1f]:\n", lower, upper))
       
       # Impute at piece boundaries (like original method)
       lower_data <- impute_fn(lower, patient_data)
@@ -85,8 +83,6 @@ compute_term2_influence_vectorized <- function(
       
       xb_lower <- as.numeric(model.matrix(terms(outcome_model), data = model_frame_lower) %*% outcome_model$coef)
       xb_upper <- as.numeric(model.matrix(terms(outcome_model), data = model_frame_upper) %*% outcome_model$coef)
-      
-      cat(sprintf("    xb_lower=%.3f, xb_upper=%.3f\n", xb_lower, xb_upper))
       
       # Create interpolating impute function for this piece
       # This matches the original: a = (time - lower)/(upper - lower); xb_time = (1-a)*xb_lower + a*xb_upper
