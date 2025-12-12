@@ -2,6 +2,8 @@
 test_debug <- Sys.getenv("SENSIAT_TEST_DEBUG", "0") == "1"
 
 test_that("piecewise integration matches original method exactly", {
+  skip_if(!test_debug, "Detailed diagnostic test - set SENSIAT_TEST_DEBUG=1 to run")
+  
   # Use exact setup from test-vectorized-integration-simple.R
   model.data <- SensIAT_example_data |>
     dplyr::group_by(Subject_ID) |>

@@ -24,24 +24,19 @@ This will show detailed output in tests that support it, including:
 ## Test Organization
 
 ### Active Tests
-- `test-vectorized-integration-simple.R` - Main integration validation (clean output by default)
-- `test-integration-detailed.R` - Detailed single-piece integration test (verbose when debug enabled)
+- `test-vectorized-integration-simple.R` - Main integration validation (minimal output)
 - `test-jackknife*.R` - Jackknife variance estimation tests
 - `test-SensIAT_sim_outcome_modeler_mave.R` - MAVE outcome model tests (optimized for speed)
 
-### Diagnostic/Skipped Tests  
-- `test-vectorized-integration-diagnostic.R` - Skipped, used for historical bug diagnosis
+### Debug/Diagnostic Tests (require SENSIAT_TEST_DEBUG=1)
+- `test-integration-detailed.R` - Detailed single-piece integration with verbose output
+- `test-vectorized-integration-diagnostic.R` - Historical integrand diagnostics (skipped)
+
+### Skipped/Manual Tests  
 - `test-vectorized-integration.R` - Skipped, outdated API tests
 - `test-jackknife-comprehensive.R` - Manual tests for full dataset validation
 
-## Performance
-
-The test suite has been optimized for speed:
-- MAVE tests use 10 subjects instead of 200 (~12 seconds)
-- Jackknife tests use minimal subjects and simplified models
-- Comprehensive tests are skipped by default
-
-To run comprehensive tests:
+To run manual tests:
 ```r
 testthat::test_file("tests/testthat/test-jackknife-comprehensive.R")
 ```
