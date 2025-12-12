@@ -15,3 +15,4 @@ roadmap.md
 .devcontainer
 ^\.Rprofile$
 ^codecov\.yml$
+^copilot_docs$
