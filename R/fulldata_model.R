@@ -1,4 +1,3 @@
-
 #' @describeIn fit_SensIAT_within_group_model
 #' Fit the sensitivity analysis for both treatment and control groups.
 #'
@@ -12,13 +11,13 @@
 #'      `SensIAT-within-group-fitted-model` fit with the fit_within_group_model
 #'      function.
 #' @export
-fit_SensIAT_fulldata_model <- function(data, trt, ...){
+fit_SensIAT_fulldata_model <- function(data, trt, ...) {
     trt <- rlang::enquo(trt) #< diffuses evaluation for tidy expressions
 
     structure(list(
         control   = fit_SensIAT_within_group_model(filter(data, !as.logical(!!trt)), ...),
-        treatment = fit_SensIAT_within_group_model(filter(data,  as.logical(!!trt)), ...)
-    ), class = 'SensIAT_fulldata_model')
+        treatment = fit_SensIAT_within_group_model(filter(data, as.logical(!!trt)), ...)
+    ), class = "SensIAT_fulldata_model")
 }
 
 #' @describeIn predict.SensIAT_within_group_model
@@ -27,20 +26,19 @@ fit_SensIAT_fulldata_model <- function(data, trt, ...){
 #' variance.
 #' @export
 `predict.SensIAT_fulldata_model` <-
-    function(object, time, ...){
-
-        control.predicted    <- predict(object$control  , time, ...)
-        treatment.predicted  <- predict(object$treatment, time, ...)
+    function(object, time, ...) {
+        control.predicted <- predict(object$control, time, ...)
+        treatment.predicted <- predict(object$treatment, time, ...)
 
         full_join(
             control.predicted,
             treatment.predicted,
-            by= c('time'),
-            suffix = c('_control', '_treatment')
+            by = c("time"),
+            suffix = c("_control", "_treatment")
         ) |>
             mutate(
                 mean_effect = mean_treatment - mean_control,
                 var_effect = var_treatment + var_control
             )
     }
-globalVariables(c('mean_effect', 'mean_treatment', 'mean_control', 'var_effect', 'var_treatment', 'var_control'))
+globalVariables(c("mean_effect", "mean_treatment", "mean_control", "var_effect", "var_treatment", "var_control"))

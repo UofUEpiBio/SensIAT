@@ -1,4 +1,3 @@
-
 #' Compute Influence Terms
 #'
 #' This function computes the influence terms for the marginal outcome model sensitivity analysis.
@@ -14,19 +13,17 @@
 #'
 #' @export
 compute_influence_terms <-
-function(
-    outcome.model, # outcome model
-    intensity.model, # The intensity model
-    alpha, # Sensitivity, singular alpha value
-    data, #< vector of times for all observations
-    ...
-){
-    UseMethod("compute_influence_terms", outcome.model)
-}
+    function(outcome.model, # outcome model
+             intensity.model, # The intensity model
+             alpha, # Sensitivity, singular alpha value
+             data, #< vector of times for all observations
+             ...) {
+        UseMethod("compute_influence_terms", outcome.model)
+    }
 
 #' @describeIn compute_influence_terms Generic method, which throws a not implemented error.
 #' @export
 compute_influence_terms.default <-
-function(outcome.model, intensity.model, alpha, data, id, base, ...){
-    rlang::abort("compute_influence_terms is not implemented for this outcome model type. Please use a method that supports your model type.")
-}
+    function(outcome.model, intensity.model, alpha, data, id, base, ...) {
+        rlang::abort("compute_influence_terms is not implemented for this outcome model type. Please use a method that supports your model type.")
+    }

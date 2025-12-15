@@ -32,14 +32,16 @@
 #' # Create the observation time intensity model
 #' intensity.model <-
 #'     coxph(Surv(..prev_time.., Time, !is.na(Outcome)) ~ ..prev_outcome.. + strata(Visit),
-#'     data = data_with_lags |> dplyr::filter(.data$Time > 0))
+#'         data = data_with_lags |> dplyr::filter(.data$Time > 0)
+#'     )
 #'
 #' # Create the observed outcome model
 #' outcome.model <-
 #'     fit_SensIAT_single_index_fixed_coef_model(
-#'         Outcome ~ ns(..prev_outcome.., df=3) + ..delta_time.. - 1,
+#'         Outcome ~ ns(..prev_outcome.., df = 3) + ..delta_time.. - 1,
 #'         id = Subject_ID,
-#'         data = data_with_lags |> filter(Time > 0))
+#'         data = data_with_lags |> filter(Time > 0)
+#'     )
 #'
 #' # Fit the marginal outcome model
 #' mm <- fit_SensIAT_marginal_mean_model(
@@ -48,72 +50,75 @@
 #'     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
 #'     knots = c(60, 260, 460),
 #'     intensity.model = intensity.model,
-#'     time.vars = c('..delta_time..'),
-#'     outcome.model = outcome.model)
+#'     time.vars = c("..delta_time.."),
+#'     outcome.model = outcome.model
+#' )
 #' }
 fit_SensIAT_marginal_mean_model <-
-function(data,
-         id,
-         alpha,
-         knots,
-         outcome.model,
-         intensity.model,
-         spline.degree = 3L,
-         ...){
+    function(data,
+             id,
+             alpha,
+             knots,
+             outcome.model,
+             intensity.model,
+             spline.degree = 3L,
+             ...) {
+        if (is(knots, "SplineBasis")) {
+            base <- knots
+        } else {
+            knots <- c(
+                rep(head(knots, 1), spline.degree),
+                knots,
+                rep(tail(knots, 1), spline.degree)
+            )
+            base <- SplineBasis(knots, order = spline.degree + 1L)
+        }
+        V_inverse <- solve(GramMatrix(base))
 
-    if(is(knots, 'SplineBasis')){
-        base <- knots
-    } else {
-        knots <- c(
-            rep(head(knots,1), spline.degree),
-            knots,
-            rep(tail(knots, 1), spline.degree)
+
+        needed.vars <- c(
+            all.vars(terms(intensity.model)),
+            all.vars(terms(outcome.model))
         )
-        base <- SplineBasis(knots, order=spline.degree+1L)
-    }
-    V_inverse <- solve(GramMatrix(base))
+        stopifnot(all(needed.vars %in% names(data)))
+
+        for_each_alpha <- \(a){
+            compute_influence_terms(
+                data = data, id = {{ id }},
+                base = base,
+                alpha = a,
+                outcome.model = outcome.model,
+                intensity.model = intensity.model,
+                ...
+            )
+        }
+        influence.terms <- purrr::map(alpha, for_each_alpha)
+
+        # Results
+        Beta <- map(influence.terms, \(IT){
+            uncorrected.beta_hat <- (colSums(IT$term1) + colSums(IT$term2)) / length(IT$id)
+            estimate <- as.vector(V_inverse %*% uncorrected.beta_hat)
+            variance <- tcrossprod(V_inverse %*% (t(IT$term1 + IT$term2) - uncorrected.beta_hat)) / c(length(IT$id)^2)
+            list(estimate = estimate, variance = variance)
+        })
 
 
-    needed.vars <- c( all.vars(terms(intensity.model))
-                    , all.vars(terms(outcome.model))
-                    )
-    stopifnot(all(needed.vars %in% names(data)))
-
-    for_each_alpha <- \(a){
-        compute_influence_terms(
-            data=data, id={{id}},
-            base = base,
-            alpha = a,
-            outcome.model = outcome.model,
-            intensity.model = intensity.model,
-            ...
+        structure(
+            list(
+                models = list(
+                    intensity = intensity.model,
+                    outcome = outcome.model
+                ),
+                data = data,
+                influence = influence.terms,
+                alpha = alpha,
+                coefficients = map(Beta, getElement, "estimate"),
+                coefficient.variance = map(Beta, getElement, "variance"),
+                influence.args = list(...),
+                base = base,
+                V_inverse = V_inverse
+            ),
+            class = "SensIAT_marginal_outcome_model",
+            call = match.call(expand.dots = TRUE)
         )
     }
-    influence.terms <- purrr::map(alpha, for_each_alpha)
-
-    # Results
-    Beta = map(influence.terms, \(IT){
-        uncorrected.beta_hat <- (colSums(IT$term1) + colSums(IT$term2))/length(IT$id)
-        estimate <- as.vector(V_inverse %*% uncorrected.beta_hat)
-        variance <- tcrossprod(V_inverse %*% (t(IT$term1 + IT$term2) - uncorrected.beta_hat))/c(length(IT$id)^2)
-        list(estimate = estimate, variance = variance)
-    })
-
-
-    structure(list(
-        models = list(
-            intensity = intensity.model,
-            outcome = outcome.model
-        ),
-        data = data,
-        influence = influence.terms,
-        alpha = alpha,
-        coefficients = map(Beta, getElement, 'estimate'),
-        coefficient.variance = map(Beta, getElement, 'variance'),
-        influence.args = list(...),
-        base=base,
-        V_inverse = V_inverse
-    ), class = "SensIAT_marginal_outcome_model",
-    call = match.call(expand.dots = TRUE)
-    )
-}

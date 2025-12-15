@@ -1,13 +1,14 @@
-globalVariables(c('alpha', add=TRUE))
+globalVariables(c("alpha", add = TRUE))
 
-cross_validate <- function(original.object, progress = interactive(), prune = TRUE){
+cross_validate <- function(original.object, progress = interactive(), prune = TRUE) {
     data <- original.object$data
     ids <- na.omit(unique(pull(data, original.object$variables$id)))
 
-    run_without <- function(id){
-        if(progress)on.exit(try(pb$tick(), silent = TRUE))
+    run_without <- function(id) {
+        if (progress) on.exit(try(pb$tick(), silent = TRUE))
         replication <-
-        data |> filter(!!original.object$variables$id != !!id) |>
+            data |>
+            filter(!!original.object$variables$id != !!id) |>
             fit_SensIAT_within_group_model(
                 outcome_modeler = original.object$outcome_modeler,
                 id = !!original.object$variables$id,
@@ -19,15 +20,16 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
                 intensity.args = original.object$args$intensity,
                 outcome.args = original.object$args$outcome,
                 influence.args = original.object$args$influence,
-                spline.degree = original.object$base@order-1L,
+                spline.degree = original.object$base@order - 1L,
                 add.terminal.observations = FALSE
             )
-        if(prune)
+        if (prune) {
             replication <- prune(replication)
+        }
         replication$jackknife_excluded_id <- id
         return(replication)
     }
-    if(progress && rlang::is_installed("progress")){
+    if (progress && rlang::is_installed("progress")) {
         pb <- progress::progress_bar$new(
             format = "  cross-validation [:bar] :current/:total(:percent) eta: :eta",
             total = length(ids)
@@ -36,7 +38,7 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
         on.exit(pb$terminate(), add = TRUE)
     }
 
-    if(rlang::is_installed("furrr")){
+    if (rlang::is_installed("furrr")) {
         structure(
             furrr::future_map(ids, run_without, .options = furrr::furrr_options(seed = TRUE)),
             ids = ids
@@ -48,7 +50,6 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
         )
     }
 }
-
 
 
 #' Perform Jackknife Resampling on an Object
@@ -67,17 +68,17 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
 #' @examples
 #' \dontrun{
 #' object <-
-#' fit_SensIAT_within_group_model(
-#'     group.data = SensIAT_example_data,
-#'     outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
-#'     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-#'     id = Subject_ID,
-#'     outcome = Outcome,
-#'     time = Time,
-#'     intensity.args=list(bandwidth = 30),
-#'     knots = c(60,260,460),
-#'     End = 830
-#' )
+#'     fit_SensIAT_within_group_model(
+#'         group.data = SensIAT_example_data,
+#'         outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
+#'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+#'         id = Subject_ID,
+#'         outcome = Outcome,
+#'         time = Time,
+#'         intensity.args = list(bandwidth = 30),
+#'         knots = c(60, 260, 460),
+#'         End = 830
+#'     )
 #' jackknife.estimates <- jackknife(object, time = c(90, 180, 270, 360, 450))
 #' }
 
@@ -86,13 +87,13 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
 #' @param ... Additional arguments passed to the method.
 #'
 #' @export
-jackknife <- function(object, ...){
-    UseMethod('jackknife')
+jackknife <- function(object, ...) {
+    UseMethod("jackknife")
 }
 
 #' @describeIn jackknife Perform jackknife resampling on a `SensIAT_within_group_model` object.
 #' @export
-jackknife.SensIAT_within_group_model <- function(object, time, ...){
+jackknife.SensIAT_within_group_model <- function(object, time, ...) {
     replications <- cross_validate(object)
     summarize_jackknife_replications(replications, object, time, ...)
 }
@@ -100,31 +101,36 @@ SensIAT_jackknife <- jackknife.SensIAT_within_group_model
 
 #' @describeIn jackknife Perform jackknife resampling on a `SensIAT_fulldata_model` object.
 #' @export
-jackknife.SensIAT_fulldata_model <- function(object, time, ...){
+jackknife.SensIAT_fulldata_model <- function(object, time, ...) {
     SensIAT_jackknife_fulldata(object, time, ...)
 }
 
 
-summarize_jackknife_replications <- function(replications, original.object, time, ...){
-    original.estimates <- predict.SensIAT_within_group_model(original.object, time=time, ...)
-    estimates <- map(replications, predict.SensIAT_within_group_model, time=time,
-                     include.var=FALSE, base = original.object$base)
-    estimates |> bind_rows(.id='.rep') |>
+summarize_jackknife_replications <- function(replications, original.object, time, ...) {
+    original.estimates <- predict.SensIAT_within_group_model(original.object, time = time, ...)
+    estimates <- map(replications, predict.SensIAT_within_group_model,
+        time = time,
+        include.var = FALSE, base = original.object$base
+    )
+    estimates |>
+        bind_rows(.id = ".rep") |>
         group_by(alpha, time) |>
         summarize(
             # n = n(),
             jackknife_mean = mean(mean),
-            jackknife_var = (n()-1)/n() * sum((mean-mean(mean))^2),
-            , .groups='drop') |>
+            jackknife_var = (n() - 1) / n() * sum((mean - mean(mean))^2), ,
+            .groups = "drop"
+        ) |>
         ungroup() |>
-        full_join(original.estimates, by=c('alpha', 'time')) |>
-        add_class('SensIAT_withingroup_jackknife_results') |>
+        full_join(original.estimates, by = c("alpha", "time")) |>
+        add_class("SensIAT_withingroup_jackknife_results") |>
         structure(original.object = original.object)
 }
 
-SensIAT_jackknife_fulldata <- function(object, time, ...){
+SensIAT_jackknife_fulldata <- function(object, time, ...) {
     assertthat::assert_that(is.numeric(time), length(time) > 0,
-                            msg = "time must be a numeric vector of length > 0")
+        msg = "time must be a numeric vector of length > 0"
+    )
 
     replications_treatment <- cross_validate(object$treatment)
     replications_control <- cross_validate(object$control)
@@ -135,11 +141,12 @@ SensIAT_jackknife_fulldata <- function(object, time, ...){
     full_join(
         summary_treatment,
         summary_control,
-        by=c('time'),
-        suffix=c('_treatment', '_control'),
+        by = c("time"),
+        suffix = c("_treatment", "_control"),
         relationship = "many-to-many"
-    ) |> as_tibble() |>
-        add_class('SensIAT_fulldata_jackknife_results') |>
+    ) |>
+        as_tibble() |>
+        add_class("SensIAT_fulldata_jackknife_results") |>
         structure(
             original.object = object,
             summary_treatment = summary_treatment,

@@ -52,11 +52,11 @@
 #'
 #' @export
 extrapolate_from_last_observation <- function(
-    target_time,
-    data,
-    time_var,
-    slopes = NULL,
-    strict = TRUE
+  target_time,
+  data,
+  time_var,
+  slopes = NULL,
+  strict = TRUE
 ) {
     # Input validation
     if (!rlang::is_scalar_double(target_time)) {
@@ -167,11 +167,11 @@ extrapolate_from_last_observation <- function(
 #'
 #' @export
 extrapolate_from_last_observation_multiple <- function(
-    target_times,
-    data,
-    time_var,
-    slopes = NULL,
-    strict = TRUE
+  target_times,
+  data,
+  time_var,
+  slopes = NULL,
+  strict = TRUE
 ) {
     if (!is.numeric(target_times)) {
         rlang::abort("`target_times` must be a numeric vector")

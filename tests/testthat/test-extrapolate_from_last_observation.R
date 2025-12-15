@@ -41,7 +41,7 @@ test_that("extrapolate_from_last_observation works with partial slopes", {
         target_time = 4,
         data = df,
         time_var = "time",
-        slopes = c(x1 = 2)  # Only x1 has a slope
+        slopes = c(x1 = 2) # Only x1 has a slope
     )
 
     # x1 should be extrapolated: 16 + (4-3)*2 = 18
@@ -123,18 +123,18 @@ test_that("extrapolate_from_last_observation_multiple works with multiple time p
 
     # Check time = 3.5
     expect_equal(result$time[1], 3.5)
-    expect_equal(result$x1[1], 16 + (3.5 - 3) * 2)  # 17
-    expect_equal(result$x2[1], 6.5 + (3.5 - 3) * 0.5)  # 6.75
+    expect_equal(result$x1[1], 16 + (3.5 - 3) * 2) # 17
+    expect_equal(result$x2[1], 6.5 + (3.5 - 3) * 0.5) # 6.75
 
     # Check time = 4
     expect_equal(result$time[2], 4)
-    expect_equal(result$x1[2], 16 + (4 - 3) * 2)  # 18
-    expect_equal(result$x2[2], 6.5 + (4 - 3) * 0.5)  # 7.0
+    expect_equal(result$x1[2], 16 + (4 - 3) * 2) # 18
+    expect_equal(result$x2[2], 6.5 + (4 - 3) * 0.5) # 7.0
 
     # Check time = 5
     expect_equal(result$time[3], 5)
-    expect_equal(result$x1[3], 16 + (5 - 3) * 2)  # 20
-    expect_equal(result$x2[3], 6.5 + (5 - 3) * 0.5)  # 7.5
+    expect_equal(result$x1[3], 16 + (5 - 3) * 2) # 20
+    expect_equal(result$x2[3], 6.5 + (5 - 3) * 0.5) # 7.5
 })
 
 test_that("extrapolate_from_last_observation validates inputs correctly", {
@@ -182,7 +182,7 @@ test_that("extrapolate_from_last_observation validates inputs correctly", {
             target_time = 4,
             data = df,
             time_var = "time",
-            slopes = c(2)  # Unnamed
+            slopes = c(2) # Unnamed
         ),
         "must be a named numeric vector"
     )
@@ -225,7 +225,7 @@ test_that("extrapolate_from_last_observation handles edge cases", {
         strict = FALSE
     )
     # Should use first observation
-    expect_equal(result_early$x1, 10 + (-1 - 0) * 2)  # 8
+    expect_equal(result_early$x1, 10 + (-1 - 0) * 2) # 8
     expect_equal(attr(result_early, "source_period"), 1)
 
     # Target time before all observations (with strict = TRUE) should error
@@ -255,8 +255,8 @@ test_that("extrapolate_from_last_observation handles single-row data", {
         slopes = c(x1 = 2, x2 = 0.5)
     )
 
-    expect_equal(result$x1, 10 + (3 - 1) * 2)  # 14
-    expect_equal(result$x2, 5 + (3 - 1) * 0.5)  # 6
+    expect_equal(result$x1, 10 + (3 - 1) * 2) # 14
+    expect_equal(result$x2, 5 + (3 - 1) * 0.5) # 6
     expect_equal(result$time, 3)
 })
 
@@ -271,7 +271,7 @@ test_that("extrapolate_from_last_observation handles zero slopes", {
         target_time = 5,
         data = df,
         time_var = "time",
-        slopes = c(x1 = 0, x2 = 0)  # Zero slopes = carry forward
+        slopes = c(x1 = 0, x2 = 0) # Zero slopes = carry forward
     )
 
     expect_equal(result$x1, 16)
@@ -290,10 +290,10 @@ test_that("extrapolate_from_last_observation handles negative slopes", {
         target_time = 5,
         data = df,
         time_var = "time",
-        slopes = c(x1 = 2, x2 = -1)  # x2 decreasing
+        slopes = c(x1 = 2, x2 = -1) # x2 decreasing
     )
 
-    expect_equal(result$x1, 16 + (5 - 3) * 2)  # 20
-    expect_equal(result$x2, 7 + (5 - 3) * (-1))  # 5
+    expect_equal(result$x1, 16 + (5 - 3) * 2) # 20
+    expect_equal(result$x2, 7 + (5 - 3) * (-1)) # 5
     expect_equal(result$time, 5)
 })

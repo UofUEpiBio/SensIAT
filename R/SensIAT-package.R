@@ -71,5 +71,7 @@
 ## usethis namespace: end
 NULL
 
-globalVariables(c('..id..', '..time..', '..outcome..', '..prev_outcome..',
-                  '..visit_number..', '..delta_time..', '..prev_time..'))
+globalVariables(c(
+    "..id..", "..time..", "..outcome..", "..prev_outcome..",
+    "..visit_number..", "..delta_time..", "..prev_time.."
+))
