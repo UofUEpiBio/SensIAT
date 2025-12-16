@@ -4,11 +4,13 @@
 \alias{autoplot.SensIAT_withingroup_jackknife_results}
 \title{Plot Estimates at Given Times for \code{SensIAT_withingroup_jackknife_results} Objects}
 \usage{
-\method{autoplot}{SensIAT_withingroup_jackknife_results}(object, width = NULL, ...)
+\method{autoplot}{SensIAT_withingroup_jackknife_results}(object, level = 0.95, width = NULL, ...)
 }
 \arguments{
 \item{object}{A \code{SensIAT_withingroup_jackknife_results} object produced from
 \code{SensIAT_jackknife}.}
+
+\item{level}{Significance level of the confidence interval.}
 
 \item{width}{Width of the dodge for position, default is half the minimum
 distance between time evaluation points.}
@@ -21,7 +23,7 @@ A \code{ggplot2} object.
 \description{
 Horizontal axis represents time, and the vertical axis represents the outcome
 from the model. Point plotted is the mean estimate, and the error bars
-show the 95\% confidence interval using the variance estimated from the jackknife.
+show the \code{level} confidence interval using the variance estimated from the jackknife.
 }
 \examples{
 # Note: fitting the jackknife is computationally expensive,
