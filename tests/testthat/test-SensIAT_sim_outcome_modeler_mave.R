@@ -1,5 +1,6 @@
 # Helper to create small test dataset (10 subjects instead of 200)
 create_small_mave_data <- function(n_subjects = 10) {
+    data("SensIAT_example_data", package = "SensIAT", envir = environment())
     small_subjects <- head(unique(SensIAT_example_data$Subject_ID), n_subjects)
     SensIAT_example_data |>
         dplyr::filter(Subject_ID %in% small_subjects)
@@ -30,8 +31,6 @@ run_MAVE_expectations <- function(mave.model) {
     }
 }
 test_that("MAVE: ise vs. mse", {
-    testthat::skip_on_cran()
-
     small_data <- create_small_mave_data(10)
 
     object.mave.ise <-
@@ -68,8 +67,6 @@ test_that("MAVE: ise vs. mse", {
     )
 })
 test_that("MAVE: grid vs. optim", {
-    testthat::skip_on_cran()
-
     small_data <- create_small_mave_data(10)
 
     # Test just one method to verify it works
@@ -91,8 +88,6 @@ test_that("MAVE: grid vs. optim", {
     expect_equal(sum(object.mave.optimize$models$outcome$coefficients^2), 1)
 })
 test_that("MAVE: reestimate.coef", {
-    testthat::skip_on_cran()
-
     small_data <- create_small_mave_data(10)
 
     # Test without coefficient reestimation
