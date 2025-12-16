@@ -1,4 +1,10 @@
 ##### This function defined by MingYueh
+#' @keywords internal
+# nocov start
+# Note: This is the original reference implementation, kept for documentation
+# and validation purposes. The active implementation used by the package is
+# SIDR_Ravinew (for fixed coefficient models). This function is exempt from
+# test coverage requirements as it serves as a reference baseline.
 SIDRnew <- function(X, Y,
                     Y.CP = NULL,
                     initial = NULL,
@@ -316,7 +322,11 @@ SIDRnew <- function(X, Y,
 
     return(results)
 }
+# nocov end
 
+#' Fit Single Index Dimension Reduction with Fixed Bandwidth
+#'
+#' @keywords internal
 SIDRnew_fixed_bandwidth <-
     function(X, Y, ids,
              Y.CP = NULL,
