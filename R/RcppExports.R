@@ -174,7 +174,7 @@ pcoriaccel_evaluate_basis_mat <- function(spline_basis, x) {
 #' @param patient_data Patient data object (passed to R functions)
 #' @param tol Convergence tolerance
 #' @return List of integration results, one per alpha value
-#' @export
+#' @keywords internal
 integrate_term2_vectorized_alpha <- function(compute_expected_values_fn, impute_fn, weight_fn, marginal_mean_fn, alpha_vec, tmin, tmax, patient_data, tol = 1.490116e-08) {
     .Call(`_SensIAT_integrate_term2_vectorized_alpha`, compute_expected_values_fn, impute_fn, weight_fn, marginal_mean_fn, alpha_vec, tmin, tmax, patient_data, tol)
 }

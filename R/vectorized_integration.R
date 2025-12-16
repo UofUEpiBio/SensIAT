@@ -23,7 +23,7 @@
 #'   \item{alpha}{Alpha value}
 #'   \item{converged}{Convergence status}
 #'
-#' @export
+#' @keywords internal
 compute_term2_influence_vectorized <- function(
   patient_data,
   outcome_model,
@@ -202,7 +202,7 @@ compute_term2_influence_vectorized <- function(
 #'
 #' @return List with comparison results and diagnostics
 #'
-#' @export
+#' @keywords internal
 compare_term2_methods <- function(
   patient_data,
   outcome_model,

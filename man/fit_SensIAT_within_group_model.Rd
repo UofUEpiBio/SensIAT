@@ -126,7 +126,7 @@ model <-
         outcome = Outcome,
         time = Time,
         End = 830,
-        knots = c(60,260,460),
+        knots = c(60, 260, 460),
     )
 }
 }

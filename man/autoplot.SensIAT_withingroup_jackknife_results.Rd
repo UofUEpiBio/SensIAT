@@ -28,17 +28,17 @@ show the 95\% confidence interval using the variance estimated from the jackknif
 #       so this example is here for reference.
 \dontrun{
 fitted <-
-fit_SensIAT_within_group_model(
-    group.data = SensIAT_example_data,
-    outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
-    alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-    id = Subject_ID,
-    outcome = Outcome,
-    time = Time,
-    intensity.args=list(bandwidth = 30),
-    knots = c(60,260,460),
-    End = 830
-)
+    fit_SensIAT_within_group_model(
+        group.data = SensIAT_example_data,
+        outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
+        alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+        id = Subject_ID,
+        outcome = Outcome,
+        time = Time,
+        intensity.args = list(bandwidth = 30),
+        knots = c(60, 260, 460),
+        End = 830
+    )
 jackknife.estimates <- SensIAT_jackknife(fitted, time = c(90, 180, 270, 360, 450))
 ggplot2::autoplot(jackknife.estimates)
 }

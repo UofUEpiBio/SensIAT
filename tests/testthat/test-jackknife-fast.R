@@ -12,7 +12,7 @@ create_small_test_data <- function(n_subjects = 10) {
 
 # Strategy 2: Use a simpler, faster model for testing basic jackknife functionality
 test_that("jackknife basic functionality with small dataset", {
-    skip_on_cran()
+    # skip_on_cran()
 
     # Create small test data (10 subjects instead of 200)
     small_data <- create_small_test_data(10)
@@ -46,7 +46,7 @@ test_that("jackknife basic functionality with small dataset", {
 
 # Strategy 3: Test parallelization with very small data
 test_that("jackknife parallelization with minimal data", {
-    skip_on_cran()
+    # skip_on_cran()
 
     # Use only 5 subjects for parallelization test
     tiny_data <- create_small_test_data(5)
@@ -81,7 +81,7 @@ test_that("jackknife parallelization with minimal data", {
 
 # Strategy 4: Mock/stub testing for complex scenarios
 test_that("jackknife computation logic with mocked data", {
-    skip_on_cran()
+    # skip_on_cran()
 
     # Test the summarization logic separately from the expensive model fitting
     # This tests the mathematical correctness without the computational burden
@@ -128,7 +128,7 @@ test_that("jackknife computation logic with mocked data", {
 
 # Strategy 5: Integration test with reduced scope
 test_that("jackknife integration with medium dataset", {
-    skip_on_cran()
+    # skip_on_cran()
 
     # This test runs occasionally with more subjects but still much faster than full test
     # Use testthat::skip() to control when this runs

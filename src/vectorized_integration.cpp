@@ -238,7 +238,7 @@ List vectorized_adaptive_simpson(
 //' @param patient_data Patient data object (passed to R functions)
 //' @param tol Convergence tolerance
 //' @return List of integration results, one per alpha value
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 List integrate_term2_vectorized_alpha(
     Function compute_expected_values_fn,

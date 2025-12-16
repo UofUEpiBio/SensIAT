@@ -13,7 +13,7 @@ fit_SensIAT_marginal_mean_model_generalized(
   outcome.model,
   intensity.model,
   impute_data,
-  loss = c("lp_mse", "mean_mse", "quasi-likelihood"),
+  loss = c("lp_mse", "quasi-likelihood"),
   link = c("identity", "log", "logit"),
   spline.degree = 3L,
   ...,
@@ -45,9 +45,44 @@ fit_SensIAT_marginal_mean_model_generalized(
 \item{term2_method}{Method for computing term2 influence components. Options are "fast" (default, optimized closure-based integrand) and "original" (standard implementation).}
 }
 \description{
-Fit the marginal mean model for generalize outcomes.
+This function uses adaptive Simpson's rule for integration and supports multiple
+outcome model types (single-index, GLM, linear models) through the generic
+\code{compute_SensIAT_expected_values} interface. The implementation includes
+numerical stability improvements (exp(-μ) multiplication vs division) and
+caching optimizations for repeated expected value computations.
+}
+\details{
+\subsection{Integration Method}{
+
+The function uses adaptive Simpson's quadrature (\code{pcoriaccel_integrate_simp})
+for numerical integration, which automatically adjusts step sizes based on
+local function behavior.
+}
+
+\subsection{Outcome Model Compatibility}{
+
+Unlike simulation code that assumes specific single-index model formulas, this
+function supports any outcome model with a \code{compute_SensIAT_expected_values}
+method, including:
+\itemize{
+\item Single-index models (\verb{fit_SensIAT_single_index_*_model})
+\item Generalized linear models (GLM)
+\item Linear models (LM)
+\item Negative binomial models
+}
+}
+
+\subsection{Performance Optimizations}{
+\itemize{
+\item Expected values for term1 are cached (depend only on alpha, not beta)
+\item Weight functions use numerically stable exp(-μ) multiplication
+\item Fast method uses closure-based integration with reduced allocations
+}
+}
 }
 \examples{
+library(survival)
+
 data_with_lags <- SensIAT_example_data |>
     dplyr::group_by(Subject_ID) |>
     dplyr::mutate(
@@ -59,32 +94,37 @@ data_with_lags <- SensIAT_example_data |>
 # Create the observation time intensity model
 intensity.model <-
     coxph(Surv(..prev_time.., Time, !is.na(Outcome)) ~ ..prev_outcome.. + strata(Visit),
-    data = data_with_lags |> dplyr::filter(.data$Time > 0))
+        data = data_with_lags |> dplyr::filter(.data$Time > 0)
+    )
 
 # Create the observed outcome model
 outcome.model <-
     fit_SensIAT_single_index_fixed_coef_model(
-        Outcome ~ ns(..prev_outcome.., df=3) + ..delta_time.. - 1,
+        Outcome ~ ns(..prev_outcome.., df = 3) + ..delta_time.. - 1,
         id = Subject_ID,
-        data = data_with_lags |> filter(Time > 0))
+        data = data_with_lags |> filter(Time > 0)
+    )
 fit_SensIAT_marginal_mean_model_generalized(
-   data = data_with_lags,
-   time = data_with_lags$Time,
-   id = data_with_lags$Subject_ID,
-   alpha = 0,
-   knots = c(60, 260, 460),
-   outcome.model = outcome.model,
-   intensity.model = intensity.model,
-   loss = 'lp_mse',
-   link = 'log',
-   impute_data = \(t, df){
-    data_wl <- df |>
-           mutate(..prev_time.. = Time,
-                  ..prev_outcome.. = Outcome,
-                  ..delta_time.. = 0)
-       extrapolate_from_last_observation(t, data_wl, 'Time', slopes = c('..delta_time..' = 1))
-   })
-time = data_with_lags$Time
-id = data_with_lags$Subject_ID
+    data = data_with_lags,
+    time = data_with_lags$Time,
+    id = data_with_lags$Subject_ID,
+    alpha = 0,
+    knots = c(60, 260, 460),
+    outcome.model = outcome.model,
+    intensity.model = intensity.model,
+    loss = "lp_mse",
+    link = "log",
+    impute_data = \(t, df){
+        data_wl <- df |>
+            mutate(
+                ..prev_time.. = Time,
+                ..prev_outcome.. = Outcome,
+                ..delta_time.. = 0
+            )
+        extrapolate_from_last_observation(t, data_wl, "Time", slopes = c("..delta_time.." = 1))
+    }
+)
+time <- data_with_lags$Time
+id <- data_with_lags$Subject_ID
 
 }

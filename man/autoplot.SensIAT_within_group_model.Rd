@@ -29,10 +29,10 @@ object <-
         id = Subject_ID,
         outcome = Outcome,
         time = Time,
-        knots = c(60,260,460),
+        knots = c(60, 260, 460),
         End = 830,
         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-        intensity.args=list(bandwidth=30)
+        intensity.args = list(bandwidth = 30)
     )
 ggplot2::autoplot(object) +
     # Title not included

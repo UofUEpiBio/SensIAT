@@ -2,7 +2,6 @@
 test_debug <- Sys.getenv("SENSIAT_TEST_DEBUG", "0") == "1"
 
 test_that("vectorized integration matches original for alpha = 0", {
-    skip_on_cran()
     # Re-enabled after fixing weight function to use B(t) instead of V_inv %*% B(t)
 
     # Use exact setup from test-influence_term2.R

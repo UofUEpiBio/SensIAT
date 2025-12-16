@@ -75,9 +75,9 @@ The \link[stats:integrate]{stats::integrate} method is used to compute the condi
 
 }}
 \examples{
-model <- lm(mpg ~ as.factor(cyl)+disp+wt, data=mtcars)
-compute_SensIAT_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
-model <- glm(cyl ~ mpg+disp+wt, data=mtcars, family=poisson())
-compute_SensIAT_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ]) |>
-    dplyr::mutate('E(y|alpha)' = .data$E_Yexp_alphaY/.data$E_exp_alphaY)
+model <- lm(mpg ~ as.factor(cyl) + disp + wt, data = mtcars)
+compute_SensIAT_expected_values(model, alpha = c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
+model <- glm(cyl ~ mpg + disp + wt, data = mtcars, family = poisson())
+compute_SensIAT_expected_values(model, alpha = c(-0.3, 0, 0.3), new.data = mtcars[1:5, ]) |>
+    dplyr::mutate("E(y|alpha)" = .data$E_Yexp_alphaY / .data$E_exp_alphaY)
 }

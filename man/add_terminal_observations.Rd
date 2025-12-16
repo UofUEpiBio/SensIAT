@@ -37,11 +37,13 @@ other variables as \code{NA}.
 }
 \examples{
 exdata <- tibble::tibble(
-  patient = rep(1:3, 3:5),
-  day = c(0, 30, 60,
-          0, 30, 60, 90,
-          0, 30, 60, 90, 120),
-  value = TRUE
+    patient = rep(1:3, 3:5),
+    day = c(
+        0, 30, 60,
+        0, 30, 60, 90,
+        0, 30, 60, 90, 120
+    ),
+    value = TRUE
 )
 add_terminal_observations(exdata, patient, day)
 }
