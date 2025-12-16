@@ -77,14 +77,14 @@ compute_influence_for_one_alpha_and_one_patient <-
                     expected_value = expected_value, base = base,
                     resolution.within.period = control$resolution.within.period,
                     variables = variables, ...
-                ) |> as.vector()
+                )
             } else if (control$integration.method == "numerical") {
                 numerically_integrate_influence_term_2_for_one_alpha_and_one_patient(
                     df_i, expected_value,
                     base = base,
                     resolution = control$resolution,
                     variables = variables, ...
-                ) |> as.vector()
+                )
                 # } else if (control$integration.method == 'linear') {
                 #     compute_influence_term_2_linearly(
                 #         df_i, expected_value, base=base,

@@ -314,7 +314,7 @@ Cond_mean_fn_single2 <-
             E_Yexp_alphaY[k] <- temp$E_Yexp_alphaY
         }
 
-        tibble(new.data, alpha, E_Yexp_alphaY, E_exp_alphaY)
+        tibble(new.data, alpha, E_Y_past, E_Yexp_alphaY, E_exp_alphaY)
     }
 
 

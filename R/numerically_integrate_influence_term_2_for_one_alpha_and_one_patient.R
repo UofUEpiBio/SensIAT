@@ -3,6 +3,7 @@ numerically_integrate_influence_term_2_for_one_alpha_and_one_patient <-
              expected_value,
              base,
              variables,
+             centering,
              resolution = 1000,
              a = min(base@knots),
              b = max(base@knots),
@@ -11,16 +12,18 @@ numerically_integrate_influence_term_2_for_one_alpha_and_one_patient <-
         B <- evaluate(base, eval.times)
         spline_df_est <-
             bind_rows(
-                impute_patient_df(head(eval.times, 1), df_i, variables = variables, ..., right = FALSE),
-                impute_patient_df(tail(eval.times, -1), df_i, variables = variables, ..., right = TRUE)
+                impute_patient_df(head(eval.times, 1), df_i, variables = variables, centering = centering, right = FALSE),
+                impute_patient_df(tail(eval.times, -1), df_i, variables = variables, centering = centering, right = TRUE)
             )
 
 
         Ey <- expected_value(spline_df_est)
         dt <- diff(pull(spline_df_est, variables$time))
 
-        crossprod(head(B, -1), head(Ey, -1) * dt) / 2 +
-            crossprod(tail(B, -1), tail(Ey, -1) * dt) / 2
+        as.vector(
+            crossprod(head(B, -1), head(Ey, -1) * dt) / 2 +
+                crossprod(tail(B, -1), tail(Ey, -1) * dt) / 2
+        )
     }
 
 numerically_integrate_influence_term_2_for_one_alpha_and_one_patient_piecewise <-
