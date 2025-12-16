@@ -50,3 +50,4 @@ add_terminal_observations(exdata, patient, day)
 \seealso{
 \code{\link[tidyr:complete]{tidyr::complete()}}
 }
+\keyword{internal}

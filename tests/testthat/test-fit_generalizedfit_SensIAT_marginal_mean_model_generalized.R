@@ -1,4 +1,4 @@
-test_that("multiplication works", {
+test_that("fit_SensIAT_marginal_mean_model_generalized works", {
     data_with_lags <- SensIAT_example_data |>
         dplyr::group_by(Subject_ID) |>
         dplyr::mutate(

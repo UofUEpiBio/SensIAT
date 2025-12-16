@@ -23,6 +23,8 @@
 #'
 #' For variables not specified in `slopes`, the last observed value is used (slope = 0).
 #'
+#' @keywords internal
+#'
 #' @examples
 #' # Create example data
 #' df <- data.frame(
@@ -50,7 +52,7 @@
 #' )
 #' # Expected: x1 = 16 + (4-3)*2 = 18, x2 = 6.5 (carried forward), id = 1
 #'
-#' @export
+#' @keywords internal
 extrapolate_from_last_observation <- function(
   target_time,
   data,
@@ -165,7 +167,7 @@ extrapolate_from_last_observation <- function(
 #'     slopes = c(x1 = 2, x2 = 0.5)
 #' )
 #'
-#' @export
+#' @keywords internal
 extrapolate_from_last_observation_multiple <- function(
   target_times,
   data,

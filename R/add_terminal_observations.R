@@ -24,7 +24,7 @@
 #'     value = TRUE
 #' )
 #' add_terminal_observations(exdata, patient, day)
-#' @export
+#' @keywords internal
 add_terminal_observations <-
     function(data, id, time, end = max(pull(data, {{ time }}))) {
         id <- rlang::ensym(id)

@@ -70,3 +70,4 @@ extrapolate_from_last_observation(
 # Expected: x1 = 16 + (4-3)*2 = 18, x2 = 6.5 (carried forward), id = 1
 
 }
+\keyword{internal}

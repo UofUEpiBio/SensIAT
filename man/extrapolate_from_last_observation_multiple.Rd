@@ -49,3 +49,4 @@ extrapolate_from_last_observation_multiple(
 )
 
 }
+\keyword{internal}

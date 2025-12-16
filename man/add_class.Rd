@@ -11,11 +11,16 @@ add_class(x, class)
 
 \item{class}{A character vector of class names to be added.}
 }
+\value{
+The object with the new class(es) prepended to existing classes.
+}
 \description{
-Adds an S3 class to an object
+This is a utility function for working with the S3 class system only.
+It does not work with S4 or R6 class systems.
 }
 \examples{
-add_class(TRUE, "flag")
-
+# Internal use only
+obj <- add_class(list(a = 1), "my_class")
+class(obj)  # c("my_class", "list")
 }
 \keyword{internal}
