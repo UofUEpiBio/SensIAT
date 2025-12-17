@@ -26,6 +26,7 @@
 #' @param patient_outcomes Numeric vector of outcomes aligned with patient_times
 #' @param marginal_beta Coefficients (beta) for the marginal mean spline basis
 #' @param V_inv Precomputed inverse Gram matrix for base (optional; computed if NULL)
+#' @param W Weight function W(t, beta)
 #' @return A function f(t) computing the term2 integrand at scalar t
 #' @export
 make_term2_integrand_fast <- function(
@@ -35,7 +36,8 @@ make_term2_integrand_fast <- function(
   patient_times,
   patient_outcomes,
   marginal_beta,
-  V_inv = NULL
+  V_inv = NULL,
+  W = NULL
 ) {
     stopifnot(is.numeric(patient_times), is.numeric(patient_outcomes))
     stopifnot(length(patient_times) == length(patient_outcomes))
@@ -90,11 +92,19 @@ make_term2_integrand_fast <- function(
     }
 
     # Fast helpers
-    # Weight function W(t, beta) used by lp_mse/log link in current implementation
-    W_fun <- function(t) {
-        B <- as.vector(pcoriaccel_evaluate_basis(base, t))
-        mu <- sum(B * marginal_beta) # linear predictor on link scale per current code
-        (V_inv %*% B) * exp(-mu)
+    # Weight function W(t, beta)
+    if (is.null(W)) {
+        # Default: lp_mse/log link W function for backward compatibility
+        W_fun <- function(t) {
+            B <- as.vector(pcoriaccel_evaluate_basis(base, t))
+            mu <- sum(B * marginal_beta) # linear predictor on link scale
+            (V_inv %*% B) * exp(-mu)
+        }
+    } else {
+        # Use provided W function
+        W_fun <- function(t) {
+            W(t, marginal_beta)
+        }
     }
 
     # Build integrand closure (no data.frame allocations per call)

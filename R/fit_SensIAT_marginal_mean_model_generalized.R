@@ -166,6 +166,20 @@ fit_SensIAT_marginal_mean_model_generalized <-
                 d1.inv.link <- function(eta) {
                     exp(eta) / ((1 + exp(eta))^2)
                 }
+                V <- GramMatrix(base)
+                V.inv <- solve(V)
+
+                W <- function(t, beta) {
+                    B <- pcoriaccel_evaluate_basis(base, t)
+                    eta <- as.numeric(B %*% beta)
+                    # For logit link: dg/dz = 1/[z(1-z)]
+                    # Evaluated at z = s(eta) = exp(eta)/(1+exp(eta))
+                    # s(eta)(1-s(eta)) = exp(eta)/(1+exp(eta))^2
+                    # So 1/[s(eta)(1-s(eta))] = (1+exp(eta))^2/exp(eta)
+                    # W_1 = V^{-1} B(t) * (1+exp(eta))^2 / exp(eta)
+                    # For numerical stability, rewrite as: V^{-1} B(t) * (1 + 2*exp(-eta) + exp(-2*eta))
+                    as.vector((V.inv %*% B) * (1 + exp(eta))^2 / exp(eta))
+                }
             } else {
                 stop("Unsupported link function for lp_mse loss.")
             }
@@ -247,7 +261,8 @@ fit_SensIAT_marginal_mean_model_generalized <-
                         tmin = tmin,
                         tmax = tmax,
                         impute_fn = impute_data,
-                        inv_link = inv.link
+                        inv_link = inv.link,
+                        W = W
                     )
                 } else {
                     compute_term2_influence_original(
@@ -260,7 +275,8 @@ fit_SensIAT_marginal_mean_model_generalized <-
                         tmin = tmin,
                         tmax = tmax,
                         impute_fn = impute_data,
-                        inv_link = inv.link
+                        inv_link = inv.link,
+                        W = W
                     )
                 }
             }

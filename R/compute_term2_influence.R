@@ -43,6 +43,7 @@
 #' @param tmax Upper integration bound
 #' @param impute_fn Function to impute data at time t: impute_fn(t, patient_data) -> data.frame
 #' @param inv_link Inverse link function (e.g., exp for log link)
+#' @param W Weight function W(t, beta)
 #'
 #' @return Numeric vector of length ncol(base) with term2 influence values
 #'
@@ -57,14 +58,9 @@ compute_term2_influence_original <- function(
   tmin,
   tmax,
   impute_fn,
-  inv_link
+  inv_link,
+  W
 ) {
-    # Weight function W(t, beta)
-    W <- function(t, beta) {
-        B <- as.vector(pcoriaccel_evaluate_basis(base, t))
-        mu <- sum(B * beta)
-        as.vector((V_inv %*% B) * exp(-mu))
-    }
 
     # Integrand
     term2_integrand <- function(t) {
@@ -107,7 +103,8 @@ compute_term2_influence_fast <- function(
   tmin,
   tmax,
   impute_fn,
-  inv_link
+  inv_link,
+  W
 ) {
     # Extract outcome variable name from the model formula
     outcome_var <- as.character(rlang::f_lhs(formula(outcome_model)))
@@ -152,7 +149,8 @@ compute_term2_influence_fast <- function(
         patient_times = patient_times,
         patient_outcomes = patient_outcomes,
         marginal_beta = marginal_beta,
-        V_inv = V_inv
+        V_inv = V_inv,
+        W = W
     )
 
     # Split integration into segments at observation times to handle discontinuities

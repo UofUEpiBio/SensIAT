@@ -76,7 +76,8 @@ $$
 g(\mu) = \log(\mu),
 $$
 
-$$\frac{\partial g(z)}{\partial z} = \frac{1}{z},$$ 
+$\frac{\partial g(z)}{\partial z} = \frac{1}{z}$, 
+
 $$ 
 W_1(t;\boldsymbol{\beta}) = 
     \frac{\boldsymbol{V}_1^{-1}\boldsymbol{B}(t)} {\boldsymbol{B}(t)^\prime \boldsymbol{\beta}}.
@@ -88,12 +89,11 @@ $$
 ### Logit Link
 For the logit link,
 $$
-g(\mu) = \log\left(\frac{\mu}{1-\mu}\right),
-$$
-$$\frac{\partial g(z)}{\partial z} = \frac{1}{z(1-z)},
-$$ 
-$$ 
-W_1(t;\boldsymbol{\beta}) = \boldsymbol{V}_1^{-1}\boldsymbol{B}(t) \left\{\boldsymbol{B}(t)^\prime \boldsymbol{\beta} \left(1-\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)\right\}^{-1}.
+\begin{align}
+g(\mu) &= \log\left(\frac{\mu}{1-\mu}\right), \\
+\frac{\partial g(z)}{\partial z} &= \frac{1}{z(1-z)}, \\
+W_1(t;\boldsymbol{\beta}) &= \frac{\boldsymbol{V}_1^{-1}\boldsymbol{B}(t)}{\boldsymbol{B}(t)^\prime \boldsymbol{\beta} \left(1-\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)}.
+\end{align}
 $$
 
 ## Squared error loss in the original space

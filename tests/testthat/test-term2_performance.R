@@ -1,6 +1,6 @@
 test_that("term2 original and fast methods produce identical results", {
     # Skip on CRAN to avoid long-running tests
-    skip_on_cran()
+    # skip_on_cran()
 
     # Setup test data
     data_with_lags <- SensIAT_example_data |>
@@ -56,6 +56,13 @@ test_that("term2 original and fast methods produce identical results", {
     # Inverse link (log link)
     inv_link <- exp
 
+    # Weight function for lp_mse + log
+    W <- function(t, beta) {
+        B <- as.vector(pcoriaccel_evaluate_basis(base, t))
+        mu <- sum(B * beta)
+        as.vector((V.inv %*% B) * exp(-mu))
+    }
+
     # Test on first 3 patients
     test_ids <- unique(data_with_lags$Subject_ID)[1:3]
 
@@ -81,7 +88,8 @@ test_that("term2 original and fast methods produce identical results", {
             tmin = tmin,
             tmax = tmax,
             impute_fn = impute_data_fn,
-            inv_link = inv_link
+            inv_link = inv_link,
+            W = W
         )
         timings_original[i] <- proc.time()[3] - t_start
 
@@ -97,7 +105,8 @@ test_that("term2 original and fast methods produce identical results", {
             tmin = tmin,
             tmax = tmax,
             impute_fn = impute_data_fn, # Not used by fast, but included for interface consistency
-            inv_link = inv_link # Not used by fast, but included for interface consistency
+            inv_link = inv_link, # Not used by fast, but included for interface consistency
+            W = W
         )
         timings_fast[i] <- proc.time()[3] - t_start
     }

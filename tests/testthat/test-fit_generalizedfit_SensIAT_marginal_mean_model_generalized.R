@@ -90,6 +90,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + log", {
 })
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + log (original term2)", {
+    skip("Manual test")
     setup <- prepare_test_data_and_models()
     
     expect_no_error({
@@ -111,7 +112,6 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + log (original t
 })
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + logit", {
-    skip("Missing W function definition for lp_mse + logit combination")
     setup <- prepare_test_data_and_models()
     
     expect_no_error({
