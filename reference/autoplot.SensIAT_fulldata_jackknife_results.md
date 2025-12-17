@@ -2,15 +2,15 @@
 
 The horizontal and vertical axes represent the sensitivity parameter
 `alpha` for the control and treatment groups, respectively. The plot
-shows at each combination of `alpha` values zero if the 95% confidence
-interval contains zero, otherwise the bound of the confidence interval
-that is closest to zero.
+shows at each combination of `alpha` values zero if the `level`
+confidence interval contains zero, otherwise the bound of the confidence
+interval that is closest to zero.
 
 ## Usage
 
 ``` r
 # S3 method for class 'SensIAT_fulldata_jackknife_results'
-autoplot(object, ..., include.rugs = NA)
+autoplot(object, level = 0.05, ..., include.rugs = NA)
 ```
 
 ## Arguments
@@ -18,6 +18,10 @@ autoplot(object, ..., include.rugs = NA)
 - object:
 
   A `SensIAT_fulldata_jackknife_results` object.
+
+- level:
+
+  Significance level of the confidence interval.
 
 - ...:
 

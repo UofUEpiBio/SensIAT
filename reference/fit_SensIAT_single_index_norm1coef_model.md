@@ -5,9 +5,8 @@ Single index model estimation using minimum average variance estimation
 selected by minimization of the cross-validated pseudo-integrated
 squared error. Optionally, the initial coefficients of the outcome model
 can be re-estimated by optimization on a spherical manifold. This option
-requires the
-[ManifoldOptim](https://rdrr.io/pkg/ManifoldOptim/man/manifold.optim.html)
-package.
+requires the ManifoldOptim package (see
+[`ManifoldOptim::manifold.optim`](https://rdrr.io/pkg/ManifoldOptim/man/manifold.optim.html)).
 
 ## Usage
 

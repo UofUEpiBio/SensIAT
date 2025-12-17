@@ -2,14 +2,14 @@
 
 Horizontal axis represents time, and the vertical axis represents the
 outcome from the model. Point plotted is the mean estimate, and the
-error bars show the 95% confidence interval using the variance estimated
-from the jackknife.
+error bars show the `level` confidence interval using the variance
+estimated from the jackknife.
 
 ## Usage
 
 ``` r
 # S3 method for class 'SensIAT_withingroup_jackknife_results'
-autoplot(object, width = NULL, ...)
+autoplot(object, level = 0.95, width = NULL, ...)
 ```
 
 ## Arguments
@@ -18,6 +18,10 @@ autoplot(object, width = NULL, ...)
 
   A `SensIAT_withingroup_jackknife_results` object produced from
   `SensIAT_jackknife`.
+
+- level:
+
+  Significance level of the confidence interval.
 
 - width:
 
