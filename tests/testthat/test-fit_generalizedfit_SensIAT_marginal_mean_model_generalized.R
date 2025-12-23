@@ -109,15 +109,15 @@ create_impute_fn <- function() {
 # lp_mse tests use normal data (identity link would work but delegates to old function)
 # quasi-likelihood tests use appropriate data types for the link function
 
-test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + identity", {
-    skip("Identity link delegates to fit_SensIAT_marginal_mean_model with API mismatch")
-    setup <- generate_normal_test_data()
+test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + identity matches original", {
+    setup <- generate_test_data(link = "identity", n_subjects = 20)
     
-    expect_no_error({
+    # Fit using generalized version with identity link
+    result_generalized <- suppressWarnings({
         fit_SensIAT_marginal_mean_model_generalized(
             data = setup$data,
-            time = setup$data$Time,
-            id = setup$data$Subject_ID,
+            time = ..time..,
+            id = ..id..,
             alpha = 0,
             knots = setup$knots,
             outcome.model = setup$outcome.model,
@@ -125,10 +125,35 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + identity", {
             loss = "lp_mse",
             link = "identity",
             impute_data = create_impute_fn(),
-            BBsolve.control = list(maxit = 5, tol = 1e-3),
+            BBsolve.control = list(maxit = 10, tol = 1e-4),
             term2_method = "fast"
         )
-    })
+    }, classes = "simpleWarning")
+    
+    # Fit using original version
+    result_original <- fit_SensIAT_marginal_mean_model(
+        data = setup$data,
+        alpha = 0,
+        knots = setup$knots,
+        intensity.model = setup$intensity.model,
+        outcome.model = setup$outcome.model,
+        spline.degree = 3
+    )
+    
+    # Compare coefficients
+    expect_equal(result_generalized$coefficients, result_original$coefficients, 
+                 tolerance = 1e-3, 
+                 info = "Coefficients should match between generalized and original")
+    
+    # Compare coefficient variance
+    expect_equal(result_generalized$coefficient.variance, result_original$coefficient.variance,
+                 tolerance = 1e-3,
+                 info = "Coefficient variance should match between generalized and original")
+    
+    # Compare influence values
+    expect_equal(result_generalized$influence, result_original$influence,
+                 tolerance = 1e-3,
+                 info = "Influence values should match between generalized and original")
 })
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + log", {
