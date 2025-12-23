@@ -118,14 +118,21 @@ make_term2_integrand_fast <- function(
         delta_time <- t - patient_times[idx]
 
         # Build outcome model row efficiently
-        key <- as.character(prev_outcome)
-        if (!is.null(ns_cache[[key]]) && !is.na(idx_delta)) {
-            x_row <- ns_cache[[key]][1, , drop = TRUE]
-            x_row[idx_delta] <- delta_time
-        } else {
-            # Fallback: construct a single-row model.matrix (still cheap)
-            df1 <- data.frame(..prev_outcome.. = prev_outcome, ..delta_time.. = delta_time, check.names = FALSE)
+        # Handle NA or invalid prev_outcome gracefully
+        if (is.na(prev_outcome) || is.null(prev_outcome)) {
+            # Fallback: construct a single-row model.matrix
+            df1 <- data.frame(..prev_outcome.. = 0, ..delta_time.. = delta_time, check.names = FALSE)
             x_row <- model.matrix(term_spec, data = df1)[1, , drop = TRUE]
+        } else {
+            key <- as.character(prev_outcome)
+            if (exists(key, envir = ns_cache, inherits = FALSE) && !is.na(idx_delta)) {
+                x_row <- ns_cache[[key]][1, , drop = TRUE]
+                x_row[idx_delta] <- delta_time
+            } else {
+                # Fallback: construct a single-row model.matrix (still cheap)
+                df1 <- data.frame(..prev_outcome.. = prev_outcome, ..delta_time.. = delta_time, check.names = FALSE)
+                x_row <- model.matrix(term_spec, data = df1)[1, , drop = TRUE]
+            }
         }
 
         # Single-index xb for pmf estimation
