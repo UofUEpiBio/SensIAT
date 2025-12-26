@@ -4,15 +4,15 @@ Last Updated: December 26, 2025
 
 ## High Priority
 
-### 1. Export Generalized Fitting Function
-- [ ] Add `@export` tag to `fit_SensIAT_marginal_mean_model_generalized()`
-- [ ] Re-document to update NAMESPACE
-- [ ] Verify function appears in package exports
+### 1. Export Generalized Fitting Function ✅ COMPLETE
+- [x] Add `@export` tag to `fit_SensIAT_marginal_mean_model_generalized()`
+- [x] Re-document to update NAMESPACE
+- [x] Verify function appears in package exports
 - [ ] Add to package documentation index
 
-**Status:** Not Started  
-**Impact:** Critical - Users cannot access the generalized fitting functionality  
-**Estimated Effort:** 5 minutes  
+**Status:** COMPLETE (commit 2aca638)  
+**Impact:** Critical - Users can now access the generalized fitting functionality  
+**Completed:** December 26, 2025  
 
 ---
 
