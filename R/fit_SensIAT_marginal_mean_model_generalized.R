@@ -79,6 +79,7 @@
 #' time <- data_with_lags$Time
 #' id <- data_with_lags$Subject_ID
 #'
+#' @export
 fit_SensIAT_marginal_mean_model_generalized <-
     function(data,
              time, #< 0-indexed time vector
@@ -97,18 +98,10 @@ fit_SensIAT_marginal_mean_model_generalized <-
                  tol = 1e-6
              ),
              term2_method = c("fast", "original")) {
-        time <- rlang::eval_tidy(
-            {
-                time
-            },
-            data
-        )
-        id <- rlang::eval_tidy(
-            {
-                id
-            },
-            data
-        )
+        time <- enquo(time)
+        time <- rlang::eval_tidy({{time}}, data)
+
+        id <- enquo(id)
 
         Y <- dplyr::pull(data, rlang::f_lhs(formula(outcome.model)))
 
@@ -122,7 +115,7 @@ fit_SensIAT_marginal_mean_model_generalized <-
             return(
                 fit_SensIAT_marginal_mean_model(
                     data = data,
-                    id = id,
+                    id = !!id,
                     alpha = alpha,
                     knots = knots,
                     outcome.model = outcome.model,
@@ -178,7 +171,7 @@ fit_SensIAT_marginal_mean_model_generalized <-
                     # So 1/[s(eta)(1-s(eta))] = (1+exp(eta))^2/exp(eta)
                     # W_1 = V^{-1} B(t) * (1+exp(eta))^2 / exp(eta)
                     # For numerical stability, rewrite as: V^{-1} B(t) * (1 + 2*exp(-eta) + exp(-2*eta))
-                    as.vector((V.inv %*% B) * (1 + exp(eta))^2 / exp(eta))
+                    as.vector((V.inv %*% B) * (1 + 2 * exp(-eta) + exp(-2 * eta)))
                 }
             } else {
                 stop("Unsupported link function for lp_mse loss.")
@@ -198,18 +191,84 @@ fit_SensIAT_marginal_mean_model_generalized <-
             #         stop("Unsupported link function for mean_mse loss.")
             #     }
         } else if (loss == "quasi-likelihood") {
-            if (link == "log") {
+            if (link == "identity") {
+                link.fun <- function(mu) mu
+                inv.link <- function(eta) eta
+                d1.inv.link <- function(eta) rep(1, length(eta))
+                V <- GramMatrix(base)
+                V.inv <- solve(V)
+                
+                W <- function(t, beta) {
+                    B <- pcoriaccel_evaluate_basis(base, t)
+                    # For identity link: ds/dz = 1, so V_3 = V_1 (constant)
+                    as.vector(V.inv %*% B)
+                }
+            } else if (link == "log") {
                 link.fun <- log
                 inv.link <- exp
                 d1.inv.link <- exp
-                variance.fun <- function(mu) mu
+                
+                # For log link, V_3 depends on beta, so we need numerical integration
+                # V_3(beta) = int B(t) B(t)' * exp(B(t)'beta) dt
+                # This requires numerical integration for each beta
+                # W_3(t; beta) = V_3(beta)^{-1} B(t)
+                
+                # Placeholder V.inv (not used, but needed for function signature)
+                V <- GramMatrix(base)
+                V.inv <- solve(V)
+                
+                W <- function(t, beta) {
+                    # Compute V_3(beta) via numerical integration
+                    integrand <- function(s) {
+                        Bs <- pcoriaccel_evaluate_basis(base, s)
+                        eta_s <- as.numeric(crossprod(Bs, beta))
+                        # Return B(s) B(s)' * exp(eta_s) as a vector (column-major)
+                        as.vector(tcrossprod(Bs) * exp(eta_s))
+                    }
+                    
+                    V3_result <- pcoriaccel_integrate_simp(integrand, tmin, tmax)
+                    V3_vec <- V3_result$Q
+                    n <- ncol(base)
+                    V3 <- matrix(V3_vec, n, n)
+                    V3.inv <- solve(V3)
+                    
+                    B <- pcoriaccel_evaluate_basis(base, t)
+                    as.vector(V3.inv %*% B)
+                }
             } else if (link == "logit") {
                 link.fun <- function(mu) log(mu / (1 - mu))
                 inv.link <- function(eta) exp(eta) / (1 + exp(eta))
                 d1.inv.link <- function(eta) {
                     exp(eta) / ((1 + exp(eta))^2)
                 }
-                variance.fun <- function(mu) mu * (1 - mu)
+                
+                # For logit link: ds/dz = exp(z)/(1+exp(z))^2
+                # V_3(beta) = int B(t) B(t)' * exp(B(t)'beta)/(1+exp(B(t)'beta))^2 dt
+                
+                # Placeholder V.inv (not used, but needed for function signature)
+                V <- GramMatrix(base)
+                V.inv <- solve(V)
+                
+                W <- function(t, beta) {
+                    # Compute V_3(beta) via numerical integration
+                    integrand <- function(s) {
+                        Bs <- pcoriaccel_evaluate_basis(base, s)
+                        eta_s <- as.numeric(crossprod(Bs, beta))
+                        # ds/dz at z=eta_s
+                        weight <- exp(eta_s) / (1 + exp(eta_s))^2
+                        # Return B(s) B(s)' * weight as a vector (column-major)
+                        as.vector(tcrossprod(Bs) * weight)
+                    }
+                    
+                    V3_result <- pcoriaccel_integrate_simp(integrand, tmin, tmax)
+                    V3_vec <- V3_result$Q
+                    n <- ncol(base)
+                    V3 <- matrix(V3_vec, n, n)
+                    V3.inv <- solve(V3)
+                    
+                    B <- pcoriaccel_evaluate_basis(base, t)
+                    as.vector(V3.inv %*% B)
+                }
             } else {
                 stop("Unsupported link function for quasi-likelihood loss.")
             }
@@ -217,7 +276,7 @@ fit_SensIAT_marginal_mean_model_generalized <-
             stop("Unsupported loss function.")
         }
 
-
+        id <- rlang::eval_tidy({{id}}, data)
         fu <- time > 0
 
         intensity <- estimate_baseline_intensity(
@@ -243,7 +302,9 @@ fit_SensIAT_marginal_mean_model_generalized <-
             }
             expected <- get(".expected_cache", envir = environment(influence))
 
-            term1.deviation.by.observation <- (Y[fu][valid.time] - expected$E_Yexp_alphaY / expected$E_exp_alphaY) / intensity_weights[valid.time]
+            term1.deviation.by.observation <-
+                (Y[fu][valid.time] - expected$E_Yexp_alphaY / expected$E_exp_alphaY) / 
+                intensity_weights[valid.time]
 
             term1.by.observation <- purrr::map2(weights, term1.deviation.by.observation, `*`)
 
