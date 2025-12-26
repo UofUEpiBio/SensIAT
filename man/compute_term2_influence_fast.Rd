@@ -14,7 +14,8 @@ compute_term2_influence_fast(
   tmin,
   tmax,
   impute_fn,
-  inv_link
+  inv_link,
+  W
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ compute_term2_influence_fast(
 \item{impute_fn}{Function to impute data at time t: impute_fn(t, patient_data) -> data.frame}
 
 \item{inv_link}{Inverse link function (e.g., exp for log link)}
+
+\item{W}{Weight function W(t, beta)}
 }
 \value{
 Numeric vector of length ncol(base) with term2 influence values

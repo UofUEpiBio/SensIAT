@@ -11,7 +11,8 @@ make_term2_integrand_fast(
   patient_times,
   patient_outcomes,
   marginal_beta,
-  V_inv = NULL
+  V_inv = NULL,
+  W = NULL
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ make_term2_integrand_fast(
 \item{marginal_beta}{Coefficients (beta) for the marginal mean spline basis}
 
 \item{V_inv}{Precomputed inverse Gram matrix for base (optional; computed if NULL)}
+
+\item{W}{Weight function W(t, beta)}
 }
 \value{
 A function f(t) computing the term2 integrand at scalar t
