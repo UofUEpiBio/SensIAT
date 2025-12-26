@@ -244,6 +244,11 @@ generate_next_observation_time <- function(current_time,
 #' Generate an outcome value based on previous outcome, time since baseline,
 #' and time since last observation using a non-linear model.
 #'
+#' The non-linear transformation of previous outcome approximates the natural spline
+#' basis (df=3) used in fitting functions. While fitting uses `splines::ns()`,
+#' simulation uses a polynomial approximation for computational efficiency during
+#' one-at-a-time data generation.
+#'
 #' @inheritParams simulate_single_subject
 #' @param prev_outcome Previous outcome value.
 #' @param time Current time (time since baseline).
@@ -257,11 +262,10 @@ generate_outcome <- function(prev_outcome,
                              outcome_coef,
                              outcome_sd,
                              link = "identity") {
-    # Non-linear transformation of previous outcome using natural spline basis
-    # For simplicity, using a polynomial approximation here
-    # In practice, this would use splines::ns() to match the model
-    
-    # Simplified non-linear transformation
+    # Non-linear transformation of previous outcome
+    # Polynomial approximation of natural spline basis (df=3)
+    # This provides similar non-linear behavior to ns(prev_outcome, df=3)
+    # used in fitting, while being suitable for single-value generation
     basis1 <- prev_outcome
     basis2 <- prev_outcome^2 / 10
     basis3 <- prev_outcome^3 / 100

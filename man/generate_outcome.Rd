@@ -40,4 +40,10 @@ Generated outcome value.
 Generate an outcome value based on previous outcome, time since baseline,
 and time since last observation using a non-linear model.
 }
+\details{
+The non-linear transformation of previous outcome approximates the natural spline
+basis (df=3) used in fitting functions. While fitting uses \code{splines::ns()},
+simulation uses a polynomial approximation for computational efficiency during
+one-at-a-time data generation.
+}
 \keyword{internal}
