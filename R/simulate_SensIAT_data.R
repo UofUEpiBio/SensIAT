@@ -64,6 +64,18 @@ simulate_SensIAT_data <- function(n_subjects,
                                   max_visits = 50,
                                   seed = NULL,
                                   link = "identity") {
+    # Input validation
+    if (!is.numeric(n_subjects) || n_subjects < 1 || n_subjects != floor(n_subjects)) {
+        stop("n_subjects must be a positive integer")
+    }
+    if (!is.numeric(End) || End <= 0) {
+        stop("End must be a positive number")
+    }
+    if (!is.numeric(max_visits) || max_visits < 2) {
+        stop("max_visits must be at least 2")
+    }
+    link <- match.arg(link, choices = c("identity", "log", "logit"))
+    
     if (!is.null(seed)) {
         set.seed(seed)
     }
@@ -338,6 +350,15 @@ simulate_SensIAT_two_groups <- function(n_subjects,
                                         treatment_intensity_effect = 1,
                                         seed = NULL,
                                         link = "identity") {
+    # Input validation
+    if (!is.numeric(n_subjects) || n_subjects < 2 || n_subjects != floor(n_subjects)) {
+        stop("n_subjects must be a positive integer >= 2")
+    }
+    if (!is.numeric(End) || End <= 0) {
+        stop("End must be a positive number")
+    }
+    link <- match.arg(link, choices = c("identity", "log", "logit"))
+    
     if (!is.null(seed)) {
         set.seed(seed)
     }
@@ -360,7 +381,7 @@ simulate_SensIAT_two_groups <- function(n_subjects,
         seed = NULL,  # Already set seed above
         link = link
     ) |>
-        dplyr::mutate(Treatment = 0)
+        dplyr::mutate(Group = "Control")
     
     # Modify parameters for treatment group
     treatment_outcome_coef <- outcome_coef
@@ -384,12 +405,12 @@ simulate_SensIAT_two_groups <- function(n_subjects,
     ) |>
         dplyr::mutate(
             Subject_ID = Subject_ID + n_control,  # Offset IDs
-            Treatment = 1
+            Group = "Treatment"
         )
     
     # Combine groups
     result <- dplyr::bind_rows(control_data, treatment_data) |>
-        dplyr::arrange(.data$Treatment, .data$Subject_ID, .data$Time)
+        dplyr::arrange(.data$Group, .data$Subject_ID, .data$Time)
     
     return(result)
 }
