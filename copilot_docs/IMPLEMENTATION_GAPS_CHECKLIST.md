@@ -29,21 +29,24 @@ Last Updated: December 26, 2025
 
 ---
 
-### 3. Add Dedicated Simulation Unit Tests
-- [ ] Create `tests/testthat/test-simulate_SensIAT_data.R`
-- [ ] Test each link function produces correct outcome types
-  - [ ] Identity → continuous
-  - [ ] Log → count (non-negative integers)
-  - [ ] Logit → binary (0/1)
-- [ ] Test reproducibility with seed
-- [ ] Test edge cases (extreme parameters)
-- [ ] Test that all subjects have follow-up
-- [ ] Test two-group simulation
-- [ ] Test treatment effect is properly applied
+### 3. Add Dedicated Simulation Unit Tests ✅ COMPLETE
+- [x] Create `tests/testthat/test-simulate_SensIAT_data.R`
+- [x] Test each link function produces correct outcome types
+  - [x] Identity → continuous
+  - [x] Log → count (non-negative integers)
+  - [x] Logit → binary (0/1)
+- [x] Test reproducibility with seed
+- [x] Test edge cases (extreme parameters, single subject, max visits)
+- [x] Test that all subjects have follow-up
+- [x] Test two-group simulation
+- [x] Test treatment effect is properly applied
+- [x] Add input validation to simulation functions
 
-**Status:** Not Started  
-**Impact:** High - Ensure simulation reliability  
-**Estimated Effort:** 2-3 hours  
+**Status:** COMPLETE (commit 83c9de8)  
+**Impact:** High - Comprehensive test coverage ensures simulation reliability  
+**Test Count:** 39 new tests, all passing (421 total package tests)
+**Additional Work:** Changed API to use Group column instead of Treatment for clarity
+**Completed:** December 26, 2025  
 
 ---
 
@@ -120,25 +123,25 @@ Last Updated: December 26, 2025
 ## Additional Observations
 
 ### Testing Coverage
-- Current: 382 tests passing
-- Simulation functions used in: 1 test file
-- Generalized function tested in: 1 test file
-- **Recommendation:** Expand test coverage for new functionality
+- Current: 421 tests passing (increased from 382)
+- Simulation tests: 39 tests in test-simulate_SensIAT_data.R
+- Generalized function tests: 7 tests (5 passing, 2 skipped)
+- **Status:** Good test coverage for core functionality
 
 ### Documentation Status
 - Simulation functions: ✅ Documented and exported
-- Generalized fitting: ❌ Not exported (documented but inaccessible)
+- Generalized fitting: ✅ Exported and documented
 - Vignettes: ⚠️ Partial (loss_and_links.Rmd exists but incomplete)
 
 ---
 
 ## Progress Summary
 
-**Completed:** 0/8 items  
+**Completed:** 3/8 items  
 **In Progress:** 0/8 items  
-**Not Started:** 8/8 items  
+**Not Started:** 5/8 items  
 
-**Total Estimated Effort:** 15-25 hours
+**Total Estimated Effort:** ~9-17 hours remaining
 
 ---
 
