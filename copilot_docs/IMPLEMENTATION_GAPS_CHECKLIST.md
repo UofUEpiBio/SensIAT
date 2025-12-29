@@ -50,17 +50,39 @@ Last Updated: December 26, 2025
 
 ---
 
-### 4. Add Tests for GLM Outcome Models with Generalized Fitting
-- [ ] Create tests using `glm()` with gaussian family
-- [ ] Create tests using `glm()` with binomial family
-- [ ] Create tests using `glm()` with poisson family
-- [ ] Verify `compute_SensIAT_expected_values.glm` works correctly
+### 4. Add Tests for GLM Outcome Models with Generalized Fitting ⚠️ **BLOCKED**
+- [x] Create tests using `glm()` with gaussian family
+- [x] Create tests using `glm()` with binomial family
+- [x] Create tests using `glm()` with poisson family
+- [x] Verify `compute_SensIAT_expected_values.glm` works correctly
 - [ ] Test that generalized fitting function accepts GLM models
 - [ ] Compare results with single-index models where applicable
 
-**Status:** Not Started  
-**Impact:** High - Validates advertised GLM compatibility  
-**Estimated Effort:** 1-2 hours  
+**Status:** BLOCKED - Critical issue discovered (partial commit a722fab)  
+**Impact:** HIGH - Documentation claims GLM support but it's not fully implemented  
+**Blocker:** `compute_influence_terms` has no method for GLM models, causing error:  
+  "compute_influence_terms is not implemented for this outcome model type"  
+**Discovery:** While `compute_SensIAT_expected_values.glm` works correctly, the full  
+  generalized fitting workflow fails because `compute_influence_terms` only has methods  
+  for single-index models, not GLMs.  
+**Action Required:** Either implement `compute_influence_terms.glm` or update documentation  
+  to clarify that only single-index models are currently supported.  
+**Test Status:** 7 failures due to missing GLM support in influence terms  
+**Completed Work:** Verified `compute_SensIAT_expected_values` works for all GLM families  
+
+---
+
+### 4a. NEW: Implement compute_influence_terms for GLM Models **OR** Fix Documentation
+- [ ] Option 1: Implement `compute_influence_terms.glm` method
+- [ ] Option 2: Update fit_SensIAT_marginal_mean_model_generalized documentation to remove GLM claims
+- [ ] Option 3: Restrict generalized function to only accept single-index models
+- [ ] Update tests once direction is chosen
+- [ ] Resolve discrepancy between advertised and actual capabilities
+
+**Status:** Not Started (decision needed)  
+**Impact:** CRITICAL - Misleading documentation or missing functionality  
+**Estimated Effort:** 4-8 hours (Option 1) or 30 minutes (Options 2/3)  
+**Recommendation:** Option 2 (fix docs) unless GLM support is critical priority  
 
 ---
 
@@ -151,11 +173,12 @@ Last Updated: December 26, 2025
 
 ## Progress Summary
 
-**Completed:** 3/9 items  
-**In Progress:** 0/9 items  
-**Not Started:** 6/9 items  
+**Completed:** 3/10 items  
+**In Progress:** 0/10 items  
+**Blocked:** 1/10 items  
+**Not Started:** 6/10 items  
 
-**Total Estimated Effort:** ~10-19 hours remaining
+**Total Estimated Effort:** ~14-27 hours remaining (depends on GLM decision)
 
 ---
 
