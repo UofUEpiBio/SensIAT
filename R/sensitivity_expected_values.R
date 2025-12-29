@@ -52,17 +52,13 @@ compute_SensIAT_expected_values.lm <- function(model, alpha, new.data, ...) {
     mu <- predict(model, newdata = new.data, type = "response")
 
     # compute the conditional expectations
-    pmf_estimator <- function(y) {
-        dnorm(y, mu, sd = sigma)
-    }
-
     E_exp_alphaY <- stats::integrate(
-        \(y)if_else(pmf_estimator(y) == 0, 0, exp(alpha * y) * pmf_estimator(y)),
+        function(y) exp(alpha * y) * dnorm(y, mu, sd = sigma),
         lower = -Inf,
         upper = Inf
     )$value
     E_Yexp_alphaY <- stats::integrate(
-        \(y)if_else(pmf_estimator(y) == 0, 0, y * exp(alpha * y) * pmf_estimator(y)),
+        function(y) y * exp(alpha * y) * dnorm(y, mu, sd = sigma),
         lower = -Inf,
         upper = Inf
     )$value
@@ -103,32 +99,28 @@ compute_SensIAT_expected_values.glm <- function(model, alpha, new.data, ..., y.m
 
     if (family(model)$family == "gaussian") {
         # For gaussian GLMs, use dispersion instead of sigma
-        mu <- predict(model, newdata = new.data, type = "response")
+        mu <- as.numeric(predict(model, newdata = new.data, type = "response"))
         sigma <- sqrt(summary(model)$dispersion)
         
-        # compute the conditional expectations
-        pmf_estimator <- function(y) {
-            dnorm(y, mu, sd = sigma)
-        }
-        
+        # compute the conditional expectations  
         E_exp_alphaY <- stats::integrate(
-            \(y)if_else(pmf_estimator(y) == 0, 0, exp(alpha * y) * pmf_estimator(y)),
+            function(y) exp(alpha * y) * dnorm(y, mu, sd = sigma),
             lower = -Inf,
             upper = Inf
         )$value
         E_Yexp_alphaY <- stats::integrate(
-            \(y)if_else(pmf_estimator(y) == 0, 0, y * exp(alpha * y) * pmf_estimator(y)),
+            function(y) y * exp(alpha * y) * dnorm(y, mu, sd = sigma),
             lower = -Inf,
             upper = Inf
         )$value
     } else if (family(model)$family == "binomial") {
-        mu <- predict(model, newdata = new.data, type = "response")
+        mu <- as.numeric(predict(model, newdata = new.data, type = "response"))
         y <- 0:1
         pmf <- dbinom(y, size = 1, prob = mu)
         E_exp_alphaY <- sum(exp(alpha * y) * pmf)
         E_Yexp_alphaY <- sum(y * exp(alpha * y) * pmf)
     } else if (family(model)$family == "poisson") {
-        mu <- predict(model, newdata = new.data, type = "response")
+        mu <- as.numeric(predict(model, newdata = new.data, type = "response"))
         if (is.null(y.max)) {
             y.max <- qpois(1 - eps, lambda = mu)
         }

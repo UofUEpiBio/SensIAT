@@ -13,7 +13,7 @@ test_that("compute_SensIAT_expected_values.glm: gaussian family", {
     
     # Fit a gaussian GLM
     glm_model <- glm(
-        Outcome ~ ns(..prev_outcome.., df = 3) + ..delta_time..,
+        Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_prepared |> filter(Time > 0),
         family = gaussian()
     )
@@ -56,7 +56,7 @@ test_that("compute_SensIAT_expected_values.glm: binomial family", {
     
     # Fit a binomial GLM
     glm_model <- glm(
-        Outcome ~ ns(..prev_outcome.., df = 3) + ..delta_time..,
+        Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_prepared |> filter(Time > 0),
         family = binomial()
     )
@@ -101,7 +101,7 @@ test_that("compute_SensIAT_expected_values.glm: poisson family", {
     
     # Fit a poisson GLM
     glm_model <- glm(
-        Outcome ~ ns(..prev_outcome.., df = 3) + ..delta_time..,
+        Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_prepared |> filter(Time > 0),
         family = poisson()
     )
@@ -137,7 +137,7 @@ test_that("compute_SensIAT_expected_values.glm: multiple alpha values", {
     
     # Fit GLM
     glm_model <- glm(
-        Outcome ~ ns(..prev_outcome.., df = 3) + ..delta_time..,
+        Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_prepared |> filter(Time > 0),
         family = gaussian()
     )
@@ -175,7 +175,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: works with gaussian GLM"
     
     # Fit gaussian GLM outcome model
     outcome.model <- glm(
-        Outcome ~ ns(..prev_outcome.., df = 3) + ..delta_time..,
+        Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_with_lags |> filter(Time > 0),
         family = gaussian()
     )
@@ -231,7 +231,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: works with binomial GLM"
     
     # Fit binomial GLM outcome model
     outcome.model <- glm(
-        Outcome ~ ns(..prev_outcome.., df = 3) + ..delta_time..,
+        Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_with_lags |> filter(Time > 0),
         family = binomial()
     )
@@ -285,7 +285,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: works with poisson GLM",
     
     # Fit poisson GLM outcome model
     outcome.model <- glm(
-        Outcome ~ ns(..prev_outcome.., df = 3) + ..delta_time..,
+        Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_with_lags |> filter(Time > 0),
         family = poisson()
     )
@@ -331,14 +331,14 @@ test_that("GLM vs single-index model: gaussian family comparison", {
     
     # Fit gaussian GLM outcome model
     glm_outcome.model <- glm(
-        Outcome ~ ns(..prev_outcome.., df = 3) + ..delta_time..,
+        Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_with_lags |> filter(Time > 0),
         family = gaussian()
     )
     
     # Fit single-index outcome model
     si_outcome.model <- fit_SensIAT_single_index_fixed_coef_model(
-        Outcome ~ ns(..prev_outcome.., df = 3) + ..delta_time.. - 1,
+        Outcome ~ ..prev_outcome.. + ..delta_time.. - 1,
         id = Subject_ID,
         data = data_with_lags |> filter(Time > 0)
     )
@@ -388,7 +388,7 @@ test_that("compute_SensIAT_expected_values.glm: handles edge cases", {
     
     # Fit GLM
     glm_model <- glm(
-        Outcome ~ ns(..prev_outcome.., df = 3) + ..delta_time..,
+        Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_prepared |> filter(Time > 0),
         family = gaussian()
     )
