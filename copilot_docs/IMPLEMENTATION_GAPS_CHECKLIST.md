@@ -50,9 +50,23 @@ Last Updated: December 26, 2025
 
 ---
 
+### 4. Add Tests for GLM Outcome Models with Generalized Fitting
+- [ ] Create tests using `glm()` with gaussian family
+- [ ] Create tests using `glm()` with binomial family
+- [ ] Create tests using `glm()` with poisson family
+- [ ] Verify `compute_SensIAT_expected_values.glm` works correctly
+- [ ] Test that generalized fitting function accepts GLM models
+- [ ] Compare results with single-index models where applicable
+
+**Status:** Not Started  
+**Impact:** High - Validates advertised GLM compatibility  
+**Estimated Effort:** 1-2 hours  
+
+---
+
 ## Medium Priority
 
-### 4. Complete Loss and Links Vignette
+### 5. Complete Loss and Links Vignette
 - [ ] Add practical examples using simulation
 - [ ] Demonstrate `fit_SensIAT_marginal_mean_model_generalized()` usage
 - [ ] Compare results across different link functions
@@ -66,7 +80,7 @@ Last Updated: December 26, 2025
 
 ---
 
-### 5. Implement Proper Stratified Baseline Hazard in Simulation
+### 6. Implement Proper Stratified Baseline Hazard in Simulation
 - [ ] Create stratified baseline hazard function
 - [ ] Support vector of baseline hazards by visit stratum
 - [ ] Support baseline hazard as function of (time, visit_num)
@@ -79,7 +93,7 @@ Last Updated: December 26, 2025
 
 ---
 
-### 6. Resolve Quasi-Likelihood Identity Link API Inconsistency
+### 7. Resolve Quasi-Likelihood Identity Link API Inconsistency
 - [ ] Investigate why quasi-likelihood + identity test is skipped
 - [ ] Determine if generalized and original return structures should match
 - [ ] Implement fix or document intentional difference
@@ -94,7 +108,7 @@ Last Updated: December 26, 2025
 
 ## Low Priority
 
-### 7. Enhance Simulation Examples and Documentation
+### 8. Enhance Simulation Examples and Documentation
 - [ ] Add more `@examples` to simulation functions
 - [ ] Show various parameter configurations
 - [ ] Demonstrate treatment effect specification
@@ -137,11 +151,11 @@ Last Updated: December 26, 2025
 
 ## Progress Summary
 
-**Completed:** 3/8 items  
-**In Progress:** 0/8 items  
-**Not Started:** 5/8 items  
+**Completed:** 3/9 items  
+**In Progress:** 0/9 items  
+**Not Started:** 6/9 items  
 
-**Total Estimated Effort:** ~9-17 hours remaining
+**Total Estimated Effort:** ~10-19 hours remaining
 
 ---
 
