@@ -92,10 +92,12 @@ $$
 \begin{align}
 g(\mu) &= \log\left(\frac{\mu}{1-\mu}\right), \\
 \frac{\partial g(z)}{\partial z} &= \frac{1}{z(1-z)}, \\
-W_1(t;\boldsymbol{\beta}) &= \frac{\boldsymbol{V}_1^{-1}\boldsymbol{B}(t)}{\boldsymbol{B}(t)^\prime \boldsymbol{\beta} \left(1-\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)}.
+W_1(t;\boldsymbol{\beta}) &= \boldsymbol{V}_1^{-1}\boldsymbol{B}(t) \left.\frac{1}{z(1-z)}\right|_{z=s\{\boldsymbol{B}(t)^\prime\boldsymbol{\beta}\}} = \boldsymbol{V}_1^{-1}\boldsymbol{B}(t) \frac{\left[1+\exp\{\boldsymbol{B}(t)^\prime\boldsymbol{\beta}\}\right]^2}{\exp\{\boldsymbol{B}(t)^\prime\boldsymbol{\beta}\}}.
 \end{align}
 $$
 
+
+<!--
 ## Squared error loss in the original space
 For squared error loss in the original space, $\mathcal{L}_2$, in general we have
 $$
@@ -157,15 +159,15 @@ $$
 and
 $$
 W_2(t;\boldsymbol{\beta}) = 
-\boldsymbol{V}_2(\boldsymbol{\beta})^{-1} \boldsymbol{B}(t) 
-\frac{ \exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)}
+\boldsymbol{V}_2(\boldsymbol{\beta})^{-1} 
+\frac{ \boldsymbol{B}(t) \exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)}
      { \left\{1+\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)\right\}^2},
 $$
 where
 $$
 \boldsymbol{V}_2(\boldsymbol{\beta}) = \int_{t=t_1}^{t_2} \boldsymbol{B}(t) \boldsymbol{B}(t)^\prime \frac{\exp\left(2\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)}{\left\{1+\exp\left(\boldsymbol{B}(t)^\prime \boldsymbol{\beta}\right)\right\}^4} dt.
 $$
-
+-->
 
 ## Quasi-likelihood Loss
 For quasi-likelihood loss, $\mathcal{L}_3$, in general we have
