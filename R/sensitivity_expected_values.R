@@ -51,17 +51,23 @@ compute_SensIAT_expected_values.lm <- function(model, alpha, new.data, ...) {
     Xi <- model.matrix(model, new.data)
     mu <- predict(model, newdata = new.data, type = "response")
 
-    # compute the conditional expectations
-    E_exp_alphaY <- stats::integrate(
-        function(y) exp(alpha * y) * dnorm(y, mu, sd = sigma),
-        lower = -Inf,
-        upper = Inf
-    )$value
-    E_Yexp_alphaY <- stats::integrate(
-        function(y) y * exp(alpha * y) * dnorm(y, mu, sd = sigma),
-        lower = -Inf,
-        upper = Inf
-    )$value
+    # Handle missing values
+    if (is.na(mu) || is.na(sigma)) {
+        E_exp_alphaY <- NA_real_
+        E_Yexp_alphaY <- NA_real_
+    } else {
+        # compute the conditional expectations
+        E_exp_alphaY <- stats::integrate(
+            function(y) exp(alpha * y) * dnorm(y, mu, sd = sigma),
+            lower = -Inf,
+            upper = Inf
+        )$value
+        E_Yexp_alphaY <- stats::integrate(
+            function(y) y * exp(alpha * y) * dnorm(y, mu, sd = sigma),
+            lower = -Inf,
+            upper = Inf
+        )$value
+    }
     data.frame(
         new.data,
         E_Yexp_alphaY = E_Yexp_alphaY,
@@ -102,32 +108,52 @@ compute_SensIAT_expected_values.glm <- function(model, alpha, new.data, ..., y.m
         mu <- as.numeric(predict(model, newdata = new.data, type = "response"))
         sigma <- sqrt(summary(model)$dispersion)
         
-        # compute the conditional expectations  
-        E_exp_alphaY <- stats::integrate(
-            function(y) exp(alpha * y) * dnorm(y, mu, sd = sigma),
-            lower = -Inf,
-            upper = Inf
-        )$value
-        E_Yexp_alphaY <- stats::integrate(
-            function(y) y * exp(alpha * y) * dnorm(y, mu, sd = sigma),
-            lower = -Inf,
-            upper = Inf
-        )$value
+        # Handle missing values
+        if (is.na(mu) || is.na(sigma)) {
+            E_exp_alphaY <- NA_real_
+            E_Yexp_alphaY <- NA_real_
+        } else {
+            # compute the conditional expectations  
+            E_exp_alphaY <- stats::integrate(
+                function(y) exp(alpha * y) * dnorm(y, mu, sd = sigma),
+                lower = -Inf,
+                upper = Inf
+            )$value
+            E_Yexp_alphaY <- stats::integrate(
+                function(y) y * exp(alpha * y) * dnorm(y, mu, sd = sigma),
+                lower = -Inf,
+                upper = Inf
+            )$value
+        }
     } else if (family(model)$family == "binomial") {
         mu <- as.numeric(predict(model, newdata = new.data, type = "response"))
-        y <- 0:1
-        pmf <- dbinom(y, size = 1, prob = mu)
-        E_exp_alphaY <- sum(exp(alpha * y) * pmf)
-        E_Yexp_alphaY <- sum(y * exp(alpha * y) * pmf)
+        
+        # Handle missing values
+        if (is.na(mu)) {
+            E_exp_alphaY <- NA_real_
+            E_Yexp_alphaY <- NA_real_
+        } else {
+            y <- 0:1
+            pmf <- dbinom(y, size = 1, prob = mu)
+            E_exp_alphaY <- sum(exp(alpha * y) * pmf)
+            E_Yexp_alphaY <- sum(y * exp(alpha * y) * pmf)
+        }
     } else if (family(model)$family == "poisson") {
         mu <- as.numeric(predict(model, newdata = new.data, type = "response"))
-        if (is.null(y.max)) {
-            y.max <- qpois(1 - eps, lambda = mu)
+        
+        # Handle missing values
+        if (is.na(mu)) {
+            E_exp_alphaY <- NA_real_
+            E_Yexp_alphaY <- NA_real_
+        } else {
+            if (is.null(y.max)) {
+                y.max <- qpois(1 - eps, lambda = mu)
+            }
+            y <- seq(0, y.max)
+            pmf <- dpois(0:y.max, lambda = mu)
+            E_exp_alphaY <- sum(exp(alpha * y) * pmf)
+            E_Yexp_alphaY <- sum(y * exp(alpha * y) * pmf)
         }
-        y <- seq(0, y.max)
-        pmf <- dpois(0:y.max, lambda = mu)
-        E_exp_alphaY <- sum(exp(alpha * y) * pmf)
-        E_Yexp_alphaY <- sum(y * exp(alpha * y) * pmf)
     } else {
         stop("Model family not supported")
     }

@@ -7,17 +7,17 @@ test_that("compute_SensIAT_expected_values.glm: gaussian family", {
         link = "identity",
         outcome_sd = 2
     )
-    
+
     # Prepare data
     data_prepared <- prepare_SensIAT_data(data, Subject_ID, Time, Outcome, End = 500)
-    
+
     # Fit a gaussian GLM
     glm_model <- glm(
         Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_prepared |> filter(Time > 0),
         family = gaussian()
     )
-    
+
     # Test compute_SensIAT_expected_values
     test_data <- data_prepared |> filter(Time > 0) |> head(5)
     result <- compute_SensIAT_expected_values(
@@ -25,7 +25,7 @@ test_that("compute_SensIAT_expected_values.glm: gaussian family", {
         alpha = 0,
         new.data = test_data
     )
-    
+
     expect_s3_class(result, "data.frame")
     expect_true("E_Yexp_alphaY" %in% names(result))
     expect_true("E_exp_alphaY" %in% names(result))
@@ -50,17 +50,17 @@ test_that("compute_SensIAT_expected_values.glm: binomial family", {
         ),
         initial_outcome_mean = 0.3
     )
-    
+
     # Prepare data
     data_prepared <- prepare_SensIAT_data(data, Subject_ID, Time, Outcome, End = 500)
-    
+
     # Fit a binomial GLM
     glm_model <- glm(
         Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_prepared |> filter(Time > 0),
         family = binomial()
     )
-    
+
     # Test compute_SensIAT_expected_values
     test_data <- data_prepared |> filter(Time > 0) |> head(5)
     result <- compute_SensIAT_expected_values(
@@ -68,7 +68,7 @@ test_that("compute_SensIAT_expected_values.glm: binomial family", {
         alpha = 0.5,
         new.data = test_data
     )
-    
+
     expect_s3_class(result, "tbl_df")
     expect_true("E_Yexp_alphaY" %in% names(result))
     expect_true("E_exp_alphaY" %in% names(result))
@@ -95,17 +95,17 @@ test_that("compute_SensIAT_expected_values.glm: poisson family", {
         ),
         initial_outcome_mean = 5
     )
-    
+
     # Prepare data
     data_prepared <- prepare_SensIAT_data(data, Subject_ID, Time, Outcome, End = 500)
-    
+
     # Fit a poisson GLM
     glm_model <- glm(
         Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_prepared |> filter(Time > 0),
         family = poisson()
     )
-    
+
     # Test compute_SensIAT_expected_values
     test_data <- data_prepared |> filter(Time > 0) |> head(5)
     result <- compute_SensIAT_expected_values(
@@ -113,7 +113,7 @@ test_that("compute_SensIAT_expected_values.glm: poisson family", {
         alpha = -0.1,
         new.data = test_data
     )
-    
+
     expect_s3_class(result, "tbl_df")
     expect_true("E_Yexp_alphaY" %in% names(result))
     expect_true("E_exp_alphaY" %in% names(result))
@@ -131,17 +131,17 @@ test_that("compute_SensIAT_expected_values.glm: multiple alpha values", {
         End = 400,
         link = "identity"
     )
-    
+
     # Prepare data
     data_prepared <- prepare_SensIAT_data(data, Subject_ID, Time, Outcome, End = 500)
-    
+
     # Fit GLM
     glm_model <- glm(
         Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_prepared |> filter(Time > 0),
         family = gaussian()
     )
-    
+
     # Test with multiple alpha values
     test_data <- data_prepared |> filter(Time > 0) |> head(3)
     result <- compute_SensIAT_expected_values(
@@ -149,7 +149,7 @@ test_that("compute_SensIAT_expected_values.glm: multiple alpha values", {
         alpha = c(-0.5, 0, 0.5),
         new.data = test_data
     )
-    
+
     expect_equal(nrow(result), 9)  # 3 data rows × 3 alpha values
     expect_equal(sort(unique(result$alpha)), c(-0.5, 0, 0.5))
 })
@@ -163,23 +163,23 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: works with gaussian GLM"
         link = "identity",
         outcome_sd = 2
     )
-    
+
     # Prepare data
     data_with_lags <- prepare_SensIAT_data(data, Subject_ID, Time, Outcome, End = 500)
-    
+
     # Fit intensity model
     intensity.model <- coxph(
         Surv(..prev_time.., Time, !is.na(Outcome)) ~ ..prev_outcome..,
         data = data_with_lags |> filter(Time > 0)
     )
-    
+
     # Fit gaussian GLM outcome model
     outcome.model <- glm(
         Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_with_lags |> filter(Time > 0),
         family = gaussian()
     )
-    
+
     # Test that generalized fitting works
     result <- suppressWarnings(
         fit_SensIAT_marginal_mean_model_generalized(
@@ -194,7 +194,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: works with gaussian GLM"
             link = "identity"
         )
     )
-    
+
     # Check result structure
     expect_type(result, "list")
     expect_true("gamma" %in% names(result))
@@ -204,7 +204,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: works with gaussian GLM"
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: works with binomial GLM", {
     skip_if(TRUE, "Long-running test - enable when debugging binomial GLM")
-    
+
     # Simulate binary data
     set.seed(333)
     data <- simulate_SensIAT_data(
@@ -219,23 +219,23 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: works with binomial GLM"
         ),
         initial_outcome_mean = 0.3
     )
-    
+
     # Prepare data
     data_with_lags <- prepare_SensIAT_data(data, Subject_ID, Time, Outcome, End = 500)
-    
+
     # Fit intensity model
     intensity.model <- coxph(
         Surv(..prev_time.., Time, !is.na(Outcome)) ~ ..prev_outcome..,
         data = data_with_lags |> filter(Time > 0)
     )
-    
+
     # Fit binomial GLM outcome model
     outcome.model <- glm(
         Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_with_lags |> filter(Time > 0),
         family = binomial()
     )
-    
+
     # Test that generalized fitting works
     result <- suppressWarnings(
         fit_SensIAT_marginal_mean_model_generalized(
@@ -250,7 +250,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: works with binomial GLM"
             link = "logit"
         )
     )
-    
+
     # Check result structure
     expect_type(result, "list")
     expect_true("gamma" %in% names(result))
@@ -258,7 +258,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: works with binomial GLM"
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: works with poisson GLM", {
     skip_if(TRUE, "Long-running test - enable when debugging poisson GLM")
-    
+
     # Simulate count data
     set.seed(444)
     data <- simulate_SensIAT_data(
@@ -273,23 +273,23 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: works with poisson GLM",
         ),
         initial_outcome_mean = 5
     )
-    
+
     # Prepare data
     data_with_lags <- prepare_SensIAT_data(data, Subject_ID, Time, Outcome, End = 500)
-    
+
     # Fit intensity model
     intensity.model <- coxph(
         Surv(..prev_time.., Time, !is.na(Outcome)) ~ ..prev_outcome..,
         data = data_with_lags |> filter(Time > 0)
     )
-    
+
     # Fit poisson GLM outcome model
     outcome.model <- glm(
         Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_with_lags |> filter(Time > 0),
         family = poisson()
     )
-    
+
     # Test that generalized fitting works
     result <- suppressWarnings(
         fit_SensIAT_marginal_mean_model_generalized(
@@ -304,7 +304,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: works with poisson GLM",
             link = "log"
         )
     )
-    
+
     # Check result structure
     expect_type(result, "list")
     expect_true("gamma" %in% names(result))
@@ -319,23 +319,23 @@ test_that("GLM vs single-index model: gaussian family comparison", {
         link = "identity",
         outcome_sd = 2
     )
-    
+
     # Prepare data
     data_with_lags <- prepare_SensIAT_data(data, Subject_ID, Time, Outcome, End = 500)
-    
+
     # Fit intensity model
     intensity.model <- coxph(
         Surv(..prev_time.., Time, !is.na(Outcome)) ~ ..prev_outcome..,
         data = data_with_lags |> filter(Time > 0)
     )
-    
+
     # Fit gaussian GLM outcome model
     glm_outcome.model <- glm(
         Outcome ~ ..prev_outcome.. + ..delta_time..,
         data = data_with_lags |> filter(Time > 0),
         family = gaussian()
     )
-    
+
     # Fit single-index outcome model
     si_outcome.model <- fit_SensIAT_single_index_fixed_coef_model(
         Outcome ~ ..prev_outcome.. + ..delta_time.. - 1,

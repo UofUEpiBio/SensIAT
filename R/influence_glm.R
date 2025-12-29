@@ -38,7 +38,7 @@ compute_influence_terms.glm <-
                 dplyr::all_of(all.vars(terms(outcome.model)))
             ) |>
             na.omit()
-        
+
         # Get model frame and matrices
         mf_followup <- model.frame(terms(outcome.model), data = followup_only)
         X_followup <- model.matrix(outcome.model, data = mf_followup)
