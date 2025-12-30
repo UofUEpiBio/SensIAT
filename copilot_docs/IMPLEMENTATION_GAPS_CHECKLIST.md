@@ -4,6 +4,30 @@ Last Updated: December 26, 2025
 
 ## High Priority
 
+### 10. Establish and Apply Consistent File Naming Scheme ⏳ PLANNED
+- [ ] Audit all R/ and tests/ files for naming inconsistencies
+- [ ] Define a clear, consistent file naming convention for all package code and tests
+- [ ] Refactor/rename files to match the new convention
+- [ ] Update documentation and developer guidelines to reflect the scheme
+- [ ] Ensure all future files follow the convention
+
+**Status:** PLANNED  
+**Impact:** HIGH - Improves maintainability, discoverability, and onboarding for new contributors  
+**Estimated Effort:** 2-4 hours  
+**Recommendation:** Use all lowercase, words separated by underscores, and group related functionality by prefix (e.g., `fit_`, `compute_`, `prepare_`). For tests, mirror the R/ file names with `test-` prefix (e.g., `test-fit_sensiat_marginal_mean_model.R`). Avoid camelCase and abbreviations unless standard in R community.
+
+### 9. Unify Linear and Generalized Fitting Interfaces ⏳ PLANNED
+- [ ] Design a single user-facing interface that supports both linear (single-index) and generalized (GLM) outcome models
+- [ ] Refactor `fit_SensIAT_marginal_mean_model` and `fit_SensIAT_marginal_mean_model_generalized` to use a common entry point
+- [ ] Ensure all arguments, return values, and documentation are consistent
+- [ ] Update all tests to use the unified interface
+- [ ] Deprecate or alias legacy functions as needed
+
+**Status:** PLANNED  
+**Impact:** HIGH - Simplifies user experience and reduces maintenance burden  
+**Estimated Effort:** 6-10 hours  
+**Notes:** This will make the API more intuitive and robust for all users, and ensure future extensibility.
+
 ### 1. Export Generalized Fitting Function ✅ COMPLETE
 - [x] Add `@export` tag to `fit_SensIAT_marginal_mean_model_generalized()`
 - [x] Re-document to update NAMESPACE
@@ -51,38 +75,34 @@ Last Updated: December 26, 2025
 ---
 
 ### 4. Add Tests for GLM Outcome Models with Generalized Fitting ⚠️ **BLOCKED**
+
+### 4. Add Tests for GLM Outcome Models with Generalized Fitting ✅ COMPLETE
 - [x] Create tests using `glm()` with gaussian family
 - [x] Create tests using `glm()` with binomial family
 - [x] Create tests using `glm()` with poisson family
 - [x] Verify `compute_SensIAT_expected_values.glm` works correctly
-- [ ] Test that generalized fitting function accepts GLM models
-- [ ] Compare results with single-index models where applicable
+- [x] Test that generalized fitting function accepts GLM models
+- [x] Compare results with single-index models where applicable
 
-**Status:** BLOCKED - Critical issue discovered (partial commit a722fab)  
-**Impact:** HIGH - Documentation claims GLM support but it's not fully implemented  
-**Blocker:** `compute_influence_terms` has no method for GLM models, causing error:  
-  "compute_influence_terms is not implemented for this outcome model type"  
-**Discovery:** While `compute_SensIAT_expected_values.glm` works correctly, the full  
-  generalized fitting workflow fails because `compute_influence_terms` only has methods  
-  for single-index models, not GLMs.  
-**Action Required:** Either implement `compute_influence_terms.glm` or update documentation  
-  to clarify that only single-index models are currently supported.  
-**Test Status:** 7 failures due to missing GLM support in influence terms  
-**Completed Work:** Verified `compute_SensIAT_expected_values` works for all GLM families  
+**Status:** COMPLETE (commit 670b562, 24a1f26)  
+**Impact:** HIGH - Full GLM support for generalized fitting workflow is now implemented and tested  
+**Resolution:** Implemented `compute_influence_terms.glm` and fixed all NA handling and edge cases. All GLM tests now pass, including integration with the generalized fitting function.  
+**Test Status:** All GLM outcome model tests pass (except intentionally skipped for runtime)  
+**Completed Work:** Verified `compute_SensIAT_expected_values` and full workflow for all GLM families  
+**Completed:** December 30, 2025  
 
----
+----
 
-### 4a. NEW: Implement compute_influence_terms for GLM Models **OR** Fix Documentation
-- [ ] Option 1: Implement `compute_influence_terms.glm` method
+### 4a. NEW: Implement compute_influence_terms for GLM Models **OR** Fix Documentation ✅ COMPLETE
+- [x] Option 1: Implement `compute_influence_terms.glm` method
 - [ ] Option 2: Update fit_SensIAT_marginal_mean_model_generalized documentation to remove GLM claims
 - [ ] Option 3: Restrict generalized function to only accept single-index models
-- [ ] Update tests once direction is chosen
-- [ ] Resolve discrepancy between advertised and actual capabilities
+- [x] Update tests once direction is chosen
+- [x] Resolve discrepancy between advertised and actual capabilities
 
-**Status:** Not Started (decision needed)  
-**Impact:** CRITICAL - Misleading documentation or missing functionality  
-**Estimated Effort:** 4-8 hours (Option 1) or 30 minutes (Options 2/3)  
-**Recommendation:** Option 2 (fix docs) unless GLM support is critical priority  
+**Status:** COMPLETE (commits 4125ce8, 5725514, f75494e, 24a1f26, 670b562)  
+**Impact:** CRITICAL - GLM support is now fully implemented and documented. No misleading claims remain.  
+**Completed:** December 30, 2025  
 
 ---
 
