@@ -52,7 +52,7 @@ compute_SensIAT_expected_values.lm <- function(model, alpha, new.data, ...) {
     mu <- predict(model, newdata = new.data, type = "response")
 
     # Handle missing values
-    if (is.na(mu) || is.na(sigma)) {
+    if (any(is.na(mu)) || any(is.na(sigma))) {
         E_exp_alphaY <- NA_real_
         E_Yexp_alphaY <- NA_real_
     } else {
@@ -105,31 +105,31 @@ compute_SensIAT_expected_values.glm <- function(model, alpha, new.data, ..., y.m
 
     if (family(model)$family == "gaussian") {
         # For gaussian GLMs, use dispersion instead of sigma
-        mu <- as.numeric(predict(model, newdata = new.data, type = "response"))
+        mu <- as.numeric(predict(model, newdata = new.data, type = "response"))[1]
         sigma <- sqrt(summary(model)$dispersion)
         
         # Handle missing values
-        if (is.na(mu) || is.na(sigma)) {
+        if (any(is.na(mu)) || any(is.na(sigma))) {
             E_exp_alphaY <- NA_real_
             E_Yexp_alphaY <- NA_real_
         } else {
             # compute the conditional expectations  
             E_exp_alphaY <- stats::integrate(
                 function(y) exp(alpha * y) * dnorm(y, mu, sd = sigma),
-                lower = -Inf,
-                upper = Inf
+                lower = qnorm(eps**2, mu, sd = sigma),
+                upper = qnorm(eps**2, mu, sd = sigma, lower.tail = FALSE)
             )$value
             E_Yexp_alphaY <- stats::integrate(
                 function(y) y * exp(alpha * y) * dnorm(y, mu, sd = sigma),
-                lower = -Inf,
-                upper = Inf
+                lower = qnorm(eps**2, mu, sd = sigma),
+                upper = qnorm(eps**2, mu, sd = sigma, lower.tail = FALSE)
             )$value
         }
     } else if (family(model)$family == "binomial") {
-        mu <- as.numeric(predict(model, newdata = new.data, type = "response"))
+        mu <- as.numeric(predict(model, newdata = new.data, type = "response"))[1]
         
         # Handle missing values
-        if (is.na(mu)) {
+        if (any(is.na(mu))) {
             E_exp_alphaY <- NA_real_
             E_Yexp_alphaY <- NA_real_
         } else {
@@ -139,10 +139,10 @@ compute_SensIAT_expected_values.glm <- function(model, alpha, new.data, ..., y.m
             E_Yexp_alphaY <- sum(y * exp(alpha * y) * pmf)
         }
     } else if (family(model)$family == "poisson") {
-        mu <- as.numeric(predict(model, newdata = new.data, type = "response"))
+        mu <- as.numeric(predict(model, newdata = new.data, type = "response"))[1]
         
         # Handle missing values
-        if (is.na(mu)) {
+        if (any(is.na(mu))) {
             E_exp_alphaY <- NA_real_
             E_Yexp_alphaY <- NA_real_
         } else {
