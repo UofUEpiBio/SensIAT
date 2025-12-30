@@ -330,7 +330,7 @@ test_that("GLM vs single-index model: gaussian family comparison", {
     # Fit intensity model
     intensity.model <- coxph(
         Surv(..prev_time.., Time, !is.na(Outcome)) ~ ..prev_outcome..,
-        data = data_with_lags |> filter(Time > 0)
+        data = data_with_lags |> filter(Time > 0, ..delta_time.. > 0)
     )
 
     # Fit gaussian GLM outcome model
