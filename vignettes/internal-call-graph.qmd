@@ -1,0 +1,156 @@
+---
+title: "Internal Call Graph Overview"
+author: "SensIAT Authors"
+date: "2025-12-30"
+format:
+  html:
+    toc: true
+    code-fold: false
+---
+
+# Internal Call Graph (Mermaid)
+
+This vignette provides a high-level overview of the internal function call structure of the `pcoriRPackage` package, using a [Mermaid](https://mermaid-js.github.io/) diagram. This is intended to help developers and contributors understand the relationships and dependencies between core functions.
+
+```{mermaid}
+graph LR
+  fit_SensIAT_fulldata_model --> |"for each (Treatment, Control)"| fit_SensIAT_within_group_model --> |"intensity.model"| coxph["survival::coxph"]
+  fit_SensIAT_within_group_model --> |"outcome.model"| outcome_modeler["`<*outcome_modeler*>`"]
+  outcome_modeler -.- fit_SensIAT_single_index_fixed_coef_model
+  outcome_modeler -.- fit_SensIAT_single_index_fixed_bandwidth_model
+  outcome_modeler -.- fit_SensIAT_single_index_norm1coef_model
+  outcome_modeler -.- lm["stats::lm"]
+  outcome_modeler -.- glm["stats::glm"]
+  fit_SensIAT_within_group_model --> |"`(intensity.model, outcome.model)`"| fit_SensIAT_marginal_mean_model["`fit_SensIAT_marginal_mean_model`"]
+  
+  style coxph fill:#999,stroke:#666,color:#fff
+  style lm fill:#999,stroke:#666,color:#fff
+  style glm fill:#999,stroke:#666,color:#fff
+```
+
+## Notes
+
+- This graph is a simplified representation and may omit some utility/helper functions for clarity.
+- External dependencies (e.g., `stats::glm`, `predict`) are shown in gray to distinguish them from package-internal functions.
+- For a full list of functions and their documentation, see the package manual and reference index.
+
+# Outcome Models
+
+There are two standard outcome models, `stats::lm` and `stats::glm` that are implemented in addition to the single index model variants.
+
+## Single Index Model Call Graph (Fixed Coefficient)
+
+Fits a single index model with the first coefficient fixed (positive) and optimizes bandwidth.
+
+```{mermaid}
+graph LR
+  fit_SensIAT_single_index_fixed_coef_model --> |"initial"| MAVE["MAVE::mave.compute"]
+  fit_SensIAT_single_index_fixed_coef_model --> SIDR_Ravinew
+  SIDR_Ravinew --> |bandwidth optimization| optim_nlminb_nmk["optim/nlminb/nmk"]
+  fit_SensIAT_single_index_fixed_coef_model --> predict.SensIAT_single_index_fixed_coef_model["`predict.<.._fixed_coef_..>`"]
+  predict.SensIAT_single_index_fixed_coef_model --> pcoriaccel_NW
+  fit_SensIAT_single_index_fixed_coef_model --> compute_SensIAT_expected_values
+  compute_SensIAT_expected_values --> pcoriaccel_NW
+  
+  style MAVE fill:#999,stroke:#666,color:#fff
+  style optim_nlminb_nmk fill:#999,stroke:#666,color:#fff
+```
+
+## Single Index Model Call Graph (Fixed Bandwidth)
+
+Fits a single index model with a fixed bandwidth and optimizes coefficients.
+
+```{mermaid}
+graph LR
+  fit_SensIAT_single_index_fixed_bandwidth_model --> |initial| MAVE2["MAVE::mave.compute"]
+  fit_SensIAT_single_index_fixed_bandwidth_model --> SIDRnew_fixed_bandwidth
+  SIDRnew_fixed_bandwidth --> |coefficient optimization| optim_nlminb_nmk2["optim/nlminb/nmk"]
+  fit_SensIAT_single_index_fixed_bandwidth_model --> predict.SensIAT_single_index_fixed_bandwidth_model["`predict.<.._fixed_bandwidth_..>`"]
+  predict.SensIAT_single_index_fixed_bandwidth_model --> pcoriaccel_NW2["pcoriaccel_NW"]
+  fit_SensIAT_single_index_fixed_bandwidth_model --> compute_SensIAT_expected_values2["compute_SensIAT_expected_values"]
+  compute_SensIAT_expected_values2 --> pcoriaccel_NW2["pcoriaccel_NW"]
+  
+  style MAVE2 fill:#999,stroke:#666,color:#fff
+  style optim_nlminb_nmk2 fill:#999,stroke:#666,color:#fff
+```
+
+## Single Index Model Call Graph (Norm 1 Coefficient Vector)
+
+Fits a single index model using MAVE with joint optimization of coefficients and bandwidth.
+
+```{mermaid}
+---
+config:
+      theme: redux
+---
+graph LR
+  fit_SensIAT_single_index_norm1coef_model["fit_SensIAT_single_index_norm1coef_model"] --> |initial| MAVE3["MAVE::mave.compute"]
+  fit_SensIAT_single_index_norm1coef_model --> |bandwidth selection| optim_optimize["optim/optimize/grid"]
+  fit_SensIAT_single_index_norm1coef_model --> |optional reestimation| ManifoldOptim["ManifoldOptim::manifold.optim"]
+  fit_SensIAT_single_index_norm1coef_model --> predict.SensIAT_single_index_norm1coef_model["`predict.<.._norm1coef_..>`"]
+  predict.SensIAT_single_index_norm1coef_model --> pcoriaccel_NW4["pcoriaccel_NW"]
+  fit_SensIAT_single_index_norm1coef_model --> compute_SensIAT_expected_values3["compute_SensIAT_expected_values"]
+  compute_SensIAT_expected_values3 --> pcoriaccel_NW4["pcoriaccel_NW"]
+  
+  style MAVE3 fill:#999,stroke:#666,color:#fff
+  style optim_optimize fill:#999,stroke:#666,color:#fff
+  style ManifoldOptim fill:#999,stroke:#666,color:#fff
+```
+
+
+
+# Marginal Mean Model Functions
+
+## Generalized
+
+```{mermaid}
+graph TD
+  fit_SensIAT_marginal_mean_model --> compute_influence_terms
+  fit_SensIAT_marginal_mean_model_generalized --> fit_SensIAT_marginal_mean_model
+  fit_SensIAT_marginal_mean_model_generalized --> compute_SensIAT_expected_values
+  fit_SensIAT_marginal_mean_model_generalized --> compute_term2_influence_fast
+  fit_SensIAT_marginal_mean_model_generalized --> compute_term2_influence_original
+  compute_influence_terms --> compute_glm_influence_term_1_for_all
+  compute_influence_terms --> compute_glm_influence_term_2_for_all_patients
+  compute_glm_influence_term_2_for_all_patients --> compute_glm_influence_term_2_for_individual
+  compute_term2_influence_fast --> pcoriaccel_integrate_simp
+  compute_term2_influence_original --> pcoriaccel_integrate_simp
+  pcoriaccel_integrate_simp --> pcoriaccel_evaluate_basis
+  pcoriaccel_integrate_simp --> pcoriaccel_evaluate_basis_mat
+```
+
+## Linear
+
+```{mermaid}
+graph TD
+  fit_SensIAT_marginal_mean_model --> compute_influence_terms
+  subgraph one["for each alpha"]
+    compute_influence_terms --> compute_glm_influence_term_1_for_all
+    compute_influence_terms --> compute_glm_influence_term_2_for_all_patients
+    compute_glm_influence_term_2_for_all_patients --> compute_glm_influence_term_2_for_individual
+  end
+```
+
+
+
+
+
+# Single Index Model Functions
+
+This section highlights the internal relationships between functions related to the single index model fitting and prediction in the package.
+
+```{mermaid}
+graph TD
+  fit_fixed_coef["fit_SensIAT_single_index_fixed_coef_model"] --> compute_ev["compute_SensIAT_expected_values"]
+  fit_norm1["fit_SensIAT_single_index_norm1coef_model"] --> compute_ev
+  fit_fixed_coef --> predict_fixed["predict.SensIAT_single_index_fixed_coef_model"]
+  fit_norm1 --> predict_norm1["predict.SensIAT_single_index_norm1coef_model"]
+  predict_fixed --> compute_ev
+  predict_norm1 --> compute_ev
+  autoplot_fixed["autoplot.SensIAT_single_index_fixed_coef_model"] --> fit_fixed_coef
+  autoplot_norm1["autoplot.SensIAT_single_index_norm1coef_model"] --> fit_norm1
+```
+
+## Notes
+- This graph focuses on the core single index model fitting, prediction, and plotting functions.
+- External dependencies (e.g., `stats::glm`) are shown in gray to distinguish them from package-internal functions.

@@ -11,7 +11,7 @@ Last Updated: December 26, 2025
 - [ ] Update documentation and developer guidelines to reflect the scheme
 - [ ] Ensure all future files follow the convention
 
-**Status:** PLANNED  
+**Status:** IN PROCESS  
 **Impact:** HIGH - Improves maintainability, discoverability, and onboarding for new contributors  
 **Estimated Effort:** 2-4 hours  
 **Recommendation:** Use all lowercase, words separated by underscores, and group related functionality by prefix (e.g., `fit_`, `compute_`, `prepare_`). For tests, mirror the R/ file names with `test-` prefix (e.g., `test-fit_sensiat_marginal_mean_model.R`). Avoid camelCase and abbreviations unless standard in R community.
@@ -95,8 +95,8 @@ Last Updated: December 26, 2025
 
 ### 4a. NEW: Implement compute_influence_terms for GLM Models **OR** Fix Documentation ✅ COMPLETE
 - [x] Option 1: Implement `compute_influence_terms.glm` method
-- [ ] Option 2: Update fit_SensIAT_marginal_mean_model_generalized documentation to remove GLM claims
-- [ ] Option 3: Restrict generalized function to only accept single-index models
+- ~~[ ] Option 2: Update fit_SensIAT_marginal_mean_model_generalized documentation to remove GLM claims~~
+- ~~[ ] Option 3: Restrict generalized function to only accept single-index models~~
 - [x] Update tests once direction is chosen
 - [x] Resolve discrepancy between advertised and actual capabilities
 

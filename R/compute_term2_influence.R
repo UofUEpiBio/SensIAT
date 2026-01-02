@@ -61,7 +61,6 @@ compute_term2_influence_original <- function(
   inv_link,
   W
 ) {
-
     # Integrand
     term2_integrand <- function(t) {
         weight <- W(t, marginal_beta)
@@ -106,6 +105,12 @@ compute_term2_influence_fast <- function(
   inv_link,
   W
 ) {
+        assertthat::assert_that(
+                is(outcome_model, "SensIAT::Single-index-outcome-model"),
+                !is.null(attr(outcome_model, "kernel")),
+                !is.null(outcome_model$bandwidth)
+        )
+
     # Extract outcome variable name from the model formula
     outcome_var <- as.character(rlang::f_lhs(formula(outcome_model)))
 

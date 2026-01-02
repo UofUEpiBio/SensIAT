@@ -1,5 +1,5 @@
 #' @describeIn fit_SensIAT_within_group_model
-#' Fit the sensitivity analysis for both treatment and control groups.
+#' Fit the Marginal Mean Sensitivity Analysis with Tilting Assumption for Both Treatment and Control Groups.
 #'
 #' @param data the full data set.
 #' @param trt  an expression that determine what is treated as the treatment.

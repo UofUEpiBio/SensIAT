@@ -142,9 +142,9 @@ fit_SensIAT_marginal_mean_model_generalized <-
 
         if (loss == "lp_mse") {
             if (link == "log") {
-                link.fun <- log
+                # link.fun <- log
                 inv.link <- exp
-                d1.inv.link <- exp
+                # d1.inv.link <- exp
                 V <- GramMatrix(base)
                 V.inv <- solve(V)
 
@@ -154,11 +154,9 @@ fit_SensIAT_marginal_mean_model_generalized <-
                     as.vector((V.inv %*% B) * exp(-mu))
                 }
             } else if (link == "logit") {
-                link.fun <- function(mu) log(mu / (1 - mu))
+                # link.fun <- function(mu) log(mu / (1 - mu))
                 inv.link <- function(eta) exp(eta) / (1 + exp(eta))
-                d1.inv.link <- function(eta) {
-                    exp(eta) / ((1 + exp(eta))^2)
-                }
+                # d1.inv.link <- function(eta) {exp(eta) / ((1 + exp(eta))^2)}
                 V <- GramMatrix(base)
                 V.inv <- solve(V)
 
@@ -192,9 +190,9 @@ fit_SensIAT_marginal_mean_model_generalized <-
             #     }
         } else if (loss == "quasi-likelihood") {
             if (link == "identity") {
-                link.fun <- function(mu) mu
+                # link.fun <- function(mu) mu
                 inv.link <- function(eta) eta
-                d1.inv.link <- function(eta) rep(1, length(eta))
+                # d1.inv.link <- function(eta) rep(1, length(eta))
                 V <- GramMatrix(base)
                 V.inv <- solve(V)
                 
@@ -278,6 +276,7 @@ fit_SensIAT_marginal_mean_model_generalized <-
 
         id <- rlang::eval_tidy({{id}}, data)
         fu <- time > 0
+        unique_ids <- unique(id)
 
         intensity <- estimate_baseline_intensity(
             intensity.model = intensity.model,
@@ -286,73 +285,94 @@ fit_SensIAT_marginal_mean_model_generalized <-
         exp_gamma <- predict(intensity.model, newdata = data[fu, ], type = "risk", reference = "zero")
         intensity_weights <- intensity$baseline_intensity * exp_gamma
 
-        # Define the influence function.
-        influence <- function(beta) {
-            valid.time <- time[fu] >= tmin & time[fu] <= tmax
-            weights <- purrr::map(time[fu][valid.time], W, beta = beta)
+        # Pre-compute term1 components (they only depend on alpha, not beta)
+        valid.time <- time[fu] >= tmin & time[fu] <= tmax
+        expected <- compute_SensIAT_expected_values(
+            model = outcome.model,
+            alpha = alpha,
+            new.data = data[fu, ][valid.time, ]
+        )
+        term1.deviation.by.observation <-
+            (Y[fu][valid.time] - expected$E_Yexp_alphaY / expected$E_exp_alphaY) /
+            intensity_weights[valid.time]
 
-            # Cache expected values for term1 (they only depend on alpha, not beta)
-            if (!exists(".expected_cache", envir = environment(influence))) {
-                .expected_cache <- compute_SensIAT_expected_values(
-                    model = outcome.model,
-                    alpha = alpha,
-                    new.data = data[fu, ][valid.time, ]
-                )
-                assign(".expected_cache", .expected_cache, envir = environment(influence))
-            }
-            expected <- get(".expected_cache", envir = environment(influence))
-
-            term1.deviation.by.observation <-
-                (Y[fu][valid.time] - expected$E_Yexp_alphaY / expected$E_exp_alphaY) / 
-                intensity_weights[valid.time]
-
-            term1.by.observation <- purrr::map2(weights, term1.deviation.by.observation, `*`)
-
-
-            compute_term2_for_patient <- function(patient_id) {
-                patient_data <- data[id == patient_id, ]
-                if (term2_method == "fast") {
-                    compute_term2_influence_fast(
-                        patient_data = patient_data,
-                        outcome_model = outcome.model,
-                        base = base,
-                        alpha = alpha,
-                        marginal_beta = beta,
-                        V_inv = V.inv,
-                        tmin = tmin,
-                        tmax = tmax,
-                        impute_fn = impute_data,
-                        inv_link = inv.link,
-                        W = W
-                    )
-                } else {
-                    compute_term2_influence_original(
-                        patient_data = patient_data,
-                        outcome_model = outcome.model,
-                        base = base,
-                        alpha = alpha,
-                        marginal_beta = beta,
-                        V_inv = V.inv,
-                        tmin = tmin,
-                        tmax = tmax,
-                        impute_fn = impute_data,
-                        inv_link = inv.link,
-                        W = W
-                    )
-                }
-            }
-
-            term2.by.patient <- map(unique(id), compute_term2_for_patient)
-
-            reduce(term2.by.patient, `+`) + reduce(term1.by.observation, `+`)
+        # Select term2 computation function once to avoid repeated conditionals
+        term2_fn <- if (term2_method == "fast") {
+            compute_term2_influence_fast
+        } else {
+            compute_term2_influence_original
         }
 
-        influence(rep(1 / ncol(base), ncol(base)))
+        # Helper function to compute influence for a single patient
+        compute_influence_by_patient <- function(patient_id, beta) {
+            patient_data <- data[id == patient_id, ]
+            term2 <- term2_fn(
+                patient_data = patient_data,
+                outcome_model = outcome.model,
+                base = base,
+                alpha = alpha,
+                marginal_beta = beta,
+                V_inv = V.inv,
+                tmin = tmin,
+                tmax = tmax,
+                impute_fn = impute_data,
+                inv_link = inv.link,
+                W = W
+            )
+            
+            # Term1 contributions for this patient (from observations where time[fu] is valid)
+            patient_indices_in_fu <- which(id[fu] == patient_id)[which(id[fu] == patient_id) %in% which(valid.time)]
+            term1 <- sum(term1.deviation.by.observation[patient_indices_in_fu])
+            
+            list(id = patient_id, term1 = term1, term2 = term2)
+        }
+
+        # Define the influence function that aggregates by-patient influences
+        influence <- function(beta) {
+            # Compute weights for all valid timepoints (depends on beta)
+            weights <- purrr::map(time[fu][valid.time], W, beta = beta)
+            term1.by.observation <- purrr::map2(weights, term1.deviation.by.observation, `*`)
+            
+            # Get term2 by patient
+            influence_by_patient <- map(unique_ids, compute_influence_by_patient, beta = beta)
+            
+            # Aggregate: sum all term1 observations + sum all term2 patient contributions
+            reduce(term1.by.observation, `+`) + reduce(map(influence_by_patient, \(x) x$term2), `+`)
+        }
+
         time <- system.time(
             solution <- BB::sane(
                 par = rep(1 / ncol(base), ncol(base)),
                 fn = influence,
                 control = BBsolve.control
             )
+        )
+        if (solution$convergence != 0) {
+            stop("fit_SensIAT_marginal_mean_model_generalized: Optimization did not converge. Message: ", 
+                 solution$message)
+        }
+
+        # Compute final influence by patient at the solution
+        final_influence_by_patient <- map(unique_ids, compute_influence_by_patient, beta = solution$par)
+        influence_df <- tibble(
+            id = purrr::map_chr(final_influence_by_patient, \(x) x$id),
+            term1 = purrr::map_dbl(final_influence_by_patient, \(x) x$term1),
+            term2 = purrr::map(final_influence_by_patient, \(x) x$term2)
+        )
+
+        structure(
+            list(
+                models = list(
+                    intensity = intensity.model,
+                    outcome = outcome.model
+                ),
+                data = data,
+                influence = influence_df,
+                base = base,
+                alpha = alpha,
+                beta = solution$par,
+                time = time
+            ),
+            class = "SensIAT_marginal_mean_model_generalized"
         )
     }
