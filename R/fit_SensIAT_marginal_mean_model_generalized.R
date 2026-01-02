@@ -169,7 +169,7 @@ fit_SensIAT_marginal_mean_model_generalized <-
                     # So 1/[s(eta)(1-s(eta))] = (1+exp(eta))^2/exp(eta)
                     # W_1 = V^{-1} B(t) * (1+exp(eta))^2 / exp(eta)
                     # For numerical stability, rewrite as: V^{-1} B(t) * (1 + 2*exp(-eta) + exp(-2*eta))
-                    as.vector((V.inv %*% B) * (1 + 2 * exp(-eta) + exp(-2 * eta)))
+                    as.vector((V.inv %*% B) * (exp(eta) + 2 + exp(-eta)))
                 }
             } else {
                 stop("Unsupported link function for lp_mse loss.")
