@@ -15,7 +15,8 @@ compute_term2_influence_original(
   tmax,
   impute_fn,
   inv_link,
-  W
+  W,
+  ...
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ compute_term2_influence_original(
 \item{inv_link}{Inverse link function (e.g., exp for log link)}
 
 \item{W}{Weight function W(t, beta)}
+
+\item{...}{Additional arguments (not used)}
 }
 \value{
 Numeric vector of length ncol(base) with term2 influence values

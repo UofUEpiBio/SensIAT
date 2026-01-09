@@ -15,7 +15,8 @@ compute_term2_influence_fast(
   tmax,
   impute_fn,
   inv_link,
-  W
+  W,
+  time_var = NULL
 )
 }
 \arguments{

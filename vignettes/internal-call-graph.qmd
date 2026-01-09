@@ -105,18 +105,21 @@ graph LR
 
 ```{mermaid}
 graph TD
-  fit_SensIAT_marginal_mean_model --> compute_influence_terms
-  fit_SensIAT_marginal_mean_model_generalized --> fit_SensIAT_marginal_mean_model
-  fit_SensIAT_marginal_mean_model_generalized --> compute_SensIAT_expected_values
+  fit_SensIAT_marginal_mean_model_generalized --> |"link=='identity'"| fit_SensIAT_marginal_mean_model
+  fit_SensIAT_marginal_mean_model_generalized --> estimate_baseline_intensity
+  fit_SensIAT_marginal_mean_model_generalized --> |"for observed data to compute term 1"|compute_SensIAT_expected_values
+  subgraph term2fast["fast - SIM only"]
   fit_SensIAT_marginal_mean_model_generalized --> compute_term2_influence_fast
-  fit_SensIAT_marginal_mean_model_generalized --> compute_term2_influence_original
-  compute_influence_terms --> compute_glm_influence_term_1_for_all
-  compute_influence_terms --> compute_glm_influence_term_2_for_all_patients
-  compute_glm_influence_term_2_for_all_patients --> compute_glm_influence_term_2_for_individual
   compute_term2_influence_fast --> pcoriaccel_integrate_simp
+  end
+  subgraph term2original["generic"]
+  fit_SensIAT_marginal_mean_model_generalized --> compute_term2_influence_original
+  end
   compute_term2_influence_original --> pcoriaccel_integrate_simp
   pcoriaccel_integrate_simp --> pcoriaccel_evaluate_basis
   pcoriaccel_integrate_simp --> pcoriaccel_evaluate_basis_mat
+
+  style term2fast fill:#e1f5ff,stroke:#01579b,color:#000
 ```
 
 ## Linear
@@ -129,6 +132,7 @@ graph TD
     compute_influence_terms --> compute_glm_influence_term_2_for_all_patients
     compute_glm_influence_term_2_for_all_patients --> compute_glm_influence_term_2_for_individual
   end
+style one fill:#e1f5ff,stroke:#01579b,color:#000
 ```
 
 

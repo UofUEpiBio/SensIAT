@@ -98,8 +98,8 @@ fit_SensIAT_marginal_mean_model_generalized <-
                  tol = 1e-6
              ),
              term2_method = c("fast", "original")) {
-        time <- enquo(time)
-        time <- rlang::eval_tidy({{time}}, data)
+        time.var <- enquo(time)
+        time <- rlang::eval_tidy({{time.var}}, data)
 
         id <- enquo(id)
 
@@ -195,7 +195,7 @@ fit_SensIAT_marginal_mean_model_generalized <-
                 # d1.inv.link <- function(eta) rep(1, length(eta))
                 V <- GramMatrix(base)
                 V.inv <- solve(V)
-                
+
                 W <- function(t, beta) {
                     B <- pcoriaccel_evaluate_basis(base, t)
                     # For identity link: ds/dz = 1, so V_3 = V_1 (constant)
@@ -205,16 +205,16 @@ fit_SensIAT_marginal_mean_model_generalized <-
                 link.fun <- log
                 inv.link <- exp
                 d1.inv.link <- exp
-                
+
                 # For log link, V_3 depends on beta, so we need numerical integration
                 # V_3(beta) = int B(t) B(t)' * exp(B(t)'beta) dt
                 # This requires numerical integration for each beta
                 # W_3(t; beta) = V_3(beta)^{-1} B(t)
-                
+
                 # Placeholder V.inv (not used, but needed for function signature)
                 V <- GramMatrix(base)
                 V.inv <- solve(V)
-                
+
                 W <- function(t, beta) {
                     # Compute V_3(beta) via numerical integration
                     integrand <- function(s) {
@@ -223,13 +223,13 @@ fit_SensIAT_marginal_mean_model_generalized <-
                         # Return B(s) B(s)' * exp(eta_s) as a vector (column-major)
                         as.vector(tcrossprod(Bs) * exp(eta_s))
                     }
-                    
+
                     V3_result <- pcoriaccel_integrate_simp(integrand, tmin, tmax)
                     V3_vec <- V3_result$Q
                     n <- ncol(base)
                     V3 <- matrix(V3_vec, n, n)
                     V3.inv <- solve(V3)
-                    
+
                     B <- pcoriaccel_evaluate_basis(base, t)
                     as.vector(V3.inv %*% B)
                 }
@@ -239,14 +239,14 @@ fit_SensIAT_marginal_mean_model_generalized <-
                 d1.inv.link <- function(eta) {
                     exp(eta) / ((1 + exp(eta))^2)
                 }
-                
+
                 # For logit link: ds/dz = exp(z)/(1+exp(z))^2
                 # V_3(beta) = int B(t) B(t)' * exp(B(t)'beta)/(1+exp(B(t)'beta))^2 dt
-                
+
                 # Placeholder V.inv (not used, but needed for function signature)
                 V <- GramMatrix(base)
                 V.inv <- solve(V)
-                
+
                 W <- function(t, beta) {
                     # Compute V_3(beta) via numerical integration
                     integrand <- function(s) {
@@ -257,13 +257,13 @@ fit_SensIAT_marginal_mean_model_generalized <-
                         # Return B(s) B(s)' * weight as a vector (column-major)
                         as.vector(tcrossprod(Bs) * weight)
                     }
-                    
+
                     V3_result <- pcoriaccel_integrate_simp(integrand, tmin, tmax)
                     V3_vec <- V3_result$Q
                     n <- ncol(base)
                     V3 <- matrix(V3_vec, n, n)
                     V3.inv <- solve(V3)
-                    
+
                     B <- pcoriaccel_evaluate_basis(base, t)
                     as.vector(V3.inv %*% B)
                 }
@@ -278,23 +278,28 @@ fit_SensIAT_marginal_mean_model_generalized <-
         fu <- time > 0
         unique_ids <- unique(id)
 
+        # tmin assumed to be > 0 so that all included.obs imply followup.
+        if(tmin==0){
+            rlang::warn("tmin must be > 0")
+        }
+        included.obs <- time >= tmin & time <= tmax
+
         intensity <- estimate_baseline_intensity(
             intensity.model = intensity.model,
-            data = data[fu, ]
+            data = data[included.obs, ]
         )
-        exp_gamma <- predict(intensity.model, newdata = data[fu, ], type = "risk", reference = "zero")
+        exp_gamma <- predict(intensity.model, newdata = data[included.obs, ], type = "risk", reference = "zero")
         intensity_weights <- intensity$baseline_intensity * exp_gamma
 
         # Pre-compute term1 components (they only depend on alpha, not beta)
-        valid.time <- time[fu] >= tmin & time[fu] <= tmax
         expected <- compute_SensIAT_expected_values(
             model = outcome.model,
             alpha = alpha,
-            new.data = data[fu, ][valid.time, ]
+            new.data = data[included.obs, ]
         )
         term1.deviation.by.observation <-
-            (Y[fu][valid.time] - expected$E_Yexp_alphaY / expected$E_exp_alphaY) /
-            intensity_weights[valid.time]
+            (Y[included.obs] - expected$E_Yexp_alphaY / expected$E_exp_alphaY) /
+            intensity_weights
 
         # Select term2 computation function once to avoid repeated conditionals
         term2_fn <- if (term2_method == "fast") {
@@ -304,7 +309,13 @@ fit_SensIAT_marginal_mean_model_generalized <-
         }
 
         # Helper function to compute influence for a single patient
-        compute_influence_by_patient <- function(patient_id, beta) {
+        compute_influence_term_1_by_observation <- function(beta) {
+            weights <- purrr::map(time[included.obs], W, beta = beta)
+            purrr::map2(weights, term1.deviation.by.observation, `*`)
+        }
+        compute_influence_by_patient <-
+        function(patient_id, beta,
+                 term1.by.observation = compute_influence_term_1_by_observation(beta)) {
             patient_data <- data[id == patient_id, ]
             term2 <- term2_fn(
                 patient_data = patient_data,
@@ -317,30 +328,31 @@ fit_SensIAT_marginal_mean_model_generalized <-
                 tmax = tmax,
                 impute_fn = impute_data,
                 inv_link = inv.link,
-                W = W
+                W = W,
+                time_var = time.var
             )
-            
+
             # Term1 contributions for this patient (from observations where time[fu] is valid)
-            patient_indices_in_fu <- which(id[fu] == patient_id)[which(id[fu] == patient_id) %in% which(valid.time)]
-            term1 <- sum(term1.deviation.by.observation[patient_indices_in_fu])
-            
-            list(id = patient_id, term1 = term1, term2 = term2)
+            patient_indices_in_fu <- which(id[included.obs] == patient_id)
+            if(length(patient_indices_in_fu) == 0){
+                term1 <- rep(0, ncol(base))
+            } else {
+                term1 <- reduce(term1.by.observation[patient_indices_in_fu], `+`)
+            }
+
+            list(id = patient_id, term1 = term1, term2 = term2, total= term1 + term2)
         }
+
 
         # Define the influence function that aggregates by-patient influences
         influence <- function(beta) {
-            # Compute weights for all valid timepoints (depends on beta)
-            weights <- purrr::map(time[fu][valid.time], W, beta = beta)
-            term1.by.observation <- purrr::map2(weights, term1.deviation.by.observation, `*`)
-            
-            # Get term2 by patient
             influence_by_patient <- map(unique_ids, compute_influence_by_patient, beta = beta)
-            
+
             # Aggregate: sum all term1 observations + sum all term2 patient contributions
-            reduce(term1.by.observation, `+`) + reduce(map(influence_by_patient, \(x) x$term2), `+`)
+            reduce(map(influence_by_patient, getElement, 'total'), `+`)
         }
 
-        time <- system.time(
+        ptime <- system.time(
             solution <- BB::sane(
                 par = rep(1 / ncol(base), ncol(base)),
                 fn = influence,
@@ -348,16 +360,17 @@ fit_SensIAT_marginal_mean_model_generalized <-
             )
         )
         if (solution$convergence != 0) {
-            stop("fit_SensIAT_marginal_mean_model_generalized: Optimization did not converge. Message: ", 
+            stop("fit_SensIAT_marginal_mean_model_generalized: Optimization did not converge. Message: ",
                  solution$message)
         }
 
         # Compute final influence by patient at the solution
         final_influence_by_patient <- map(unique_ids, compute_influence_by_patient, beta = solution$par)
         influence_df <- tibble(
-            id = purrr::map_chr(final_influence_by_patient, \(x) x$id),
-            term1 = purrr::map_dbl(final_influence_by_patient, \(x) x$term1),
-            term2 = purrr::map(final_influence_by_patient, \(x) x$term2)
+            id = purrr::map(final_influence_by_patient, \(x) x$id) |> purrr::list_c(),
+            term1 = purrr::map(final_influence_by_patient, \(x) x$term1),
+            term2 = purrr::map(final_influence_by_patient, \(x) x$term2),
+            total = purrr::map(final_influence_by_patient, \(x) x$total)
         )
 
         structure(
@@ -368,11 +381,14 @@ fit_SensIAT_marginal_mean_model_generalized <-
                 ),
                 data = data,
                 influence = influence_df,
-                base = base,
                 alpha = alpha,
-                beta = solution$par,
-                time = time
+                coefficients = solution$par,
+                # coefficient.variance = NULL,
+                influence.args = list(...),
+                base = base,
+                V.inverse = V.inv
             ),
-            class = "SensIAT_marginal_mean_model_generalized"
+            class = "SensIAT_marginal_mean_model_generalized",
+            call = match.call(expand.dots = TRUE)
         )
     }

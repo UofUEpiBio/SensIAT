@@ -175,7 +175,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + log", {
                 loss = "lp_mse",
                 link = "log",
                 impute_data = create_impute_fn(),
-                BBsolve.control = list(maxit = 5, tol = 1e-3),
+                BBsolve.control = list(maxit = 100, tol = 1e-3),
                 term2_method = "fast"
             )
         }, classes = "simpleWarning")
@@ -198,7 +198,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + log (original t
             loss = "lp_mse",
             link = "log",
             impute_data = create_impute_fn(),
-            BBsolve.control = list(maxit = 5, tol = 1e-3),
+            BBsolve.control = list(maxit = 100, tol = 1e-3),
             term2_method = "original"
         )
     })
@@ -220,7 +220,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + logit", {
                 loss = "lp_mse",
                 link = "logit",
                 impute_data = create_impute_fn(),
-                BBsolve.control = list(maxit = 5, tol = 1e-3),
+                BBsolve.control = list(maxit = 100, tol = 1e-3),
                 term2_method = "fast"
             )
         }, classes = "simpleWarning")
@@ -243,7 +243,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: quasi-likelihood + ident
             loss = "quasi-likelihood",
             link = "identity",
             impute_data = create_impute_fn(),
-            BBsolve.control = list(maxit = 5, tol = 1e-3),
+            BBsolve.control = list(maxit = 100, tol = 1e-3),
             term2_method = "fast"
         )
     })
@@ -265,7 +265,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: quasi-likelihood + log",
                 loss = "quasi-likelihood",
                 link = "log",
                 impute_data = create_impute_fn(),
-                BBsolve.control = list(maxit = 5, tol = 1e-3),
+                BBsolve.control = list(maxit = 100, tol = 1e-3),
                 term2_method = "fast"
             )
         }, classes = "simpleWarning")
@@ -288,7 +288,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: quasi-likelihood + logit
                 loss = "quasi-likelihood",
                 link = "logit",
                 impute_data = create_impute_fn(),
-                BBsolve.control = list(maxit = 5, tol = 1e-3),
+                BBsolve.control = list(maxit = 100, tol = 1e-3, trace = TRUE,  triter=1),
                 term2_method = "fast"
             )
         }, classes = "simpleWarning")

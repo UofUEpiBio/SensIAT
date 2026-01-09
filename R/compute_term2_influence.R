@@ -44,6 +44,7 @@
 #' @param impute_fn Function to impute data at time t: impute_fn(t, patient_data) -> data.frame
 #' @param inv_link Inverse link function (e.g., exp for log link)
 #' @param W Weight function W(t, beta)
+#' @param ... Additional arguments (not used)
 #'
 #' @return Numeric vector of length ncol(base) with term2 influence values
 #'
@@ -59,7 +60,8 @@ compute_term2_influence_original <- function(
   tmax,
   impute_fn,
   inv_link,
-  W
+  W,
+  ...
 ) {
     # Integrand
     term2_integrand <- function(t) {
@@ -103,7 +105,8 @@ compute_term2_influence_fast <- function(
   tmax,
   impute_fn,
   inv_link,
-  W
+  W,
+  time_var = NULL
 ) {
         assertthat::assert_that(
                 is(outcome_model, "SensIAT::Single-index-outcome-model"),
@@ -118,21 +121,26 @@ compute_term2_influence_fast <- function(
     # The patient_data should have the outcome variable
     patient_outcomes <- patient_data[[outcome_var]]
 
-    # For time, we need to find it. Common patterns: Time, time, t, T
-    # Or we can look for the column that's not the outcome
-    time_candidates <- c("Time", "time", "t", "T", "obstime", "obs_time")
-    time_var <- NULL
-    for (candidate in time_candidates) {
-        if (candidate %in% names(patient_data)) {
-            time_var <- candidate
-            break
-        }
-    }
 
-    # If still not found, take the first numeric column that's not the outcome
-    if (is.null(time_var)) {
-        numeric_cols <- names(patient_data)[sapply(patient_data, is.numeric)]
-        time_var <- setdiff(numeric_cols, outcome_var)[1]
+    if(is.null(time_var)){
+        # For time, we need to find it, ifnot provided. Common patterns: Time, time, t, T
+        # Or we can look for the column that's not the outcome
+        time_candidates <- c("..time..", "Time", "time", "t", "T", "obstime", "obs_time")
+        time_var <- NULL
+        for (candidate in time_candidates) {
+            if (candidate %in% names(patient_data)) {
+                time_var <- candidate
+                break
+            }
+        }
+
+        # If still not found, take the first numeric column that's not the outcome
+        if (is.null(time_var)) {
+            numeric_cols <- names(patient_data)[sapply(patient_data, is.numeric)]
+            time_var <- setdiff(numeric_cols, outcome_var)[1]
+        }
+    } else {
+        tidyselect::vars_select(names(patient_data), !!time_var) -> time_var
     }
 
     if (is.null(time_var) || is.na(time_var)) {
