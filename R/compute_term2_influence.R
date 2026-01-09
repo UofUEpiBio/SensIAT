@@ -44,6 +44,7 @@
 #' @param impute_fn Function to impute data at time t: impute_fn(t, patient_data) -> data.frame
 #' @param inv_link Inverse link function (e.g., exp for log link)
 #' @param W Weight function W(t, beta)
+#' @param expected_get Optional caching function: expected_get(t) -> list(E_exp_alphaY, E_Yexp_alphaY)
 #' @param ... Additional arguments (not used)
 #'
 #' @return Numeric vector of length ncol(base) with term2 influence values
@@ -61,16 +62,24 @@ compute_term2_influence_original <- function(
   impute_fn,
   inv_link,
   W,
+  expected_get = NULL,
   ...
 ) {
     # Integrand
     term2_integrand <- function(t) {
         weight <- W(t, marginal_beta)
-        expected <- compute_SensIAT_expected_values(
-            model = outcome_model,
-            alpha = alpha,
-            new.data = impute_fn(t, patient_data)
-        )
+        expected <- if (!is.null(expected_get)) {
+            expected_get(t)
+        } else {
+            compute_SensIAT_expected_values(
+                model = outcome_model,
+                alpha = alpha,
+                new.data = impute_fn(t, patient_data)
+            )
+        }
+        if (!is.list(expected) || !is.finite(expected$E_exp_alphaY) || !is.finite(expected$E_Yexp_alphaY) || expected$E_exp_alphaY <= 0) {
+            return(rep(0, ncol(base)))
+        }
         B <- pcoriaccel_evaluate_basis(base, t)
         weight * as.numeric(
             expected$E_Yexp_alphaY / expected$E_exp_alphaY -
@@ -90,6 +99,7 @@ compute_term2_influence_original <- function(
 #' Compute term2 influence for a patient (fast method)
 #'
 #' @inheritParams compute_term2_influence_original
+#' @param expected_get Optional caching function: expected_get(t) -> list(E_exp_alphaY, E_Yexp_alphaY)
 #'
 #' @return Numeric vector of length ncol(base) with term2 influence values
 #'
@@ -105,7 +115,8 @@ compute_term2_influence_fast <- function(
   tmax,
   impute_fn,
   inv_link,
-  W,
+    W,
+    expected_get = NULL,
   time_var = NULL
 ) {
         assertthat::assert_that(
@@ -163,7 +174,8 @@ compute_term2_influence_fast <- function(
         patient_outcomes = patient_outcomes,
         marginal_beta = marginal_beta,
         V_inv = V_inv,
-        W = W
+        W = W,
+        expected_get = expected_get
     )
 
     # Split integration into segments at observation times to handle discontinuities

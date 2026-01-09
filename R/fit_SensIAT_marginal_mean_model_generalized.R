@@ -279,7 +279,7 @@ fit_SensIAT_marginal_mean_model_generalized <-
         unique_ids <- unique(id)
 
         # tmin assumed to be > 0 so that all included.obs imply followup.
-        if(tmin==0){
+        if (tmin == 0) {
             rlang::warn("tmin must be > 0")
         }
         included.obs <- time >= tmin & time <= tmax
@@ -308,6 +308,34 @@ fit_SensIAT_marginal_mean_model_generalized <-
             compute_term2_influence_original
         }
 
+        # Build per-patient expected value caches (do not depend on beta)
+        expected_cache_map <- new.env(parent = emptyenv())
+        get_expected_cache_for <- function(patient_id) {
+            key <- as.character(patient_id)
+            if (!exists(key, expected_cache_map, inherits = FALSE)) {
+                patient_data_local <- data[id == patient_id, ]
+                cache_env <- new.env(parent = emptyenv())
+                expected_get <- function(t) {
+                    k <- as.character(signif(t, 12))
+                    if (!exists(k, cache_env, inherits = FALSE)) {
+                        df <- impute_data(t, patient_data_local)
+                        ev <- compute_SensIAT_expected_values(
+                            model = outcome.model,
+                            alpha = alpha,
+                            new.data = df
+                        )
+                        cache_env[[k]] <- list(
+                            E_exp_alphaY = ev$E_exp_alphaY,
+                            E_Yexp_alphaY = ev$E_Yexp_alphaY
+                        )
+                    }
+                    cache_env[[k]]
+                }
+                expected_cache_map[[key]] <- expected_get
+            }
+            expected_cache_map[[key]]
+        }
+
         # Helper function to compute influence for a single patient
         compute_influence_term_1_by_observation <- function(beta) {
             weights <- purrr::map(time[included.obs], W, beta = beta)
@@ -329,6 +357,7 @@ fit_SensIAT_marginal_mean_model_generalized <-
                 impute_fn = impute_data,
                 inv_link = inv.link,
                 W = W,
+                expected_get = get_expected_cache_for(patient_id),
                 time_var = time.var
             )
 

@@ -27,6 +27,7 @@
 #' @param marginal_beta Coefficients (beta) for the marginal mean spline basis
 #' @param V_inv Precomputed inverse Gram matrix for base (optional; computed if NULL)
 #' @param W Weight function W(t, beta)
+#' @param expected_get Optional caching function for expected values: expected_get(t) -> list(E_exp_alphaY, E_Yexp_alphaY)
 #' @return A function f(t) computing the term2 integrand at scalar t
 #' @export
 make_term2_integrand_fast <- function(
@@ -37,7 +38,8 @@ make_term2_integrand_fast <- function(
   patient_outcomes,
   marginal_beta,
   V_inv = NULL,
-  W = NULL
+    W = NULL,
+    expected_get = NULL
 ) {
     stopifnot(is.numeric(patient_times), is.numeric(patient_outcomes))
     stopifnot(length(patient_times) == length(patient_outcomes))
@@ -138,21 +140,30 @@ make_term2_integrand_fast <- function(
         # Single-index xb for pmf estimation
         xb <- sum(x_row * beta_outcome)
 
-        # Estimate pmf and expectations directly
-        pmf <- pcoriaccel_estimate_pmf(
-            Xb = Xb_all,
-            Y = Yi,
-            xi = xb,
-            y_seq = y_seq,
-            h = bandwidth,
-            kernel = kernel
-        )
-        if (all(pmf == 0)) {
-            return(rep(0, ncol(base)))
-        }
+        # Expected values: use cache if provided, else compute
+        if (!is.null(expected_get)) {
+            ev <- expected_get(t)
+            E_exp_alphaY <- ev$E_exp_alphaY
+            E_Yexp_alphaY <- ev$E_Yexp_alphaY
+            if (!is.finite(E_exp_alphaY) || !is.finite(E_Yexp_alphaY) || E_exp_alphaY <= 0) {
+                return(rep(0, ncol(base)))
+            }
+        } else {
+            pmf <- pcoriaccel_estimate_pmf(
+                Xb = Xb_all,
+                Y = Yi,
+                xi = xb,
+                y_seq = y_seq,
+                h = bandwidth,
+                kernel = kernel
+            )
+            if (all(pmf == 0)) {
+                return(rep(0, ncol(base)))
+            }
 
-        E_exp_alphaY <- sum(exp(alpha * y_seq) * pmf)
-        E_Yexp_alphaY <- sum(y_seq * exp(alpha * y_seq) * pmf)
+            E_exp_alphaY <- sum(exp(alpha * y_seq) * pmf)
+            E_Yexp_alphaY <- sum(y_seq * exp(alpha * y_seq) * pmf)
+        }
 
         # Marginal mean pieces
         B <- pcoriaccel_evaluate_basis(base, t)
