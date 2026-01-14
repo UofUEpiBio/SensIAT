@@ -397,76 +397,94 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: fast term2 timing compar
     setup <- generate_test_data(link = "log", n_subjects = 18)
     attr(setup$intensity.model, "bandwidth") <- 7
 
+    alphas <- c(-0.5, 0, 0.5)
+
     fit_original_nocache <- function() {
-        fit_SensIAT_marginal_mean_model_generalized(
-            data = setup$data,
-            time = ..time..,
-            id = ..id..,
-            alpha = 0,
-            knots = setup$knots,
-            outcome.model = setup$outcome.model,
-            intensity.model = setup$intensity.model,
-            loss = "lp_mse",
-            link = "log",
-            impute_data = create_impute_fn(),
-            BBsolve.control = list(maxit = 12, tol = 1e-2, trace = FALSE),
-            term2_method = "original",
-            use_expected_cache = FALSE
-        )
+        last <- NULL
+        for (a in alphas) {
+            last <- fit_SensIAT_marginal_mean_model_generalized(
+                data = setup$data,
+                time = ..time..,
+                id = ..id..,
+                alpha = a,
+                knots = setup$knots,
+                outcome.model = setup$outcome.model,
+                intensity.model = setup$intensity.model,
+                loss = "lp_mse",
+                link = "log",
+                impute_data = create_impute_fn(),
+                BBsolve.control = list(maxit = 12, tol = 1e-2, trace = FALSE),
+                term2_method = "original",
+                use_expected_cache = FALSE
+            )
+        }
+        last
     }
 
     fit_original_cached <- function() {
-        fit_SensIAT_marginal_mean_model_generalized(
-            data = setup$data,
-            time = ..time..,
-            id = ..id..,
-            alpha = 0,
-            knots = setup$knots,
-            outcome.model = setup$outcome.model,
-            intensity.model = setup$intensity.model,
-            loss = "lp_mse",
-            link = "log",
-            impute_data = create_impute_fn(),
-            BBsolve.control = list(maxit = 12, tol = 1e-2, trace = FALSE),
-            term2_method = "original",
-            use_expected_cache = TRUE
-        )
+        last <- NULL
+        for (a in alphas) {
+            last <- fit_SensIAT_marginal_mean_model_generalized(
+                data = setup$data,
+                time = ..time..,
+                id = ..id..,
+                alpha = a,
+                knots = setup$knots,
+                outcome.model = setup$outcome.model,
+                intensity.model = setup$intensity.model,
+                loss = "lp_mse",
+                link = "log",
+                impute_data = create_impute_fn(),
+                BBsolve.control = list(maxit = 12, tol = 1e-2, trace = FALSE),
+                term2_method = "original",
+                use_expected_cache = TRUE
+            )
+        }
+        last
     }
 
     fit_fast_nocache <- function() {
-        fit_SensIAT_marginal_mean_model_generalized(
-            data = setup$data,
-            time = ..time..,
-            id = ..id..,
-            alpha = 0,
-            knots = setup$knots,
-            outcome.model = setup$outcome.model,
-            intensity.model = setup$intensity.model,
-            loss = "lp_mse",
-            link = "log",
-            impute_data = create_impute_fn(),
-            BBsolve.control = list(maxit = 12, tol = 1e-2, trace = FALSE),
-            term2_method = "fast",
-            use_expected_cache = FALSE
-        )
+        last <- NULL
+        for (a in alphas) {
+            last <- fit_SensIAT_marginal_mean_model_generalized(
+                data = setup$data,
+                time = ..time..,
+                id = ..id..,
+                alpha = a,
+                knots = setup$knots,
+                outcome.model = setup$outcome.model,
+                intensity.model = setup$intensity.model,
+                loss = "lp_mse",
+                link = "log",
+                impute_data = create_impute_fn(),
+                BBsolve.control = list(maxit = 12, tol = 1e-2, trace = FALSE),
+                term2_method = "fast",
+                use_expected_cache = FALSE
+            )
+        }
+        last
     }
 
     fit_fast_cached <- function() {
-        fit_SensIAT_marginal_mean_model_generalized(
-            data = setup$data,
-            time = ..time..,
-            id = ..id..,
-            alpha = 0,
-            knots = setup$knots,
-            outcome.model = setup$outcome.model,
-            intensity.model = setup$intensity.model,
-            loss = "lp_mse",
-            link = "log",
-            impute_data = create_impute_fn(),
-            BBsolve.control = list(maxit = 12, tol = 1e-2, trace = FALSE),
-            term2_method = "fast",
-            use_expected_cache = TRUE
-        )
+        last <- NULL
+        for (a in alphas) {
+            last <- fit_SensIAT_marginal_mean_model_generalized(
+                data = setup$data,
+                time = ..time..,
+                id = ..id..,
+                alpha = a,
+                knots = setup$knots,
+                outcome.model = setup$outcome.model,
+                intensity.model = setup$intensity.model,
+                loss = "lp_mse",
+                link = "log",
+                impute_data = create_impute_fn(),
+                BBsolve.control = list(maxit = 12, tol = 1e-2, trace = FALSE),
+                term2_method = "fast",
+                use_expected_cache = TRUE
+            )
+        }
+        last
     }
 
     # Warm-up to avoid one-time overhead dominating timings
