@@ -77,7 +77,10 @@ compute_term2_influence_original <- function(
                 new.data = impute_fn(t, patient_data)
             )
         }
-        if (!is.list(expected) || !is.finite(expected$E_exp_alphaY) || !is.finite(expected$E_Yexp_alphaY) || expected$E_exp_alphaY <= 0) {
+        if   ( !is.list(expected) || !is.finite(expected$E_exp_alphaY) 
+            || !is.finite(expected$E_Yexp_alphaY) 
+            || expected$E_exp_alphaY <= 0
+             ) {
             return(rep(0, ncol(base)))
         }
         B <- pcoriaccel_evaluate_basis(base, t)
@@ -115,15 +118,15 @@ compute_term2_influence_fast <- function(
   tmax,
   impute_fn,
   inv_link,
-    W,
-    expected_get = NULL,
+  W,
+  expected_get = NULL,
   time_var = NULL
 ) {
-        assertthat::assert_that(
-                is(outcome_model, "SensIAT::Single-index-outcome-model"),
-                !is.null(attr(outcome_model, "kernel")),
-                !is.null(outcome_model$bandwidth)
-        )
+    assertthat::assert_that(
+        is(outcome_model, "SensIAT::Single-index-outcome-model"),
+        !is.null(attr(outcome_model, "kernel")),
+        !is.null(outcome_model$bandwidth)
+    )
 
     # Extract outcome variable name from the model formula
     outcome_var <- as.character(rlang::f_lhs(formula(outcome_model)))
