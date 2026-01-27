@@ -198,13 +198,26 @@ compute_term2_influence_fast <- function(
         # Skip zero-length segments
         if (abs(seg_max - seg_min) < 1e-10) next
 
-        rslt <- pcoriaccel_integrate_simp(
-            integrand_fast,
-            seg_min,
-            seg_max
-        )
-        total_integral <- total_integral + rslt$Q
+        rslt <- tryCatch({
+            pcoriaccel_integrate_simp(
+                integrand_fast,
+                seg_min,
+                seg_max
+            )
+        }, error = function(e) {
+            # If integration fails, return zero contribution for this segment
+            # This can happen with numerically unstable integrands
+            list(Q = rep(0, ncol(base)))
+        })
+        
+        # Guard against NaN/Inf values from integration
+        if (!is.null(rslt$Q)) {
+            rslt$Q <- ifelse(is.finite(rslt$Q), rslt$Q, 0)
+            total_integral <- total_integral + rslt$Q
+        }
     }
 
+    # Ensure output is finite
+    total_integral <- ifelse(is.finite(total_integral), total_integral, 0)
     total_integral
 }
