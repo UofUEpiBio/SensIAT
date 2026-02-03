@@ -137,7 +137,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + identity with m
     })
     
     # Verify structure for multiple alphas
-    expect_is(result_generalized, "SensIAT_marginal_mean_model_generalized")
+    expect_s3_class(result_generalized, "SensIAT_marginal_mean_model_generalized")
     expect_equal(length(result_generalized$coefficients), 3)
     expect_equal(result_generalized$alpha, alphas)
     

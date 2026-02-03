@@ -296,83 +296,152 @@ fit_SensIAT_marginal_mean_model_generalized <-
             compute_term2_influence_original
         }
 
+        # ============================================================
+        # PRE-COMPUTE ALPHA-INDEPENDENT TERM1 COMPONENTS
+        # ============================================================
+        # These computations are done once outside the alpha loop for efficiency
+        
+        # Y contribution to term1 (scaled by intensity weights) - doesn't depend on alpha
+        Y_obs <- Y[included.obs]
+        Y_scaled_by_intensity <- Y_obs / intensity_weights
+        
+        # Observation times for included observations
+        obs_times <- time[included.obs]
+        n_obs <- length(obs_times)
+        
+        # Pre-compute patient index mappings (which observations belong to which patient)
+        patient_obs_indices <- lapply(unique_ids, function(pid) {
+            which(id[included.obs] == pid)
+        })
+        names(patient_obs_indices) <- as.character(unique_ids)
+        
+        # Pre-compute patient data subsets
+        patient_data_list <- lapply(unique_ids, function(pid) {
+            data[id == pid, ]
+        })
+        names(patient_data_list) <- as.character(unique_ids)
+        
+        # For identity link, W(t, beta) = V.inv %*% B(t) doesn't depend on beta or alpha
+        # Pre-compute all weight vectors for each observation time
+        if (link == "identity") {
+            # Pre-compute weights for all observation times (matrix: n_obs x ncol(base))
+            precomputed_weights <- lapply(obs_times, function(t) {
+                B <- pcoriaccel_evaluate_basis(base, t)
+                as.vector(V.inv %*% B)
+            })
+        } else {
+            precomputed_weights <- NULL
+        }
+        
+        # Pre-compute per-patient constants for fast pmf path (for single-index models)
+        # These don't depend on alpha
+        use_fast_cache_global <- is(outcome.model, "SensIAT::Single-index-outcome-model") &&
+                                 !is.null(attr(outcome.model, "kernel")) &&
+                                 !is.null(outcome.model$bandwidth)
+        
+        if (use_fast_cache_global) {
+            # Global outcome model constants (don't depend on alpha)
+            Xi_global <- model.matrix(terms(outcome.model), outcome.model$data)
+            Yi_global <- model.response(model.frame(outcome.model))
+            beta_outcome_global <- outcome.model$coef
+            Xb_all_global <- as.vector(Xi_global %*% beta_outcome_global)
+            y_seq_global <- sort(unique(Yi_global))
+            kernel_global <- attr(outcome.model, "kernel")
+            bandwidth_global <- outcome.model$bandwidth
+            
+            # Outcome variable name
+            outcome_var_global <- as.character(rlang::f_lhs(formula(outcome.model)))
+            
+            # Pre-compute term_spec for model.matrix
+            term_spec_global <- delete.response(terms(outcome.model))
+            template_df <- data.frame(..prev_outcome.. = 0, ..delta_time.. = 0, check.names = FALSE)
+            template_row <- model.matrix(term_spec_global, data = template_df)
+            mm_colnames_global <- colnames(template_row)
+            idx_delta_global <- which(mm_colnames_global == "..delta_time..")
+            if (length(idx_delta_global) == 0L) idx_delta_global <- grep("delta_time", mm_colnames_global, fixed = TRUE)
+            if (length(idx_delta_global) != 1L) idx_delta_global <- NA_integer_
+            
+            # Pre-compute per-patient time/outcome vectors and ns_cache
+            patient_pmf_cache <- lapply(unique_ids, function(pid) {
+                patient_data_local <- patient_data_list[[as.character(pid)]]
+                
+                # Find time variable
+                time_candidates <- c("..time..", "Time", "time", "t", "T", "obstime", "obs_time")
+                time_var_local <- NULL
+                for (candidate in time_candidates) {
+                    if (candidate %in% names(patient_data_local)) {
+                        time_var_local <- candidate
+                        break
+                    }
+                }
+                if (is.null(time_var_local)) {
+                    numeric_cols <- names(patient_data_local)[sapply(patient_data_local, is.numeric)]
+                    time_var_local <- setdiff(numeric_cols, outcome_var_global)[1]
+                }
+                
+                patient_times <- patient_data_local[[time_var_local]]
+                patient_outcomes <- patient_data_local[[outcome_var_global]]
+                valid_idx <- !is.na(patient_outcomes)
+                patient_times <- patient_times[valid_idx]
+                patient_outcomes <- patient_outcomes[valid_idx]
+                
+                # Cache ns-basis rows for unique observed prev_outcome values
+                unique_prev_outcomes <- unique(patient_outcomes)
+                ns_cache <- new.env(parent = emptyenv())
+                for (val in unique_prev_outcomes) {
+                    df1 <- data.frame(..prev_outcome.. = val, ..delta_time.. = 0, check.names = FALSE)
+                    row0 <- model.matrix(term_spec_global, data = df1)
+                    ns_cache[[as.character(val)]] <- row0
+                }
+                
+                list(
+                    patient_times = patient_times,
+                    patient_outcomes = patient_outcomes,
+                    ns_cache = ns_cache
+                )
+            })
+            names(patient_pmf_cache) <- as.character(unique_ids)
+        }
+        
+        # ============================================================
         # Helper function to run optimization for a single alpha value
+        # ============================================================
         fit_single_alpha <- function(current_alpha) {
-            # Pre-compute term1 components for this alpha (depends on alpha, not beta)
+            # Compute alpha-dependent expected values for included observations
             expected <- compute_SensIAT_expected_values(
                 model = outcome.model,
                 alpha = current_alpha,
                 new.data = data[included.obs, ]
             )
-            term1.deviation.by.observation <-
-                (Y[included.obs] - expected$E_Yexp_alphaY / expected$E_exp_alphaY) /
-                intensity_weights
+            
+            # Alpha-dependent correction term
+            alpha_correction <- (expected$E_Yexp_alphaY / expected$E_exp_alphaY) / intensity_weights
+            
+            # Combine pre-computed Y contribution with alpha-dependent correction
+            term1.deviation.by.observation <- Y_scaled_by_intensity - alpha_correction
 
-            # Build per-patient expected value caches for this alpha
+            # Build per-patient expected value caches for this alpha (for term2)
+            # Uses pre-computed patient constants when available
             expected_cache_map <- new.env(parent = emptyenv())
             get_expected_cache_for <- function(patient_id) {
                 key <- as.character(patient_id)
                 if (!exists(key, expected_cache_map, inherits = FALSE)) {
-                    patient_data_local <- data[id == patient_id, ]
                     cache_env <- new.env(parent = emptyenv())
                     
-                    # Check if we can use fast pmf-based caching (for single-index models)
-                    use_fast_cache <- is(outcome.model, "SensIAT::Single-index-outcome-model") &&
-                                      !is.null(attr(outcome.model, "kernel")) &&
-                                      !is.null(outcome.model$bandwidth)
+                    # Use pre-computed patient data
+                    patient_data_local <- patient_data_list[[key]]
                     
-                    if (use_fast_cache) {
-                        # Pre-compute constants for fast pmf path (same as in make_term2_integrand_fast)
-                        Xi <- model.matrix(terms(outcome.model), outcome.model$data)
-                        Yi <- model.response(model.frame(outcome.model))
-                        beta_outcome <- outcome.model$coef
-                        Xb_all <- as.vector(Xi %*% beta_outcome)
-                        y_seq <- sort(unique(Yi))
-                        kernel <- attr(outcome.model, "kernel")
-                        bandwidth <- outcome.model$bandwidth
-                        
-                        # Pre-extract patient times and outcomes for fast interval lookup
-                        outcome_var <- as.character(rlang::f_lhs(formula(outcome.model)))
-                        time_candidates <- c("..time..", "Time", "time", "t", "T", "obstime", "obs_time")
-                        time_var_local <- NULL
-                        for (candidate in time_candidates) {
-                            if (candidate %in% names(patient_data_local)) {
-                                time_var_local <- candidate
-                                break
-                            }
-                        }
-                        if (is.null(time_var_local)) {
-                            numeric_cols <- names(patient_data_local)[sapply(patient_data_local, is.numeric)]
-                            time_var_local <- setdiff(numeric_cols, outcome_var)[1]
-                        }
-                        patient_times <- patient_data_local[[time_var_local]]
-                        patient_outcomes <- patient_data_local[[outcome_var]]
-                        valid_idx <- !is.na(patient_outcomes)
-                        patient_times <- patient_times[valid_idx]
-                        patient_outcomes <- patient_outcomes[valid_idx]
-                        
-                        # Prepare model.matrix template for fast xb computation
-                        term_spec <- delete.response(terms(outcome.model))
-                        template_df <- data.frame(..prev_outcome.. = 0, ..delta_time.. = 0, check.names = FALSE)
-                        template_row <- model.matrix(term_spec, data = template_df)
-                        mm_colnames <- colnames(template_row)
-                        idx_delta <- which(mm_colnames == "..delta_time..")
-                        if (length(idx_delta) == 0L) idx_delta <- grep("delta_time", mm_colnames, fixed = TRUE)
-                        if (length(idx_delta) != 1L) idx_delta <- NA_integer_
-                        
-                        # Cache ns-basis rows for unique observed prev_outcome values
-                        unique_prev_outcomes <- unique(patient_outcomes)
-                        ns_cache <- new.env(parent = emptyenv())
-                        for (val in unique_prev_outcomes) {
-                            df1 <- data.frame(..prev_outcome.. = val, ..delta_time.. = 0, check.names = FALSE)
-                            row0 <- model.matrix(term_spec, data = df1)
-                            ns_cache[[as.character(val)]] <- row0
-                        }
+                    if (use_fast_cache_global) {
+                        # Use pre-computed global constants and per-patient cache
+                        pmf_cache <- patient_pmf_cache[[key]]
+                        patient_times <- pmf_cache$patient_times
+                        patient_outcomes <- pmf_cache$patient_outcomes
+                        ns_cache <- pmf_cache$ns_cache
                         
                         expected_get <- function(t) {
                             k <- as.character(signif(t, 12))
                             if (!exists(k, cache_env, inherits = FALSE)) {
-                                # Use fast pmf path (same logic as make_term2_integrand_fast)
+                                # Use fast pmf path with pre-computed constants
                                 idx <- findInterval(t, patient_times, left.open = FALSE)
                                 if (idx < 1L) idx <- 1L
                                 if (idx > length(patient_times)) idx <- length(patient_times)
@@ -382,23 +451,25 @@ fit_SensIAT_marginal_mean_model_generalized <-
                                 
                                 if (is.na(prev_outcome) || is.null(prev_outcome)) {
                                     df1 <- data.frame(..prev_outcome.. = 0, ..delta_time.. = delta_time, check.names = FALSE)
-                                    x_row <- model.matrix(term_spec, data = df1)[1, , drop = TRUE]
+                                    x_row <- model.matrix(term_spec_global, data = df1)[1, , drop = TRUE]
                                 } else {
                                     key_po <- as.character(prev_outcome)
-                                    if (exists(key_po, envir = ns_cache, inherits = FALSE) && !is.na(idx_delta)) {
+                                    if (exists(key_po, envir = ns_cache, inherits = FALSE) && !is.na(idx_delta_global)) {
                                         x_row <- ns_cache[[key_po]][1, , drop = TRUE]
-                                        x_row[idx_delta] <- delta_time
+                                        x_row[idx_delta_global] <- delta_time
                                     } else {
                                         df1 <- data.frame(..prev_outcome.. = prev_outcome, ..delta_time.. = delta_time, check.names = FALSE)
-                                        x_row <- model.matrix(term_spec, data = df1)[1, , drop = TRUE]
+                                        x_row <- model.matrix(term_spec_global, data = df1)[1, , drop = TRUE]
                                     }
                                 }
                                 
-                                xb <- sum(x_row * beta_outcome)
-                                pmf <- pcoriaccel_estimate_pmf(Xb = Xb_all, Y = Yi, xi = xb, y_seq = y_seq, h = bandwidth, kernel = kernel)
+                                xb <- sum(x_row * beta_outcome_global)
+                                pmf <- pcoriaccel_estimate_pmf(Xb = Xb_all_global, Y = Yi_global, xi = xb, 
+                                                               y_seq = y_seq_global, h = bandwidth_global, 
+                                                               kernel = kernel_global)
                                 
-                                E_exp_alphaY <- sum(exp(current_alpha * y_seq) * pmf)
-                                E_Yexp_alphaY <- sum(y_seq * exp(current_alpha * y_seq) * pmf)
+                                E_exp_alphaY <- sum(exp(current_alpha * y_seq_global) * pmf)
+                                E_Yexp_alphaY <- sum(y_seq_global * exp(current_alpha * y_seq_global) * pmf)
                                 
                                 cache_env[[k]] <- list(
                                     E_exp_alphaY = E_exp_alphaY,
@@ -434,12 +505,17 @@ fit_SensIAT_marginal_mean_model_generalized <-
 
             # Helper function to compute influence for a single patient
             compute_influence_term_1_by_observation <- function(beta) {
-                weights <- tryCatch({
-                    purrr::map(time[included.obs], W, beta = beta)
-                }, error = function(e) {
-                    # Return zero weights if weight computation fails
-                    replicate(length(time[included.obs]), rep(0, ncol(base)), simplify=FALSE)
-                })
+                # For identity link, use pre-computed weights (they don't depend on beta)
+                if (link == "identity" && !is.null(precomputed_weights)) {
+                    weights <- precomputed_weights
+                } else {
+                    weights <- tryCatch({
+                        purrr::map(obs_times, W, beta = beta)
+                    }, error = function(e) {
+                        # Return zero weights if weight computation fails
+                        replicate(n_obs, rep(0, ncol(base)), simplify=FALSE)
+                    })
+                }
                 
                 # Guard against NaN/NA values
                 weights <- purrr::map(weights, function(w) {
@@ -454,7 +530,9 @@ fit_SensIAT_marginal_mean_model_generalized <-
             compute_influence_by_patient <-
             function(patient_id, beta,
                      term1.by.observation = compute_influence_term_1_by_observation(beta)) {
-                patient_data <- data[id == patient_id, ]
+                # Use pre-computed patient data
+                key <- as.character(patient_id)
+                patient_data <- patient_data_list[[key]]
                 expected_get_fn <- if (isTRUE(use_expected_cache)) get_expected_cache_for(patient_id) else NULL
                 term2 <- tryCatch({
                     term2_fn(
@@ -477,8 +555,8 @@ fit_SensIAT_marginal_mean_model_generalized <-
                     rep(0, ncol(base))
                 })
 
-                # Term1 contributions for this patient (from observations where time[fu] is valid)
-                patient_indices_in_fu <- which(id[included.obs] == patient_id)
+                # Term1 contributions for this patient - use pre-computed indices
+                patient_indices_in_fu <- patient_obs_indices[[key]]
                 if(length(patient_indices_in_fu) == 0){
                     term1 <- rep(0, ncol(base))
                 } else {
