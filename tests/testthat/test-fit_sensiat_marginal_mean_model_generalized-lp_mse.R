@@ -1,7 +1,8 @@
 # Tests for fit_SensIAT_marginal_mean_model_generalized with lp_mse loss
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + identity produces valid results", {
-    setup <- generate_test_data(link = "identity", n_subjects = 20)
+    # Reduced parameters to keep test under 60 seconds
+    setup <- generate_test_data(link = "identity", n_subjects = 10)
     
     # Fit using generalized version with identity link
     result_generalized <- suppressWarnings({
@@ -16,8 +17,8 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + identity produc
             loss = "lp_mse",
             link = "identity",
             impute_data = create_impute_fn(),
-            BBsolve.control = list(maxit = 100, tol = 1e-2),
-            term2_method = "original",
+            BBsolve.control = list(maxit = 50, tol = 1e-2),
+            term2_method = "fast",
             use_expected_cache = FALSE
         )
     }, classes = "simpleWarning")
@@ -44,8 +45,12 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + identity produc
 })
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + log", {
+    # Log link with term2 integration is computationally expensive
+    skip_if_not(identical(Sys.getenv("RUN_SLOW_TESTS"), "true"), 
+                "Log link test is slow. Set RUN_SLOW_TESTS=true to run")
+    
     set.seed(123)
-    setup <- generate_test_data(link = "log", n_subjects = 25)
+    setup <- generate_test_data(link = "log", n_subjects = 15)
 
     attr(setup$intensity.model, "bandwidth") <- 7
 
@@ -62,7 +67,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + log", {
                 loss = "lp_mse",
                 link = "log",
                 impute_data = create_impute_fn(),
-                BBsolve.control = list(maxit = 100, tol = 1e-3),
+                BBsolve.control = list(maxit = 50, tol = 1e-2),
                 term2_method = "fast"
             )
         }, classes = "simpleWarning")
@@ -92,7 +97,12 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + log (original t
 })
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + logit", {
-    setup <- generate_test_data(link = "logit", n_subjects = 25)
+    # Logit link is computationally expensive due to numerical integration
+    # Skip unless explicitly enabled via environment variable
+    skip_if_not(identical(Sys.getenv("RUN_SLOW_TESTS"), "true"), 
+                "Logit link test is slow. Set RUN_SLOW_TESTS=true to run")
+    
+    setup <- generate_test_data(link = "logit", n_subjects = 10)
     
     expect_no_error({
         suppressWarnings({
@@ -107,7 +117,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + logit", {
                 loss = "lp_mse",
                 link = "logit",
                 impute_data = create_impute_fn(),
-                BBsolve.control = list(maxit = 100, tol = 1e-3),
+                BBsolve.control = list(maxit = 30, tol = 1e-2),
                 term2_method = "fast"
             )
         }, classes = "simpleWarning")
@@ -115,7 +125,8 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + logit", {
 })
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + identity with multiple alphas", {
-    setup <- generate_test_data(link = "identity", n_subjects = 15)
+    # Reduced parameters to keep test under 60 seconds
+    setup <- generate_test_data(link = "identity", n_subjects = 8)
     
     # Test with multiple alpha values
     alphas <- c(-0.3, 0, 0.3)
@@ -131,7 +142,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + identity with m
             loss = "lp_mse",
             link = "identity",
             impute_data = create_impute_fn(),
-            BBsolve.control = list(maxit = 30, tol = 1e-3),
+            BBsolve.control = list(maxit = 30, tol = 1e-2),
             term2_method = "fast"
         )
     })

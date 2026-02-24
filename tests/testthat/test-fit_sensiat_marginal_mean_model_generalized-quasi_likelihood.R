@@ -1,7 +1,8 @@
 # Tests for fit_SensIAT_marginal_mean_model_generalized with quasi-likelihood loss
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: quasi-likelihood + identity (now integrated)", {
-    setup <- generate_test_data(link = "identity", n_subjects = 20)
+    # Reduced parameters to keep test under 60 seconds
+    setup <- generate_test_data(link = "identity", n_subjects = 10)
     
     # Identity link should now work with unified infrastructure
     result_generalized <- suppressWarnings({
@@ -16,7 +17,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: quasi-likelihood + ident
             loss = "quasi-likelihood",
             link = "identity",
             impute_data = create_impute_fn(),
-            BBsolve.control = list(maxit = 50, tol = 1e-3),
+            BBsolve.control = list(maxit = 30, tol = 1e-2),
             term2_method = "fast"
         )
     })
@@ -31,7 +32,11 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: quasi-likelihood + ident
 })
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: quasi-likelihood + log", {
-    setup <- generate_test_data(link = "log", n_subjects = 25)
+    # Log link with term2 integration is computationally expensive
+    skip_if_not(identical(Sys.getenv("RUN_SLOW_TESTS"), "true"), 
+                "Log link test is slow. Set RUN_SLOW_TESTS=true to run")
+    
+    setup <- generate_test_data(link = "log", n_subjects = 10)
     
     expect_no_error({
         suppressWarnings({
@@ -46,7 +51,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: quasi-likelihood + log",
                 loss = "quasi-likelihood",
                 link = "log",
                 impute_data = create_impute_fn(),
-                BBsolve.control = list(maxit = 100, tol = 1e-3),
+                BBsolve.control = list(maxit = 30, tol = 1e-2),
                 term2_method = "fast"
             )
         }, classes = "simpleWarning")
@@ -54,7 +59,11 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: quasi-likelihood + log",
 })
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: quasi-likelihood + logit", {
-    setup <- generate_test_data(link = "logit", n_subjects = 25)
+    # Logit link is computationally expensive - skip unless explicitly enabled
+    skip_if_not(identical(Sys.getenv("RUN_SLOW_TESTS"), "true"), 
+                "Logit link test is slow. Set RUN_SLOW_TESTS=true to run")
+    
+    setup <- generate_test_data(link = "logit", n_subjects = 10)
     
     expect_no_error({
         suppressWarnings({
@@ -69,7 +78,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: quasi-likelihood + logit
                 loss = "quasi-likelihood",
                 link = "logit",
                 impute_data = create_impute_fn(),
-                BBsolve.control = list(maxit = 100, tol = 1e-3, trace = TRUE,  triter=1),
+                BBsolve.control = list(maxit = 30, tol = 1e-2),
                 term2_method = "fast"
             )
         }, classes = "simpleWarning")

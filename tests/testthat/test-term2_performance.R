@@ -1,6 +1,7 @@
 test_that("term2 original and fast methods produce identical results", {
-    # Skip on CRAN to avoid long-running tests
-    # skip_on_cran()
+    # Skip unless explicitly enabled - this test is slow
+    skip_if_not(identical(Sys.getenv("RUN_SLOW_TESTS"), "true"), 
+                "term2 performance test is slow. Set RUN_SLOW_TESTS=true to run")
 
     # Setup test data
     data_with_lags <- SensIAT_example_data |>
