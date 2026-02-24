@@ -217,12 +217,14 @@ Cond_mean_fn_single2 <-
 
         # conditional distribution
         # start <- Sys.time()
-        Fhat <- pcoriaccel_NW(
+        Fhat_matrix <- pcoriaccel_NW(
             Xb = X %*% beta, Y = Y,
             xb = x %*% beta, y_seq = y,
             h = bandwidth,
             ...
         )
+        # Convert matrix to vector (should be 1 row, length(y) columns)
+        Fhat <- as.vector(Fhat_matrix)
         # end <- Sys.time()
         # end - start
 
