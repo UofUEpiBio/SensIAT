@@ -13,7 +13,8 @@
 #'   - "original": Standard implementation with adaptive Simpson's
 #'   - "fixed_grid": Pre-computed expected values on fixed grid with composite Simpson's rule
 #'   - "seeded_adaptive": Adaptive Simpson's seeded with pre-computed grid points
-#' @param term2_grid_n Number of grid points for fixed_grid and seeded_adaptive methods (default 100)
+#'   - "gauss_legendre": Gauss-Legendre quadrature (requires statmod package)
+#' @param term2_grid_n Number of grid points/nodes for fixed_grid, seeded_adaptive, and gauss_legendre methods (default 100)
 #'
 #' @details
 #' ## Integration Methods for Term2
@@ -35,6 +36,12 @@
 #' - Combines pre-computation with adaptive refinement
 #' - Starts with pre-computed grid, subdivides where needed
 #' - Good balance of speed and accuracy
+#'
+#' **Gauss-Legendre Method (gauss_legendre):**
+#' - Uses Gauss-Legendre quadrature via statmod::gauss.quad
+#' - Highly accurate for smooth integrands with fewer evaluation points
+#' - Exact for polynomials up to degree 2n-1 using n points
+#' - Requires the statmod package
 #'
 #' ## Outcome Model Compatibility
 #' Unlike simulation code that assumes specific single-index model formulas, this
@@ -128,7 +135,7 @@ fit_SensIAT_marginal_mean_model_generalized <-
                  maxit = 1000,
                  tol = 1e-6
              ),
-             term2_method = c("fast", "original", "fixed_grid", "seeded_adaptive"),
+             term2_method = c("fast", "original", "fixed_grid", "seeded_adaptive", "gauss_legendre"),
              term2_grid_n = 100,
              use_expected_cache = TRUE) {
         time.var <- enquo(time)
@@ -341,13 +348,14 @@ fit_SensIAT_marginal_mean_model_generalized <-
         intensity_weights <- intensity$baseline_intensity * exp_gamma
 
         # Select term2 computation function and determine if we need grid pre-computation
-        use_term2_grid <- term2_method %in% c("fixed_grid", "seeded_adaptive")
+        use_term2_grid <- term2_method %in% c("fixed_grid", "seeded_adaptive", "gauss_legendre")
         
         term2_fn <- switch(term2_method,
             fast = compute_term2_influence_fast,
             original = compute_term2_influence_original,
             fixed_grid = compute_term2_influence_fixed_grid,
             seeded_adaptive = compute_term2_influence_seeded_adaptive,
+            gauss_legendre = compute_term2_influence_gauss_legendre,
             compute_term2_influence_fast  # default fallback
         )
 
@@ -469,36 +477,58 @@ fit_SensIAT_marginal_mean_model_generalized <-
         }
         
         # ============================================================
-        # PRE-COMPUTE TERM2 INTEGRATION GRIDS (for fixed_grid and seeded_adaptive)
+        # PRE-COMPUTE TERM2 INTEGRATION GRIDS (for fixed_grid, seeded_adaptive, gauss_legendre)
         # ============================================================
-        # These grids are alpha-independent and include observation times
+        # These grids are alpha-independent and include observation times (except gauss_legendre)
         patient_term2_grids <- NULL
         if (use_term2_grid) {
             patient_term2_grids <- lapply(unique_ids, function(pid) {
                 patient_data_local <- patient_data_list[[as.character(pid)]]
                 
-                # Extract observation times for this patient
-                obs_times <- if (use_fast_cache_global) {
-                    patient_pmf_cache[[as.character(pid)]]$patient_times
+                if (term2_method == "gauss_legendre") {
+                    # For Gauss-Legendre, use specialized nodes
+                    if (!requireNamespace("statmod", quietly = TRUE)) {
+                        stop("Package 'statmod' is required for Gauss-Legendre quadrature. ",
+                             "Install it with: install.packages('statmod')")
+                    }
+                    gl <- statmod::gauss.quad(n = term2_grid_n, kind = "legendre")
+                    half_range <- (tmax - tmin) / 2
+                    mid_point <- (tmax + tmin) / 2
+                    grid <- half_range * gl$nodes + mid_point
+                    weights <- gl$weights * half_range
+                    
+                    # Pre-compute basis evaluations at GL nodes
+                    B_grid <- lapply(grid, function(t) pcoriaccel_evaluate_basis(base, t))
+                    
+                    list(
+                        grid = grid,
+                        B_grid = B_grid,
+                        weights = weights
+                    )
                 } else {
-                    extract_patient_times(patient_data_local, time.var.name)
+                    # For fixed_grid and seeded_adaptive, use uniform grid + observation times
+                    obs_times <- if (use_fast_cache_global) {
+                        patient_pmf_cache[[as.character(pid)]]$patient_times
+                    } else {
+                        extract_patient_times(patient_data_local, time.var.name)
+                    }
+                    
+                    # Create integration grid including observation times
+                    grid <- create_integration_grid(
+                        tmin = tmin,
+                        tmax = tmax,
+                        n_grid = term2_grid_n,
+                        obs_times = obs_times
+                    )
+                    
+                    # Pre-compute basis evaluations at grid points (alpha-independent)
+                    B_grid <- lapply(grid, function(t) pcoriaccel_evaluate_basis(base, t))
+                    
+                    list(
+                        grid = grid,
+                        B_grid = B_grid
+                    )
                 }
-                
-                # Create integration grid including observation times
-                grid <- create_integration_grid(
-                    tmin = tmin,
-                    tmax = tmax,
-                    n_grid = term2_grid_n,
-                    obs_times = obs_times
-                )
-                
-                # Pre-compute basis evaluations at grid points (alpha-independent)
-                B_grid <- lapply(grid, function(t) pcoriaccel_evaluate_basis(base, t))
-                
-                list(
-                    grid = grid,
-                    B_grid = B_grid
-                )
             })
             names(patient_term2_grids) <- as.character(unique_ids)
         }

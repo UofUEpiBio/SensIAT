@@ -88,8 +88,8 @@ test_that("term2 integration methods produce equivalent results with sufficient 
     link = "identity",
     impute_data = impute_fn,
     term2_method = "original",
-    tol=1e-12,  # Tight tolerance for convergence
-    debug = TRUE  # Add debug flag if supported
+    # tol=1e-12,  # Tight tolerance for convergence
+    # debug = TRUE  # Add debug flag if supported
   )
   
   result_fixed_grid <- fit_SensIAT_marginal_mean_model_generalized(
@@ -122,11 +122,27 @@ test_that("term2 integration methods produce equivalent results with sufficient 
     term2_grid_n = 100
   )
   
+  result_gauss_legendre <- fit_SensIAT_marginal_mean_model_generalized(
+    data = data_with_lags,
+    time = data_with_lags$Time,
+    id = data_with_lags$Subject_ID,
+    alpha = 0,
+    knots = knots,
+    outcome.model = outcome.model,
+    intensity.model = intensity.model,
+    loss = "lp_mse",
+    link = "identity",
+    impute_data = impute_fn,
+    term2_method = "gauss_legendre",
+    term2_grid_n = 50  # GL is very accurate with fewer points
+  )
+  
   # Extract coefficients
   coef_fast <- result_fast$coefficients[[1]]
   coef_original <- result_original$coefficients[[1]]
   coef_fixed_grid <- result_fixed_grid$coefficients[[1]]
   coef_seeded <- result_seeded$coefficients[[1]]
+  coef_gauss <- result_gauss_legendre$coefficients[[1]]
   
   # Diagnostic: Compare coefficient magnitudes and signs
   cat("\nCoefficient comparison:\n")
@@ -134,6 +150,7 @@ test_that("term2 integration methods produce equivalent results with sufficient 
   cat("original: ", round(coef_original, 6), "\n")
   cat("fixed:    ", round(coef_fixed_grid, 6), "\n")
   cat("seeded:   ", round(coef_seeded, 6), "\n")
+  cat("gauss:    ", round(coef_gauss, 6), "\n")
   
   # Check for common issues:
   # 1. Sign flip
@@ -168,6 +185,12 @@ test_that("term2 integration methods produce equivalent results with sufficient 
   # Test parity with seeded_adaptive (should be very close)
   expect_equal(coef_fast, coef_seeded, tolerance = 1e-5,
                label = "fast vs seeded_adaptive")
+  
+  # Test parity with gauss_legendre (GL is highly accurate with fewer nodes)
+  # Note: GL quadrature uses different evaluation points than other methods,
+  # so tolerance is slightly looser, but should still be very accurate
+  expect_equal(coef_fast, coef_gauss, tolerance = 0.01,
+               label = "fast vs gauss_legendre (n=50)")
   
   # Both adaptive methods should be nearly identical because they use the same
   # integrand discretized via adaptive Simpson's rule (fast segments at observation

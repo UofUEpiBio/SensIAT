@@ -54,6 +54,7 @@ Suggests:
     progress,
     rmarkdown,
     spelling,
+    statmod,
     testthat (>= 3.0.0),
     tidyverse
 Config/testthat/edition: 3
