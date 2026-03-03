@@ -4,10 +4,12 @@
 \alias{autoplot.SensIAT_fulldata_jackknife_results}
 \title{Plot for Estimated Treatment Effect for \code{SensIAT_fulldata_jackknife_results} Objects}
 \usage{
-\method{autoplot}{SensIAT_fulldata_jackknife_results}(object, ..., include.rugs = NA)
+\method{autoplot}{SensIAT_fulldata_jackknife_results}(object, level = 0.05, ..., include.rugs = NA)
 }
 \arguments{
 \item{object}{A \code{SensIAT_fulldata_jackknife_results} object.}
+
+\item{level}{Significance level of the confidence interval.}
 
 \item{...}{Additional arguments passed to \code{predict}.}
 
@@ -18,7 +20,7 @@ and \code{alpha_treatment} is less than or equal to 10.}
 \description{
 The horizontal and vertical axes represent the sensitivity parameter \code{alpha}
 for the control and treatment groups, respectively. The plot shows
-at each combination of \code{alpha} values zero if the 95\% confidence interval
+at each combination of \code{alpha} values zero if the \code{level} confidence interval
 contains zero, otherwise the bound of the confidence interval that is closest
 to zero.
 }

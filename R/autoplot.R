@@ -50,12 +50,13 @@ autoplot.SensIAT_within_group_model <- function(object, ...) {
 #'
 #' Horizontal axis represents time, and the vertical axis represents the outcome
 #' from the model. Point plotted is the mean estimate, and the error bars
-#' show the 95% confidence interval using the variance estimated from the jackknife.
+#' show the `level` confidence interval using the variance estimated from the jackknife.
 #'
 #' @param object A `SensIAT_withingroup_jackknife_results` object produced from
 #'                      `SensIAT_jackknife`.
 #' @param width Width of the dodge for position, default is half the minimum
 #'              distance between time evaluation points.
+#' @param level Significance level of the confidence interval.             
 #' @param ... Ignored.
 #' @return A `ggplot2` object.
 #' @export
@@ -78,25 +79,24 @@ autoplot.SensIAT_within_group_model <- function(object, ...) {
 #' jackknife.estimates <- SensIAT_jackknife(fitted, time = c(90, 180, 270, 360, 450))
 #' ggplot2::autoplot(jackknife.estimates)
 #' }
-autoplot.SensIAT_withingroup_jackknife_results <- function(object, width = NULL, ...) {
-    if (is.null(width)) {
-        width <- min(diff(sort(unique(object$time)))) / 2
+autoplot.SensIAT_withingroup_jackknife_results <- function(object, level = 0.95, width = NULL, ...) {
+
+    if(is.null(width)) {
+        width <- min(diff(sort(unique(object$time))))/2
         # /n_distinct(object$alpha)
     }
 
     dodge <- ggplot2::position_dodge(width = width)
 
-    ggplot2::ggplot(
-        data = dplyr::mutate(object, alpha_factor = factor(alpha)),
-        ggplot2::aes(
-            x = .data$time,
-            y = .data$mean,
-            col = .data$alpha_factor,
-            ymin = mean + qnorm(0.025) * sqrt(.data$jackknife_var),
-            ymax = mean + qnorm(0.975) * sqrt(.data$jackknife_var),
-            group = .data$alpha_factor
-        )
-    ) +
+    ggplot2::ggplot(data=dplyr::mutate(object, alpha_factor = factor(alpha)),
+                    ggplot2::aes(
+                        x = .data$time,
+                        y = .data$mean,
+                        col = .data$alpha_factor,
+                        ymin = mean + qnorm((1 - level) / 2) * sqrt(.data$jackknife_var),
+                        ymax = mean + qnorm(level + (1 - level) / 2) * sqrt(.data$jackknife_var),
+                        group= .data$alpha_factor
+                    )) +
         ggplot2::geom_point(size = 2, position = dodge) +
         ggplot2::geom_errorbar(position = dodge) +
         ggplot2::labs(
@@ -193,11 +193,12 @@ autoplot.SensIAT_fulldata_model <- function(object, time, include.rugs = NA, ...
 #'
 #' The horizontal and vertical axes represent the sensitivity parameter `alpha`
 #' for the control and treatment groups, respectively. The plot shows
-#' at each combination of `alpha` values zero if the 95% confidence interval
+#' at each combination of `alpha` values zero if the `level` confidence interval
 #' contains zero, otherwise the bound of the confidence interval that is closest
 #' to zero.
 #'
 #' @param object A `SensIAT_fulldata_jackknife_results` object.
+#' @param level Significance level of the confidence interval.   
 #' @param ... Additional arguments passed to `predict`.
 #' @param include.rugs If `TRUE`, adds rugs to the plot. If `FALSE`, no rugs are added.
 #' When `NA`, rugs are added only if the number of distinct values of `alpha_control`
@@ -223,32 +224,25 @@ autoplot.SensIAT_fulldata_model <- function(object, time, include.rugs = NA, ...
 #' ggplot2::autoplot(jk.full.model)
 #' }
 autoplot.SensIAT_fulldata_jackknife_results <-
-    function(object, ..., include.rugs = NA) {
-        rslt <- ggplot2::ggplot(
-            data = object |>
-                mutate(
-                    lower_95 = mean_effect + qnorm(0.025) * sqrt(.data$mean_effect_jackknife_var),
-                    upper_95 = mean_effect + qnorm(0.975) * sqrt(.data$mean_effect_jackknife_var),
-                    plot_value = pmax(.data$lower_95, pmin(.data$upper_95, 0))
-                ),
-            ggplot2::aes(
-                x = .data$alpha_control,
-                y = .data$alpha_treatment,
-                z = .data$plot_value
-            )
-        ) +
-            ggplot2::labs(
-                x = expression(alpha[control]),
-                y = expression(alpha[treatment]),
-                fill = expression(delta),
-                caption = expression(
-                    paste(
-                        delta == 0, italic(" if "), 0 %in% "CI"["95%"],
-                        plain(" otherwise "), delta,
-                        plain(" is the bound of the 95% CI closest to zero.")
-                    )
-                )
-            )
+  function(object, level = 0.05, ..., include.rugs = NA) {
+      rslt <- ggplot2::ggplot(data = object |>
+                                  mutate(
+                                      lower = mean_effect + qnorm((1 - level) / 2) * sqrt(.data$mean_effect_jackknife_var),
+                                      upper = mean_effect + qnorm(level + (1 - level) / 2) * sqrt(.data$mean_effect_jackknife_var),
+                                      plot_value = pmax(.data$lower, pmin(.data$upper, 0))
+                                  ),
+                              ggplot2::aes(x = .data$alpha_control,
+                                           y = .data$alpha_treatment,
+                                           z = .data$plot_value)) +
+          ggplot2::labs(
+              x = expression(alpha[control]),
+              y = expression(alpha[treatment]),
+              fill = expression(delta),
+              caption = expression(
+                paste(delta == 0, italic(' if '), 0 %in% 'CI'['95%'],
+                      plain(' otherwise '), delta ,
+                      plain(' is the bound of the 95% CI closest to zero.')))
+          )
 
 
         if (rlang::is_installed("metR")) {
