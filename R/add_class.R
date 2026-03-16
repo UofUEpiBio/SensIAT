@@ -10,9 +10,11 @@
 #'
 #' @keywords internal
 #' @examples
+#' \dontrun{
 #' # Internal use only
 #' obj <- add_class(list(a = 1), "my_class")
 #' class(obj)  # c("my_class", "list")
+#' }
 add_class <- function(x, class) {
     if (!is.character(class)) {
         stop("class must be a character vector")

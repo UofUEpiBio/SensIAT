@@ -36,6 +36,7 @@ number of observations, A row is added with the \code{end} time value, leaving a
 other variables as \code{NA}.
 }
 \examples{
+\dontrun{
 exdata <- tibble::tibble(
     patient = rep(1:3, 3:5),
     day = c(
@@ -46,6 +47,7 @@ exdata <- tibble::tibble(
     value = TRUE
 )
 add_terminal_observations(exdata, patient, day)
+}
 }
 \seealso{
 \code{\link[tidyr:complete]{tidyr::complete()}}

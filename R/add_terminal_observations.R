@@ -14,6 +14,7 @@
 #' @return A data frame with terminal observations added.
 #' @seealso [tidyr::complete()]
 #' @examples
+#' \dontrun{
 #' exdata <- tibble::tibble(
 #'     patient = rep(1:3, 3:5),
 #'     day = c(
@@ -24,6 +25,7 @@
 #'     value = TRUE
 #' )
 #' add_terminal_observations(exdata, patient, day)
+#' }
 #' @keywords internal
 add_terminal_observations <-
     function(data, id, time, end = max(pull(data, {{ time }}))) {

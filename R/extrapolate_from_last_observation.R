@@ -26,6 +26,7 @@
 #' @keywords internal
 #'
 #' @examples
+#' \dontrun{
 #' # Create example data
 #' df <- data.frame(
 #'     time = c(0, 1, 2, 3),
@@ -51,6 +52,7 @@
 #'     slopes = c(x1 = 2)
 #' )
 #' # Expected: x1 = 16 + (4-3)*2 = 18, x2 = 6.5 (carried forward), id = 1
+#' }
 #'
 #' @keywords internal
 extrapolate_from_last_observation <- function(
@@ -154,6 +156,7 @@ extrapolate_from_last_observation <- function(
 #' @return A data.frame with one row per target time, containing extrapolated values.
 #'
 #' @examples
+#' \dontrun{
 #' df <- data.frame(
 #'     time = c(0, 1, 2, 3),
 #'     x1 = c(10, 12, 14, 16),
@@ -166,6 +169,7 @@ extrapolate_from_last_observation <- function(
 #'     time_var = "time",
 #'     slopes = c(x1 = 2, x2 = 0.5)
 #' )
+#' }
 #'
 #' @keywords internal
 extrapolate_from_last_observation_multiple <- function(

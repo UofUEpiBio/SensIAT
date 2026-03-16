@@ -19,8 +19,10 @@ This is a utility function for working with the S3 class system only.
 It does not work with S4 or R6 class systems.
 }
 \examples{
+\dontrun{
 # Internal use only
 obj <- add_class(list(a = 1), "my_class")
 class(obj)  # c("my_class", "list")
+}
 }
 \keyword{internal}

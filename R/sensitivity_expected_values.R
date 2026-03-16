@@ -24,7 +24,10 @@ compute_SensIAT_expected_values <-
     }
 
 #' @describeIn compute_SensIAT_expected_values (Gaussian) Linear Model method
-#' The [stats::integrate] method is used to compute the conditional expectations.
+#' Uses closed-form analytical solutions for the conditional expectations.
+#' For Y distributed as Normal(mu, sigma^2):
+#' `E[exp(alpha*Y)] = exp(alpha*mu + alpha^2*sigma^2/2)` and
+#' `E[Y*exp(alpha*Y)] = (mu + alpha*sigma^2) * exp(alpha*mu + alpha^2*sigma^2/2)`
 #' @examples
 #' model <- lm(mpg ~ as.factor(cyl) + disp + wt, data = mtcars)
 #' compute_SensIAT_expected_values(model, alpha = c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
@@ -56,17 +59,13 @@ compute_SensIAT_expected_values.lm <- function(model, alpha, new.data, ...) {
         E_exp_alphaY <- NA_real_
         E_Yexp_alphaY <- NA_real_
     } else {
-        # compute the conditional expectations
-        E_exp_alphaY <- stats::integrate(
-            function(y) exp(alpha * y) * dnorm(y, mu, sd = sigma),
-            lower = -Inf,
-            upper = Inf
-        )$value
-        E_Yexp_alphaY <- stats::integrate(
-            function(y) y * exp(alpha * y) * dnorm(y, mu, sd = sigma),
-            lower = -Inf,
-            upper = Inf
-        )$value
+        # Use closed-form analytical solutions for Gaussian integrals:
+        # For Y ~ N(μ, σ²):
+        #   E[exp(αY)] = exp(αμ + α²σ²/2)
+        #   E[Y·exp(αY)] = (μ + ασ²) · exp(αμ + α²σ²/2)
+        # These are numerically stable and exact (no integration error)
+        E_exp_alphaY <- exp(alpha * mu + (alpha^2 * sigma^2) / 2)
+        E_Yexp_alphaY <- (mu + alpha * sigma^2) * E_exp_alphaY
     }
     data.frame(
         new.data,

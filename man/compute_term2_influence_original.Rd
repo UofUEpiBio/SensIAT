@@ -16,6 +16,8 @@ compute_term2_influence_original(
   impute_fn,
   inv_link,
   W,
+  expected_get = NULL,
+  time_var = NULL,
   ...
 )
 }
@@ -42,12 +44,18 @@ compute_term2_influence_original(
 
 \item{W}{Weight function W(t, beta)}
 
+\item{expected_get}{Optional caching function: expected_get(t) -> list(E_exp_alphaY, E_Yexp_alphaY)}
+
+\item{time_var}{Name of the time variable in patient_data (if NULL, auto-detected)}
+
 \item{...}{Additional arguments (not used)}
 }
 \value{
 Numeric vector of length ncol(base) with term2 influence values
 }
 \description{
-Compute term2 influence for a patient (original method)
+Note: This method now segments the integration at observation times to handle
+discontinuities in the imputation function, making it effectively the same as
+the fast method but without the closure optimization.
 }
 \keyword{internal}

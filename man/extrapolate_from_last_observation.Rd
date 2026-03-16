@@ -43,6 +43,7 @@ equal to \code{target_time}, then extrapolates variables using the formula:
 For variables not specified in \code{slopes}, the last observed value is used (slope = 0).
 }
 \examples{
+\dontrun{
 # Create example data
 df <- data.frame(
     time = c(0, 1, 2, 3),
@@ -68,6 +69,7 @@ extrapolate_from_last_observation(
     slopes = c(x1 = 2)
 )
 # Expected: x1 = 16 + (4-3)*2 = 18, x2 = 6.5 (carried forward), id = 1
+}
 
 }
 \keyword{internal}

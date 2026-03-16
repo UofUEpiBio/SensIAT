@@ -67,7 +67,10 @@ For the methods shown here
 \section{Methods (by class)}{
 \itemize{
 \item \code{compute_SensIAT_expected_values(lm)}: (Gaussian) Linear Model method
-The \link[stats:integrate]{stats::integrate} method is used to compute the conditional expectations.
+Uses closed-form analytical solutions for the conditional expectations.
+For Y distributed as Normal(mu, sigma^2):
+\code{E[exp(alpha*Y)] = exp(alpha*mu + alpha^2*sigma^2/2)} and
+\code{E[Y*exp(alpha*Y)] = (mu + alpha*sigma^2) * exp(alpha*mu + alpha^2*sigma^2/2)}
 
 \item \code{compute_SensIAT_expected_values(glm)}: Generalized Linear Model method
 

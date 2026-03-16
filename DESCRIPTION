@@ -23,6 +23,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports: 
     assertthat,
+    BB,
     dplyr,
     generics,
     ggplot2,
@@ -43,6 +44,7 @@ Imports:
     tidyr,
     utils
 Suggests: 
+    bench,
     covr,
     dfoptim,
     furrr,

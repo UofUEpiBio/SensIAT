@@ -18,11 +18,15 @@ fit_SensIAT_marginal_mean_model_generalized(
   spline.degree = 3L,
   ...,
   BBsolve.control = list(maxit = 1000, tol = 1e-06),
-  term2_method = c("fast", "original")
+  term2_method = c("fast", "original", "fixed_grid", "seeded_adaptive", "gauss_legendre"),
+  term2_grid_n = 100,
+  use_expected_cache = TRUE
 )
 }
 \arguments{
 \item{data}{Data for evaluation of the model. Should match the data used to fit the intensity and outcome models.}
+
+\item{time}{The time variable in the data. Can be provided as a column name or vector.}
 
 \item{id}{The subject identifier variable in the data. Lazy evaluation is used, so it can be a symbol or a string.}
 
@@ -34,6 +38,9 @@ fit_SensIAT_marginal_mean_model_generalized(
 
 \item{intensity.model}{The assessment time intensity model.}
 
+\item{impute_data}{A function that takes (t, df) and returns the imputed data at time t.
+Should handle extrapolation from the last observed time point.}
+
 \item{loss}{The loss function to use. Options are "lp_mse", "mean_mse", and "quasi-likelihood".}
 
 \item{link}{The link function to use. Options are "identity", "log", and "logit".}
@@ -42,21 +49,61 @@ fit_SensIAT_marginal_mean_model_generalized(
 
 \item{...}{Additional arguments passed to \code{compute_influence_terms}.}
 
-\item{term2_method}{Method for computing term2 influence components. Options are "fast" (default, optimized closure-based integrand) and "original" (standard implementation).}
+\item{BBsolve.control}{Control parameters for the BB::sane optimizer, including \code{maxit} and \code{tol}.}
+
+\item{term2_method}{Method for computing term2 influence components. Options are:
+\itemize{
+\item "fast": Optimized closure-based integrand with adaptive Simpson's (default)
+\item "original": Standard implementation with adaptive Simpson's
+\item "fixed_grid": Pre-computed expected values on fixed grid with composite Simpson's rule
+\item "seeded_adaptive": Adaptive Simpson's seeded with pre-computed grid points
+\item "gauss_legendre": Gauss-Legendre quadrature (requires statmod package)
+}}
+
+\item{term2_grid_n}{Number of grid points/nodes for fixed_grid, seeded_adaptive, and gauss_legendre methods (default 100)}
+
+\item{use_expected_cache}{Logical; whether to cache expected values for performance (default TRUE)}
 }
 \description{
-This function uses adaptive Simpson's rule for integration and supports multiple
-outcome model types (single-index, GLM, linear models) through the generic
-\code{compute_SensIAT_expected_values} interface. The implementation includes
+This function supports multiple integration methods for term2 computation,
+including adaptive and fixed-grid approaches. The implementation includes
 numerical stability improvements (exp(-μ) multiplication vs division) and
-caching optimizations for repeated expected value computations.
+extensive caching optimizations for repeated expected value computations.
 }
 \details{
-\subsection{Integration Method}{
+\subsection{Integration Methods for Term2}{
 
-The function uses adaptive Simpson's quadrature (\code{pcoriaccel_integrate_simp})
-for numerical integration, which automatically adjusts step sizes based on
-local function behavior.
+The function offers four integration methods with different performance/accuracy tradeoffs:
+
+\strong{Adaptive Methods (fast, original):}
+\itemize{
+\item Use adaptive Simpson's quadrature with automatic subdivision
+\item Best accuracy for irregular integrands
+\item "fast" method uses optimized closure-based integrand construction
+}
+
+\strong{Fixed-Grid Method (fixed_grid):}
+\itemize{
+\item Pre-computes expected values at fixed grid points (once per alpha)
+\item Uses composite Simpson's rule for integration
+\item 2-5x faster when optimizing over beta (multiple iterations)
+\item Best for smooth integrands with sufficient grid density
+}
+
+\strong{Seeded Adaptive Method (seeded_adaptive):}
+\itemize{
+\item Combines pre-computation with adaptive refinement
+\item Starts with pre-computed grid, subdivides where needed
+\item Good balance of speed and accuracy
+}
+
+\strong{Gauss-Legendre Method (gauss_legendre):}
+\itemize{
+\item Uses Gauss-Legendre quadrature via statmod::gauss.quad
+\item Highly accurate for smooth integrands with fewer evaluation points
+\item Exact for polynomials up to degree 2n-1 using n points
+\item Requires the statmod package
+}
 }
 
 \subsection{Outcome Model Compatibility}{
@@ -73,8 +120,22 @@ method, including:
 }
 
 \subsection{Performance Optimizations}{
+
+\strong{Term1 Optimizations (alpha-independent):}
 \itemize{
-\item Expected values for term1 are cached (depend only on alpha, not beta)
+\item Y-scaled observations pre-computed once
+\item Patient index mappings cached for O(1) lookups
+\item Identity link: weights pre-computed (don't depend on beta or alpha)
+\item Single-index models: global PMF constants extracted once
+}
+
+\strong{Term2 Optimizations:}
+\itemize{
+\item Integration grids pre-computed (alpha-independent)
+\item Basis evaluations at grid points pre-computed
+\item Expected values computed once per alpha (for grid methods)
+\item Per-patient caching of expected values
+\item Weight functions use numerically stable exp(-μ) multiplication
 \item Weight functions use numerically stable exp(-μ) multiplication
 \item Fast method uses closure-based integration with reduced allocations
 }
@@ -82,6 +143,7 @@ method, including:
 }
 \examples{
 library(survival)
+library(splines)
 
 data_with_lags <- SensIAT_example_data |>
     dplyr::group_by(Subject_ID) |>
@@ -102,7 +164,7 @@ outcome.model <-
     fit_SensIAT_single_index_fixed_coef_model(
         Outcome ~ ns(..prev_outcome.., df = 3) + ..delta_time.. - 1,
         id = Subject_ID,
-        data = data_with_lags |> filter(Time > 0)
+        data = data_with_lags |> dplyr::filter(.data$Time > 0)
     )
 fit_SensIAT_marginal_mean_model_generalized(
     data = data_with_lags,

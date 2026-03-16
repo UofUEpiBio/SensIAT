@@ -8,20 +8,29 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
+# Skip expensive computations on CRAN
+NOT_CRAN <- identical(Sys.getenv("NOT_CRAN"), "true")
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.width = 8,
-  fig.height = 6
+  fig.height = 6,
+  eval = NOT_CRAN  # Skip all chunks on CRAN by default
 )
 ```
 
-```{r setup}
+```{r setup, eval=TRUE}
 library(SensIAT)
 library(survival)
 library(dplyr)
 library(ggplot2)
 library(bench)
+
+if (!NOT_CRAN) {
+ cat("Note: This vignette contains computationally intensive examples.\n")
+ cat("Set NOT_CRAN=true to run all code chunks.\n")
+}
 ```
 
 ## Overview

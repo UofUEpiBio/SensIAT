@@ -6,8 +6,12 @@
 #' extensive caching optimizations for repeated expected value computations.
 #'
 #' @inheritParams fit_SensIAT_marginal_mean_model
+#' @param time The time variable in the data. Can be provided as a column name or vector.
+#' @param impute_data A function that takes (t, df) and returns the imputed data at time t.
+#'   Should handle extrapolation from the last observed time point.
 #' @param loss The loss function to use. Options are "lp_mse", "mean_mse", and "quasi-likelihood".
 #' @param link The link function to use. Options are "identity", "log", and "logit".
+#' @param BBsolve.control Control parameters for the BB::sane optimizer, including `maxit` and `tol`.
 #' @param term2_method Method for computing term2 influence components. Options are:
 #'   - "fast": Optimized closure-based integrand with adaptive Simpson's (default)
 #'   - "original": Standard implementation with adaptive Simpson's
@@ -15,6 +19,7 @@
 #'   - "seeded_adaptive": Adaptive Simpson's seeded with pre-computed grid points
 #'   - "gauss_legendre": Gauss-Legendre quadrature (requires statmod package)
 #' @param term2_grid_n Number of grid points/nodes for fixed_grid, seeded_adaptive, and gauss_legendre methods (default 100)
+#' @param use_expected_cache Logical; whether to cache expected values for performance (default TRUE)
 #'
 #' @details
 #' ## Integration Methods for Term2
@@ -72,6 +77,7 @@
 #'
 #' @examples
 #' library(survival)
+#' library(splines)
 #'
 #' data_with_lags <- SensIAT_example_data |>
 #'     dplyr::group_by(Subject_ID) |>
@@ -92,7 +98,7 @@
 #'     fit_SensIAT_single_index_fixed_coef_model(
 #'         Outcome ~ ns(..prev_outcome.., df = 3) + ..delta_time.. - 1,
 #'         id = Subject_ID,
-#'         data = data_with_lags |> filter(Time > 0)
+#'         data = data_with_lags |> dplyr::filter(.data$Time > 0)
 #'     )
 #' fit_SensIAT_marginal_mean_model_generalized(
 #'     data = data_with_lags,
@@ -718,16 +724,6 @@ fit_SensIAT_marginal_mean_model_generalized <-
                     NULL
                 }
                 
-                # DEBUG: log term2 call details
-                debug_term2_once <- exists("DEBUG_TERM2_ONCE", envir = .GlobalEnv) && get("DEBUG_TERM2_ONCE", envir = .GlobalEnv)
-                if (debug_term2_once && patient_id == 1) {
-                    message("DEBUG term2 call for patient 1:")
-                    message("  time.var.name: ", time.var.name)
-                    message("  patient_data nrow: ", nrow(patient_data))
-                    message("  patient_data times: ", paste(patient_data[[time.var.name]], collapse=", "))
-                    message("  tmin: ", tmin, " tmax: ", tmax)
-                }
-                
                 term2 <- tryCatch({
                     result <- term2_fn(
                         patient_data = patient_data,
@@ -746,10 +742,6 @@ fit_SensIAT_marginal_mean_model_generalized <-
                         n_grid = term2_grid_n,
                         time_var = time.var.name
                     )
-                    if (debug_term2_once && patient_id == 1) {
-                        message("  term2 result: ", paste(result, collapse=", "))
-                        assign("DEBUG_TERM2_ONCE", FALSE, envir = .GlobalEnv)
-                    }
                     result
                 }, error = function(e) {
                     # If term2 computation fails, return zero

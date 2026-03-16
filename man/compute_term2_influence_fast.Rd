@@ -2,7 +2,7 @@
 % Please edit documentation in R/compute_term2_influence.R
 \name{compute_term2_influence_fast}
 \alias{compute_term2_influence_fast}
-\title{Compute term2 influence for a patient (fast method)}
+\title{Compute term2 influence for a patient (fast method with segmentation)}
 \usage{
 compute_term2_influence_fast(
   patient_data,
@@ -16,7 +16,9 @@ compute_term2_influence_fast(
   impute_fn,
   inv_link,
   W,
-  time_var = NULL
+  expected_get = NULL,
+  time_var = NULL,
+  ...
 )
 }
 \arguments{
@@ -41,11 +43,18 @@ compute_term2_influence_fast(
 \item{inv_link}{Inverse link function (e.g., exp for log link)}
 
 \item{W}{Weight function W(t, beta)}
+
+\item{expected_get}{Optional caching function: expected_get(t) -> list(E_exp_alphaY, E_Yexp_alphaY)}
+
+\item{time_var}{Name of the time variable in patient_data (if NULL, auto-detected)}
+
+\item{...}{Additional arguments (not used)}
 }
 \value{
 Numeric vector of length ncol(base) with term2 influence values
 }
 \description{
-Compute term2 influence for a patient (fast method)
+Segments integration at observation times to handle discontinuities in the
+interpolation function, then uses adaptive Simpson's quadrature on each segment.
 }
 \keyword{internal}

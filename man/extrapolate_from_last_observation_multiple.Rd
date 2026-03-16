@@ -35,6 +35,7 @@ Vectorized version of \code{\link[=extrapolate_from_last_observation]{extrapolat
 to multiple time points at once.
 }
 \examples{
+\dontrun{
 df <- data.frame(
     time = c(0, 1, 2, 3),
     x1 = c(10, 12, 14, 16),
@@ -47,6 +48,7 @@ extrapolate_from_last_observation_multiple(
     time_var = "time",
     slopes = c(x1 = 2, x2 = 0.5)
 )
+}
 
 }
 \keyword{internal}

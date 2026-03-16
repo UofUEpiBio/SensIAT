@@ -404,7 +404,7 @@ simulate_SensIAT_two_groups <- function(n_subjects,
         link = link
     ) |>
         dplyr::mutate(
-            Subject_ID = Subject_ID + n_control,  # Offset IDs
+            Subject_ID = .data$Subject_ID + n_control,  # Offset IDs
             Group = "Treatment"
         )
     

@@ -39,8 +39,8 @@
 #' @details
 #' Gauss-Legendre quadrature approximates the integral as a weighted sum:
 #' \deqn{\int_a^b f(x) dx \approx \frac{b-a}{2} \sum_{i=1}^n w_i f(x_i)}
-#' where \eqn{x_i} are the Gauss-Legendre nodes transformed to [a,b] and
-#' \eqn{w_i} are the corresponding weights.
+#' where \eqn{x_i} are the Gauss-Legendre nodes transformed to the interval
+#' \eqn{(a, b)} and \eqn{w_i} are the corresponding weights.
 #'
 #' The method requires the `statmod` package for computing nodes and weights.
 #'
@@ -242,7 +242,7 @@ compute_expected_values_at_nodes <- function(
 #' @param time_var Time variable name (optional)
 #'
 #' @return List with:
-#'   - nodes: Gauss-Legendre nodes transformed to [tmin, tmax]
+#'   - nodes: Gauss-Legendre nodes transformed to the interval (tmin, tmax)
 #'   - weights: Gauss-Legendre weights (including Jacobian)
 #'   - B_nodes: Basis evaluations at nodes
 #'   - E_nodes: Expected values at nodes
