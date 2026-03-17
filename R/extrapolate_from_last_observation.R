@@ -23,10 +23,10 @@
 #'
 #' For variables not specified in `slopes`, the last observed value is used (slope = 0).
 #'
-#' @keywords internal
+#' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Create example data
 #' df <- data.frame(
 #'     time = c(0, 1, 2, 3),

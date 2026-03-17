@@ -43,7 +43,7 @@ equal to \code{target_time}, then extrapolates variables using the formula:
 For variables not specified in \code{slopes}, the last observed value is used (slope = 0).
 }
 \examples{
-\dontrun{
+\donttest{
 # Create example data
 df <- data.frame(
     time = c(0, 1, 2, 3),
