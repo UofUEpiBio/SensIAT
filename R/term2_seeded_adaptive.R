@@ -23,7 +23,7 @@
 #' @param max_recursion Maximum recursion depth for adaptive algorithm
 #' @param tol Tolerance for adaptive integration
 #'
-#' @return Numeric vector of length ncol(base) with term2 influence values
+#' @return Numeric vector of length `ncol(base)` with term2 influence values
 #'
 #' @keywords internal
 compute_term2_influence_seeded_adaptive <- function(

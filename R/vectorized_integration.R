@@ -6,7 +6,7 @@
 #'
 #' @param patient_data data.frame with patient's observations
 #' @param outcome_model The fitted outcome model (any type supported by compute_SensIAT_expected_values)
-#' @param base SplineBasis for marginal mean model
+#' @param base `SplineBasis` for marginal mean model
 #' @param alpha_vec Numeric vector of sensitivity parameters
 #' @param marginal_beta Coefficients for the marginal mean spline basis
 #' @param V_inv Inverse Gram matrix for base

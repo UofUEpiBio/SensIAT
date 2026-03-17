@@ -53,14 +53,14 @@ Should handle extrapolation from the last observed time point.}
 
 \item{term2_method}{Method for computing term2 influence components. Options are:
 \itemize{
-\item "fast": Optimized closure-based integrand with adaptive Simpson's (default)
-\item "original": Standard implementation with adaptive Simpson's
-\item "fixed_grid": Pre-computed expected values on fixed grid with composite Simpson's rule
-\item "seeded_adaptive": Adaptive Simpson's seeded with pre-computed grid points
-\item "gauss_legendre": Gauss-Legendre quadrature (requires statmod package)
+\item \code{"fast"}: Optimized closure-based integrand with adaptive Simpson's (default)
+\item \code{"original"}: Standard implementation with adaptive Simpson's
+\item \code{"fixed_grid"}: Pre-computed expected values on fixed grid with composite Simpson's rule
+\item \code{"seeded_adaptive"}: Adaptive Simpson's seeded with pre-computed grid points
+\item \code{"gauss_legendre"}: Gauss-Legendre quadrature (requires \\pkg{statmod} package)
 }}
 
-\item{term2_grid_n}{Number of grid points/nodes for fixed_grid, seeded_adaptive, and gauss_legendre methods (default 100)}
+\item{term2_grid_n}{Number of grid points/nodes for \code{fixed_grid}, \code{seeded_adaptive}, and \code{gauss_legendre} methods (default 100)}
 
 \item{use_expected_cache}{Logical; whether to cache expected values for performance (default TRUE)}
 }
@@ -75,14 +75,14 @@ extensive caching optimizations for repeated expected value computations.
 
 The function offers four integration methods with different performance/accuracy tradeoffs:
 
-\strong{Adaptive Methods (fast, original):}
+\strong{Adaptive Methods (\code{fast}, \code{original}):}
 \itemize{
 \item Use adaptive Simpson's quadrature with automatic subdivision
 \item Best accuracy for irregular integrands
-\item "fast" method uses optimized closure-based integrand construction
+\item \code{fast} method uses optimized closure-based integrand construction
 }
 
-\strong{Fixed-Grid Method (fixed_grid):}
+\strong{Fixed-Grid Method (\code{fixed_grid}):}
 \itemize{
 \item Pre-computes expected values at fixed grid points (once per alpha)
 \item Uses composite Simpson's rule for integration
@@ -90,19 +90,19 @@ The function offers four integration methods with different performance/accuracy
 \item Best for smooth integrands with sufficient grid density
 }
 
-\strong{Seeded Adaptive Method (seeded_adaptive):}
+\strong{Seeded Adaptive Method (\code{seeded_adaptive}):}
 \itemize{
 \item Combines pre-computation with adaptive refinement
 \item Starts with pre-computed grid, subdivides where needed
 \item Good balance of speed and accuracy
 }
 
-\strong{Gauss-Legendre Method (gauss_legendre):}
+\strong{Gauss-Legendre Method (\code{gauss_legendre}):}
 \itemize{
-\item Uses Gauss-Legendre quadrature via statmod::gauss.quad
+\item Uses Gauss-Legendre quadrature via \code{\link[statmod:gauss.quad]{statmod::gauss.quad()}}
 \item Highly accurate for smooth integrands with fewer evaluation points
 \item Exact for polynomials up to degree 2n-1 using n points
-\item Requires the statmod package
+\item Requires the \pkg{statmod} package
 }
 }
 

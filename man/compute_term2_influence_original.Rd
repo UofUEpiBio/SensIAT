@@ -26,7 +26,7 @@ compute_term2_influence_original(
 
 \item{outcome_model}{The fitted Single-index outcome model}
 
-\item{base}{SplineBasis for marginal mean model}
+\item{base}{\code{SplineBasis} object for marginal mean model}
 
 \item{alpha}{Sensitivity parameter}
 
@@ -44,14 +44,14 @@ compute_term2_influence_original(
 
 \item{W}{Weight function W(t, beta)}
 
-\item{expected_get}{Optional caching function: expected_get(t) -> list(E_exp_alphaY, E_Yexp_alphaY)}
+\item{expected_get}{Optional caching function: \code{expected_get(t)} -> \code{list(E_exp_alphaY, E_Yexp_alphaY)}}
 
 \item{time_var}{Name of the time variable in patient_data (if NULL, auto-detected)}
 
 \item{...}{Additional arguments (not used)}
 }
 \value{
-Numeric vector of length ncol(base) with term2 influence values
+Numeric vector of length \code{ncol(base)} with term2 influence values
 }
 \description{
 Note: This method now segments the integration at observation times to handle

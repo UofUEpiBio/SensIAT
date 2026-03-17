@@ -31,7 +31,7 @@ make_term2_integrand_fast(
 \arguments{
 \item{outcome.model}{The fitted Single-index outcome model}
 
-\item{base}{SplineBasis for marginal mean model}
+\item{base}{\code{SplineBasis} object for marginal mean model}
 
 \item{alpha}{Sensitivity parameter}
 

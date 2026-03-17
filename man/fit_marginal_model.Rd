@@ -20,7 +20,7 @@ fit_marginal_model(
 
 \item{outcome.model}{Outcome model object or formula (GLM, single-index, or LM).}
 
-\item{intensity.model}{Intensity model object (e.g., coxph).}
+\item{intensity.model}{Intensity model object (e.g., \code{coxph}).}
 
 \item{id}{Subject identifier variable.}
 

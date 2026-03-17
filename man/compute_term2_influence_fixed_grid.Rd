@@ -29,7 +29,7 @@ compute_term2_influence_fixed_grid(
 
 \item{outcome_model}{The fitted outcome model}
 
-\item{base}{SplineBasis for marginal mean model}
+\item{base}{\code{SplineBasis} object for marginal mean model}
 
 \item{alpha}{Sensitivity parameter}
 
@@ -64,7 +64,7 @@ list with elements:
 \item{...}{Additional arguments (not used)}
 }
 \value{
-Numeric vector of length ncol(base) with term2 influence values
+Numeric vector of length \code{ncol(base)} with term2 influence values
 }
 \description{
 This method evaluates the integrand at a pre-determined grid of points

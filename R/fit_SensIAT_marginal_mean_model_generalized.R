@@ -13,12 +13,12 @@
 #' @param link The link function to use. Options are "identity", "log", and "logit".
 #' @param BBsolve.control Control parameters for the BB::sane optimizer, including `maxit` and `tol`.
 #' @param term2_method Method for computing term2 influence components. Options are:
-#'   - "fast": Optimized closure-based integrand with adaptive Simpson's (default)
-#'   - "original": Standard implementation with adaptive Simpson's
-#'   - "fixed_grid": Pre-computed expected values on fixed grid with composite Simpson's rule
-#'   - "seeded_adaptive": Adaptive Simpson's seeded with pre-computed grid points
-#'   - "gauss_legendre": Gauss-Legendre quadrature (requires statmod package)
-#' @param term2_grid_n Number of grid points/nodes for fixed_grid, seeded_adaptive, and gauss_legendre methods (default 100)
+#'   - `"fast"`: Optimized closure-based integrand with adaptive Simpson's (default)
+#'   - `"original"`: Standard implementation with adaptive Simpson's
+#'   - `"fixed_grid"`: Pre-computed expected values on fixed grid with composite Simpson's rule
+#'   - `"seeded_adaptive"`: Adaptive Simpson's seeded with pre-computed grid points
+#'   - `"gauss_legendre"`: Gauss-Legendre quadrature (requires \\pkg{statmod} package)
+#' @param term2_grid_n Number of grid points/nodes for `fixed_grid`, `seeded_adaptive`, and `gauss_legendre` methods (default 100)
 #' @param use_expected_cache Logical; whether to cache expected values for performance (default TRUE)
 #'
 #' @details
@@ -26,27 +26,27 @@
 #' 
 #' The function offers four integration methods with different performance/accuracy tradeoffs:
 #' 
-#' **Adaptive Methods (fast, original):**
+#' **Adaptive Methods (`fast`, `original`):**
 #' - Use adaptive Simpson's quadrature with automatic subdivision
 #' - Best accuracy for irregular integrands
-#' - "fast" method uses optimized closure-based integrand construction
+#' - `fast` method uses optimized closure-based integrand construction
 #' 
-#' **Fixed-Grid Method (fixed_grid):**
+#' **Fixed-Grid Method (`fixed_grid`):**
 #' - Pre-computes expected values at fixed grid points (once per alpha)
 #' - Uses composite Simpson's rule for integration
 #' - 2-5x faster when optimizing over beta (multiple iterations)
 #' - Best for smooth integrands with sufficient grid density
 #' 
-#' **Seeded Adaptive Method (seeded_adaptive):**
+#' **Seeded Adaptive Method (`seeded_adaptive`):**
 #' - Combines pre-computation with adaptive refinement
 #' - Starts with pre-computed grid, subdivides where needed
 #' - Good balance of speed and accuracy
 #'
-#' **Gauss-Legendre Method (gauss_legendre):**
-#' - Uses Gauss-Legendre quadrature via statmod::gauss.quad
+#' **Gauss-Legendre Method (`gauss_legendre`):**
+#' - Uses Gauss-Legendre quadrature via [statmod::gauss.quad()]
 #' - Highly accurate for smooth integrands with fewer evaluation points
 #' - Exact for polynomials up to degree 2n-1 using n points
-#' - Requires the statmod package
+#' - Requires the \pkg{statmod} package
 #'
 #' ## Outcome Model Compatibility
 #' Unlike simulation code that assumes specific single-index model formulas, this

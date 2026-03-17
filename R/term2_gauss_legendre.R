@@ -19,7 +19,7 @@
 #'
 #' @param patient_data data.frame with patient's observations
 #' @param outcome_model The fitted outcome model
-#' @param base SplineBasis for marginal mean model
+#' @param base `SplineBasis` object for marginal mean model
 #' @param alpha Sensitivity parameter
 #' @param marginal_beta Coefficients (beta) for the marginal mean spline basis
 #' @param V_inv Inverse Gram matrix for base
@@ -34,7 +34,7 @@
 #' @param time_var Time variable name (optional)
 #' @param ... Additional arguments (not used)
 #'
-#' @return Numeric vector of length ncol(base) with term2 influence values
+#' @return Numeric vector of length `ncol(base)` with term2 influence values
 #'
 #' @details
 #' Gauss-Legendre quadrature approximates the integral as a weighted sum:
@@ -42,7 +42,7 @@
 #' where \eqn{x_i} are the Gauss-Legendre nodes transformed to the interval
 #' \eqn{(a, b)} and \eqn{w_i} are the corresponding weights.
 #'
-#' The method requires the `statmod` package for computing nodes and weights.
+#' The method requires the \pkg{statmod} package for computing nodes and weights.
 #'
 #' @keywords internal
 compute_term2_influence_gauss_legendre <- function(
@@ -233,7 +233,7 @@ compute_expected_values_at_nodes <- function(
 #'
 #' @param patient_data Patient data frame
 #' @param outcome_model Fitted outcome model
-#' @param base SplineBasis object
+#' @param base `SplineBasis` object
 #' @param alpha Sensitivity parameter
 #' @param tmin Lower integration bound
 #' @param tmax Upper integration bound
@@ -242,7 +242,7 @@ compute_expected_values_at_nodes <- function(
 #' @param time_var Time variable name (optional)
 #'
 #' @return List with:
-#'   - nodes: Gauss-Legendre nodes transformed to the interval (tmin, tmax)
+#'   - nodes: Gauss-Legendre nodes transformed to the interval (`tmin`, `tmax`)
 #'   - weights: Gauss-Legendre weights (including Jacobian)
 #'   - B_nodes: Basis evaluations at nodes
 #'   - E_nodes: Expected values at nodes

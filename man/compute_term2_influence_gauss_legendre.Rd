@@ -27,7 +27,7 @@ compute_term2_influence_gauss_legendre(
 
 \item{outcome_model}{The fitted outcome model}
 
-\item{base}{SplineBasis for marginal mean model}
+\item{base}{\code{SplineBasis} object for marginal mean model}
 
 \item{alpha}{Sensitivity parameter}
 
@@ -55,7 +55,7 @@ for Gauss-Legendre since nodes are specialized)}
 \item{...}{Additional arguments (not used)}
 }
 \value{
-Numeric vector of length ncol(base) with term2 influence values
+Numeric vector of length \code{ncol(base)} with term2 influence values
 }
 \description{
 This method uses Gauss-Legendre quadrature for numerical integration.
@@ -68,6 +68,6 @@ Gauss-Legendre quadrature approximates the integral as a weighted sum:
 where \eqn{x_i} are the Gauss-Legendre nodes transformed to the interval
 \eqn{(a, b)} and \eqn{w_i} are the corresponding weights.
 
-The method requires the \code{statmod} package for computing nodes and weights.
+The method requires the \pkg{statmod} package for computing nodes and weights.
 }
 \keyword{internal}

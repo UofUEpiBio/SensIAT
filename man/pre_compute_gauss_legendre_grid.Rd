@@ -21,7 +21,7 @@ pre_compute_gauss_legendre_grid(
 
 \item{outcome_model}{Fitted outcome model}
 
-\item{base}{SplineBasis object}
+\item{base}{\code{SplineBasis} object}
 
 \item{alpha}{Sensitivity parameter}
 
@@ -38,7 +38,7 @@ pre_compute_gauss_legendre_grid(
 \value{
 List with:
 \itemize{
-\item nodes: Gauss-Legendre nodes transformed to the interval (tmin, tmax)
+\item nodes: Gauss-Legendre nodes transformed to the interval (\code{tmin}, \code{tmax})
 \item weights: Gauss-Legendre weights (including Jacobian)
 \item B_nodes: Basis evaluations at nodes
 \item E_nodes: Expected values at nodes

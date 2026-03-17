@@ -76,7 +76,7 @@ graph LR
 
 ## Single Index Model Call Graph (Norm 1 Coefficient Vector)
 
-Fits a single index model using MAVE with joint optimization of coefficients and bandwidth.
+Fits a single index model using `MAVE` with joint optimization of coefficients and bandwidth.
 
 ```{mermaid}
 ---

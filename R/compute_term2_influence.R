@@ -39,7 +39,7 @@
 #'
 #' @param patient_data data.frame with patient's observations (Time, Outcome, and lag variables)
 #' @param outcome_model The fitted Single-index outcome model
-#' @param base SplineBasis for marginal mean model
+#' @param base `SplineBasis` object for marginal mean model
 #' @param alpha Sensitivity parameter
 #' @param marginal_beta Coefficients (beta) for the marginal mean spline basis
 #' @param V_inv Inverse Gram matrix for base
@@ -48,11 +48,11 @@
 #' @param impute_fn Function to impute data at time t: impute_fn(t, patient_data) -> data.frame
 #' @param inv_link Inverse link function (e.g., exp for log link)
 #' @param W Weight function W(t, beta)
-#' @param expected_get Optional caching function: expected_get(t) -> list(E_exp_alphaY, E_Yexp_alphaY)
+#' @param expected_get Optional caching function: `expected_get(t)` -> `list(E_exp_alphaY, E_Yexp_alphaY)`
 #' @param time_var Name of the time variable in patient_data (if NULL, auto-detected)
 #' @param ... Additional arguments (not used)
 #'
-#' @return Numeric vector of length ncol(base) with term2 influence values
+#' @return Numeric vector of length `ncol(base)` with term2 influence values
 #'
 #' @keywords internal
 compute_term2_influence_original <- function(
@@ -170,7 +170,7 @@ compute_term2_influence_original <- function(
 #' @inheritParams compute_term2_influence_original
 #' @param time_var Name of the time variable in patient_data (if NULL, auto-detected)
 #'
-#' @return Numeric vector of length ncol(base) with term2 influence values
+#' @return Numeric vector of length `ncol(base)` with term2 influence values
 #'
 #' @keywords internal
 compute_term2_influence_fast <- function(

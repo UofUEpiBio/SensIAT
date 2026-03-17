@@ -5,7 +5,7 @@
 #'
 #' @param data Data frame containing all required variables.
 #' @param outcome.model Outcome model object or formula (GLM, single-index, or LM).
-#' @param intensity.model Intensity model object (e.g., coxph).
+#' @param intensity.model Intensity model object (e.g., `coxph`).
 #' @param id Subject identifier variable.
 #' @param time Time variable.
 #' @param alpha Sensitivity parameter(s).

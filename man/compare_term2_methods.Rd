@@ -24,7 +24,7 @@ compare_term2_methods(
 
 \item{outcome_model}{The fitted outcome model (any type supported by compute_SensIAT_expected_values)}
 
-\item{base}{SplineBasis for marginal mean model}
+\item{base}{\code{SplineBasis} for marginal mean model}
 
 \item{alpha_vec}{Numeric vector of sensitivity parameters}
 

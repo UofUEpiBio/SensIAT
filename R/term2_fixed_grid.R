@@ -21,7 +21,7 @@
 #'
 #' @param patient_data data.frame with patient's observations
 #' @param outcome_model The fitted outcome model
-#' @param base SplineBasis for marginal mean model
+#' @param base `SplineBasis` object for marginal mean model
 #' @param alpha Sensitivity parameter
 #' @param marginal_beta Coefficients (beta) for the marginal mean spline basis
 #' @param V_inv Inverse Gram matrix for base
@@ -41,7 +41,7 @@
 #' @param time_var Time variable name (optional)
 #' @param ... Additional arguments (not used)
 #'
-#' @return Numeric vector of length ncol(base) with term2 influence values
+#' @return Numeric vector of length `ncol(base)` with term2 influence values
 #'
 #' @keywords internal
 compute_term2_influence_fixed_grid <- function(

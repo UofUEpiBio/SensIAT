@@ -20,7 +20,7 @@
 #' Build a fast term2 integrand for a single patient (closure)
 #'
 #' @param outcome.model The fitted Single-index outcome model
-#' @param base SplineBasis for marginal mean model
+#' @param base `SplineBasis` object for marginal mean model
 #' @param alpha Sensitivity parameter
 #' @param patient_times Numeric vector of observation times for the patient (sorted asc)
 #' @param patient_outcomes Numeric vector of outcomes aligned with patient_times
