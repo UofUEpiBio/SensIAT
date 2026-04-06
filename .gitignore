@@ -44,3 +44,5 @@ inst/doc
 /.quarto/
 **/*.quarto_ipynb
 .pdf
+/doc/
+/Meta/
