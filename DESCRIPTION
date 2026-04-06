@@ -54,6 +54,7 @@ Suggests:
     ManifoldOptim,
     metR,
     progress,
+    quarto,
     rmarkdown,
     spelling,
     statmod,
