@@ -8,551 +8,273 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-# Skip expensive computations on CRAN
-NOT_CRAN <- identical(Sys.getenv("NOT_CRAN"), "true")
-
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.width = 8,
-  fig.height = 6,
-  eval = NOT_CRAN  # Skip all chunks on CRAN by default
+  fig.height = 6
 )
 ```
 
-```{r setup, eval=TRUE}
+```{r setup}
 library(SensIAT)
-library(survival)
 library(dplyr)
 library(ggplot2)
-library(bench)
-
-if (!NOT_CRAN) {
- cat("Note: This vignette contains computationally intensive examples.\n")
- cat("Set NOT_CRAN=true to run all code chunks.\n")
-}
 ```
 
 ## Overview
+This vignette compares integration methods for computing **term2 influence**
+components in `fit_SensIAT_marginal_mean_model_generalized`. We isolate just 
+the term2 computation (the numerical integration step) to provide focused 
+benchmarks without the overhead of full model fitting.
 
-This vignette compares four integration methods for computing term2 influence
-components in `fit_SensIAT_marginal_mean_model_generalized`:
+Available methods:
 
 1. **`"fast"`** (default): Adaptive Simpson's with optimized closure-based integrand
 2. **`"original"`**: Standard adaptive Simpson's implementation
 3. **`"fixed_grid"`**: Pre-computed expected values on fixed grid with composite Simpson's
 4. **`"seeded_adaptive"`**: Adaptive Simpson's seeded with pre-computed grid points
 
-We evaluate these methods across three dimensions:
+We evaluate across:
 
-- **Accuracy**: How close are results to a high-precision reference?
-- **Speed**: Computation time for single alpha values and multiple alpha sequences
-- **Scalability**: Performance with different numbers of patients and grid densities
+- **Accuracy**: Difference from high-precision reference
+- **Speed**: Direct term2 computation time
+- **Scalability**: Performance across grid densities
 
-## Generate Simulated Data
+## Setup: Data and Models
 
-We'll create a moderately complex dataset with longitudinal outcomes:
+We use the package's example data and fit the required outcome model once:
 
-```{r simulate-data}
-set.seed(2026)
-
-n_patients <- 50
-max_visits <- 8
-
-# Simulate longitudinal data
-sim_data <- lapply(1:n_patients, function(id) {
-  n_visits <- sample(4:max_visits, 1)
-  
-  # Visit times (somewhat irregular)
-  times <- sort(c(0, cumsum(rexp(n_visits - 1, rate = 1/50))))
-  
-  # Outcomes with AR(1) structure
-  outcomes <- numeric(n_visits)
-  outcomes[1] <- rnorm(1, mean = 10, sd = 2)
-  
-  for (i in 2:n_visits) {
-    # Autoregressive component + noise
-    delta_t <- times[i] - times[i-1]
-    outcomes[i] <- 0.7 * outcomes[i-1] + 0.05 * delta_t + rnorm(1, sd = 1.5)
-  }
-  
-  data.frame(
-    Subject_ID = id,
-    Time = times,
-    Outcome = outcomes,
-    Visit = 1:n_visits
-  )
-}) %>% bind_rows()
-
-# Add lagged variables
-data_with_lags <- sim_data %>%
-  group_by(Subject_ID) %>%
+```{r setup-data, eval=FALSE}
+# Load and prepare example data
+data_with_lags <- SensIAT_example_data |>
+  group_by(Subject_ID) |>
   mutate(
     ..prev_outcome.. = lag(Outcome, default = NA_real_, order_by = Time),
     ..prev_time.. = lag(Time, default = 0, order_by = Time),
     ..delta_time.. = Time - lag(Time, default = NA_real_, order_by = Time)
-  ) %>%
+  ) |>
   ungroup()
 
-# Summary
-cat("Simulated data:\n")
-cat("  Patients:", n_distinct(sim_data$Subject_ID), "\n")
-cat("  Total observations:", nrow(sim_data), "\n")
-cat("  Obs per patient:", round(mean(table(sim_data$Subject_ID)), 1), "\n")
+cat("Data summary:\n")
+cat("  Patients:", n_distinct(data_with_lags$Subject_ID), "\n")
+cat("  Total observations:", nrow(data_with_lags), "\n")
 ```
 
-## Fit Outcome and Intensity Models
-
-```{r fit-models}
-# Intensity model (observation time process)
-intensity.model <- coxph(
-  Surv(..prev_time.., Time, !is.na(Outcome)) ~ ..prev_outcome.. + strata(Visit),
-  data = data_with_lags %>% filter(Time > 0)
-)
-
-# Outcome model (single-index with splines)
+```{r fit-outcome-model, eval=FALSE}
+# Fit outcome model (single-index with splines)
 outcome.model <- fit_SensIAT_single_index_fixed_coef_model(
   Outcome ~ splines::ns(..prev_outcome.., df = 3) + ..delta_time.. - 1,
   id = Subject_ID,
-  data = data_with_lags %>% filter(Time > 0)
+  data = data_with_lags |> filter(Time > 0)
 )
 
-# Imputation function
+# Imputation function for extrapolation
 impute_fn <- function(t, df) {
-  data_wl <- df %>%
-    mutate(
-      ..prev_time.. = Time,
-      ..prev_outcome.. = Outcome,
-      ..delta_time.. = 0
-    )
   extrapolate_from_last_observation(
-    t, data_wl, "Time",
+    t, df, "Time",
     slopes = c("..delta_time.." = 1)
   )
 }
 
 # Marginal mean spline knots
-knots <- c(50, 150, 250)
+knots <- c(60, 260, 460)
 ```
 
-## Accuracy Comparison
+## Isolated Term2 Benchmark
 
-First, let's establish a high-precision reference using the adaptive method
-with very fine tolerance:
+The `benchmark_term2_methods()` function directly compares term2 computation
+methods without repeatedly fitting the full model. This isolates the integration
+performance we care about.
 
-```{r reference-fit, cache=TRUE}
-# High-precision reference (slow but accurate)
-reference_result <- fit_SensIAT_marginal_mean_model_generalized(
+*Note: Results below use precomputed benchmarks shipped with the package.*
+*To regenerate: `source(system.file("extdata", "generate_term2_benchmarks.R", package = "SensIAT"))`*
+
+```{r benchmark-term2, eval=FALSE}
+# Run isolated term2 benchmark
+benchmark_results <- benchmark_term2_methods(
   data = data_with_lags,
+  id = Subject_ID,
   time = data_with_lags$Time,
-  id = data_with_lags$Subject_ID,
-  alpha = 0,
-  knots = knots,
   outcome.model = outcome.model,
-  intensity.model = intensity.model,
-  loss = "lp_mse",
-  link = "identity",
+  knots = knots,
+  alpha = c(-0.05, 0, 0.05),
   impute_data = impute_fn,
-  term2_method = "fast"
+  link = "identity",
+  methods = c("fast", "original", "fixed_grid", "seeded_adaptive"),
+  grid_sizes = c(50, 100, 200),
+  n_patients = 20,
+  n_iterations = 5,
+  reference_method = "fast"
 )
-
-reference_coef <- reference_result$coefficients[[1]]
-cat("Reference coefficients:\n")
-print(round(reference_coef, 6))
 ```
 
-Now compare all four methods:
+```{r load-precomputed, echo=FALSE}
+# Load precomputed benchmark results
+load(system.file("extdata", "term2_benchmark_results.rda", package = "SensIAT"))
+benchmark_results <- term2_benchmark_results
+```
 
-```{r accuracy-comparison, cache=TRUE}
-methods <- c("fast", "original", "fixed_grid", "seeded_adaptive")
-grid_sizes <- c(50, 100, 200)
+### Timing Results
 
-accuracy_results <- expand.grid(
-  method = methods,
-  grid_n = c(NA, grid_sizes),  # NA for adaptive methods
-  stringsAsFactors = FALSE
-) %>%
-  filter(
-    (method %in% c("fast", "original") & is.na(grid_n)) |
-    (method %in% c("fixed_grid", "seeded_adaptive") & !is.na(grid_n))
-  ) %>%
-  rowwise() %>%
-  mutate(
-    result = list({
-      fit_SensIAT_marginal_mean_model_generalized(
-        data = data_with_lags,
-        time = data_with_lags$Time,
-        id = data_with_lags$Subject_ID,
-        alpha = 0,
-        knots = knots,
-        outcome.model = outcome.model,
-        intensity.model = intensity.model,
-        loss = "lp_mse",
-        link = "identity",
-        impute_data = impute_fn,
-        term2_method = method,
-        term2_grid_n = ifelse(is.na(grid_n), 100, grid_n)
-      )
-    }),
-    coefficients = list(result$coefficients[[1]]),
-    max_abs_diff = max(abs(coefficients - reference_coef)),
-    rmse = sqrt(mean((coefficients - reference_coef)^2))
-  ) %>%
-  ungroup()
-
-# Display accuracy table
-accuracy_table <- accuracy_results %>%
-  select(method, grid_n, max_abs_diff, rmse) %>%
-  mutate(
-    grid_n = ifelse(is.na(grid_n), "adaptive", as.character(grid_n)),
-    max_abs_diff = sprintf("%.2e", max_abs_diff),
-    rmse = sprintf("%.2e", rmse)
-  )
-
+```{r timing-table}
 knitr::kable(
-  accuracy_table,
-  caption = "Accuracy Comparison: Maximum Absolute Difference and RMSE from Reference",
-  col.names = c("Method", "Grid Points", "Max |Difference|", "RMSE")
+  benchmark_results$timing |>
+    mutate(
+      mean_time = sprintf("%.4f", mean_time),
+      sd_time = sprintf("%.4f", sd_time),
+      relative_speed = sprintf("%.2f", relative_speed)
+    ),
+  caption = "Term2 Computation Time by Method",
+  col.names = c("Method", "Mean (s)", "SD (s)", "Min (s)", "Max (s)", "Relative")
 )
 ```
 
-### Accuracy Plot
+### Accuracy Results
 
-```{r accuracy-plot, fig.cap="Coefficient differences from reference solution"}
-# Extract coefficient differences for plotting
-plot_data <- accuracy_results %>%
-  rowwise() %>%
+Accuracy is measured against the `fast` method (adaptive Simpson's):
+
+```{r accuracy-table}
+knitr::kable(
+  benchmark_results$accuracy |>
+    mutate(
+      max_abs_diff = sprintf("%.2e", max_abs_diff),
+      mean_abs_diff = sprintf("%.2e", mean_abs_diff),
+      rmse = sprintf("%.2e", rmse)
+    ) |>
+    select(method, max_abs_diff, rmse),
+  caption = "Accuracy vs Reference (fast method)",
+  col.names = c("Method", "Max |Diff|", "RMSE")
+)
+```
+
+### Visualization
+
+```{r benchmark-plot, fig.cap="Term2 computation time by method"}
+timing_df <- benchmark_results$timing |>
   mutate(
-    coef_diffs = list(data.frame(
-      basis_fn = 1:length(coefficients),
-      difference = coefficients - reference_coef
-    ))
-  ) %>%
-  select(method, grid_n, coef_diffs) %>%
-  tidyr::unnest(coef_diffs) %>%
-  mutate(
-    method_label = ifelse(
-      is.na(grid_n),
-      method,
-      paste0(method, " (n=", grid_n, ")")
+    method_type = case_when(
+      grepl("fixed_grid", method) ~ "Fixed Grid",
+      grepl("seeded", method) ~ "Seeded Adaptive",
+      TRUE ~ "Adaptive"
     )
   )
 
-ggplot(plot_data, aes(x = basis_fn, y = difference, color = method_label)) +
-  geom_line() +
-  geom_point() +
-  geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.5) +
-  scale_y_log10() +
-  labs(
-    title = "Coefficient Differences from Reference Solution",
-    x = "Basis Function Index",
-    y = "|Difference| from Reference (log scale)",
-    color = "Method"
-  ) +
-  theme_minimal() +
-  theme(legend.position = "bottom")
-```
-
-### Key Observations - Accuracy
-
-- **Adaptive methods** (`fast`, `original`) achieve machine precision
-- **Fixed-grid method** accuracy improves with grid density
-  - 50 points: ~1e-4 to 1e-5 error
-  - 100 points: ~1e-5 to 1e-6 error  
-  - 200 points: ~1e-6 to 1e-7 error
-- **Seeded adaptive** achieves near-adaptive accuracy even with coarse seeds
-
-## Speed Comparison: Single Alpha
-
-Compare computation time for a single alpha value:
-
-```{r speed-single, cache=TRUE}
-timing_single <- bench::mark(
-  fast = fit_SensIAT_marginal_mean_model_generalized(
-    data = data_with_lags, time = data_with_lags$Time,
-    id = data_with_lags$Subject_ID, alpha = 0, knots = knots,
-    outcome.model = outcome.model, intensity.model = intensity.model,
-    loss = "lp_mse", link = "identity", impute_data = impute_fn,
-    term2_method = "fast"
-  ),
-  
-  original = fit_SensIAT_marginal_mean_model_generalized(
-    data = data_with_lags, time = data_with_lags$Time,
-    id = data_with_lags$Subject_ID, alpha = 0, knots = knots,
-    outcome.model = outcome.model, intensity.model = intensity.model,
-    loss = "lp_mse", link = "identity", impute_data = impute_fn,
-    term2_method = "original"
-  ),
-  
-  fixed_grid_50 = fit_SensIAT_marginal_mean_model_generalized(
-    data = data_with_lags, time = data_with_lags$Time,
-    id = data_with_lags$Subject_ID, alpha = 0, knots = knots,
-    outcome.model = outcome.model, intensity.model = intensity.model,
-    loss = "lp_mse", link = "identity", impute_data = impute_fn,
-    term2_method = "fixed_grid", term2_grid_n = 50
-  ),
-  
-  fixed_grid_100 = fit_SensIAT_marginal_mean_model_generalized(
-    data = data_with_lags, time = data_with_lags$Time,
-    id = data_with_lags$Subject_ID, alpha = 0, knots = knots,
-    outcome.model = outcome.model, intensity.model = intensity.model,
-    loss = "lp_mse", link = "identity", impute_data = impute_fn,
-    term2_method = "fixed_grid", term2_grid_n = 100
-  ),
-  
-  seeded_50 = fit_SensIAT_marginal_mean_model_generalized(
-    data = data_with_lags, time = data_with_lags$Time,
-    id = data_with_lags$Subject_ID, alpha = 0, knots = knots,
-    outcome.model = outcome.model, intensity.model = intensity.model,
-    loss = "lp_mse", link = "identity", impute_data = impute_fn,
-    term2_method = "seeded_adaptive", term2_grid_n = 50
-  ),
-  
-  check = FALSE,
-  iterations = 10,
-  time_unit = "s"
-)
-
-# Display timing results
-timing_single %>%
-  select(expression, median, mem_alloc) %>%
-  mutate(
-    expression = as.character(expression),
-    median = as.numeric(median),
-    relative_speed = median / min(median)
-  ) %>%
-  arrange(median) %>%
-  knitr::kable(
-    caption = "Single Alpha Performance",
-    col.names = c("Method", "Median Time (s)", "Memory", "Relative Speed"),
-    digits = 3
-  )
-```
-
-## Speed Comparison: Multiple Alphas
-
-The fixed-grid method's advantage becomes clear when fitting multiple alpha values,
-since expected values are pre-computed once per alpha:
-
-```{r speed-multiple, cache=TRUE}
-alpha_seq <- seq(-0.1, 0.1, length.out = 5)
-
-timing_multiple <- bench::mark(
-  fast = fit_SensIAT_marginal_mean_model_generalized(
-    data = data_with_lags, time = data_with_lags$Time,
-    id = data_with_lags$Subject_ID, alpha = alpha_seq, knots = knots,
-    outcome.model = outcome.model, intensity.model = intensity.model,
-    loss = "lp_mse", link = "identity", impute_data = impute_fn,
-    term2_method = "fast"
-  ),
-  
-  fixed_grid_100 = fit_SensIAT_marginal_mean_model_generalized(
-    data = data_with_lags, time = data_with_lags$Time,
-    id = data_with_lags$Subject_ID, alpha = alpha_seq, knots = knots,
-    outcome.model = outcome.model, intensity.model = intensity.model,
-    loss = "lp_mse", link = "identity", impute_data = impute_fn,
-    term2_method = "fixed_grid", term2_grid_n = 100
-  ),
-  
-  seeded_50 = fit_SensIAT_marginal_mean_model_generalized(
-    data = data_with_lags, time = data_with_lags$Time,
-    id = data_with_lags$Subject_ID, alpha = alpha_seq, knots = knots,
-    outcome.model = outcome.model, intensity.model = intensity.model,
-    loss = "lp_mse", link = "identity", impute_data = impute_fn,
-    term2_method = "seeded_adaptive", term2_grid_n = 50
-  ),
-  
-  check = FALSE,
-  iterations = 5,
-  time_unit = "s"
-)
-
-timing_multiple %>%
-  select(expression, median, mem_alloc) %>%
-  mutate(
-    expression = as.character(expression),
-    median = as.numeric(median),
-    speedup_vs_fast = as.numeric(timing_multiple$median[1]) / median
-  ) %>%
-  arrange(median) %>%
-  knitr::kable(
-    caption = paste("Multiple Alphas Performance (", length(alpha_seq), "values)"),
-    col.names = c("Method", "Median Time (s)", "Memory", "Speedup vs Fast"),
-    digits = 3
-  )
-```
-
-### Speed Visualization
-
-```{r speed-plot, fig.cap="Computation time comparison"}
-timing_combined <- bind_rows(
-  timing_single %>%
-    mutate(scenario = "Single Alpha") %>%
-    select(expression, median, scenario),
-  timing_multiple %>%
-    mutate(scenario = paste(length(alpha_seq), "Alphas")) %>%
-    select(expression, median, scenario)
-) %>%
-  mutate(
-    expression = as.character(expression),
-    median = as.numeric(median)
-  )
-
-ggplot(timing_combined, aes(x = expression, y = median, fill = scenario)) +
-  geom_col(position = "dodge") +
+ggplot(timing_df, aes(x = reorder(method, mean_time), y = mean_time, fill = method_type)) +
+  geom_col() +
+  geom_errorbar(aes(ymin = mean_time - sd_time, ymax = mean_time + sd_time), width = 0.2) +
   coord_flip() +
-  scale_y_log10() +
   labs(
-    title = "Computation Time by Method and Scenario",
-    x = "Method",
-    y = "Median Time (seconds, log scale)",
-    fill = "Scenario"
+    title = "Term2 Integration Performance",
+    subtitle = paste(benchmark_results$setup_info$n_patients, "patients,",
+                     benchmark_results$setup_info$n_alphas, "alpha values"),
+    x = NULL,
+    y = "Time (seconds)",
+    fill = "Method Type"
   ) +
   theme_minimal() +
   theme(legend.position = "bottom")
 ```
-
-### Key Observations - Speed
-
-- **Single alpha**:
-  - `fast` is fastest adaptive method
-  - `fixed_grid` competitive with adaptive methods
-  - Trade-off between accuracy (grid density) and speed
-  
-- **Multiple alphas**:
-  - **Fixed-grid method shows 2-3x speedup** over adaptive methods
-  - Expected values computed once per alpha, not per beta iteration
-  - `seeded_adaptive` provides good middle ground
 
 ## Grid Density Analysis
 
 How does accuracy scale with grid density for fixed-grid method?
 
-```{r grid-analysis, cache=TRUE}
-grid_sizes_detailed <- c(25, 50, 75, 100, 150, 200, 300)
+```{r grid-analysis, eval=FALSE}
+# Benchmark with varying grid sizes
+grid_benchmark <- benchmark_term2_methods(
+  data = data_with_lags,
+  id = Subject_ID,
+  time = data_with_lags$Time,
+  outcome.model = outcome.model,
+  knots = knots,
+  alpha = 0,
+  impute_data = impute_fn,
+  link = "identity",
+  methods = c("fast", "fixed_grid"),
+  grid_sizes = c(25, 50, 75, 100, 150, 200),
+  n_patients = 15,
+  n_iterations = 3,
+  reference_method = "fast"
+)
+```
 
-grid_analysis <- data.frame(
-  grid_n = grid_sizes_detailed
-) %>%
-  rowwise() %>%
+```{r load-grid-precomputed, echo=FALSE}
+# Use precomputed grid benchmark
+grid_benchmark <- term2_grid_benchmark_results
+```
+
+```{r grid-extract}
+# Extract grid-specific results
+grid_accuracy <- grid_benchmark$accuracy |>
+  filter(grepl("fixed_grid", method)) |>
   mutate(
-    result = list({
-      fit_SensIAT_marginal_mean_model_generalized(
-        data = data_with_lags,
-        time = data_with_lags$Time,
-        id = data_with_lags$Subject_ID,
-        alpha = 0,
-        knots = knots,
-        outcome.model = outcome.model,
-        intensity.model = intensity.model,
-        loss = "lp_mse",
-        link = "identity",
-        impute_data = impute_fn,
-        term2_method = "fixed_grid",
-        term2_grid_n = grid_n
-      )
-    }),
-    coefficients = list(result$coefficients[[1]]),
-    rmse = sqrt(mean((coefficients - reference_coef)^2)),
-    max_diff = max(abs(coefficients - reference_coef))
-  ) %>%
-  ungroup()
+    grid_n = as.numeric(gsub("fixed_grid_", "", method))
+  )
 
-# Plot grid density vs accuracy
-ggplot(grid_analysis, aes(x = grid_n)) +
-  geom_line(aes(y = rmse, color = "RMSE")) +
-  geom_point(aes(y = rmse, color = "RMSE")) +
-  geom_line(aes(y = max_diff, color = "Max Diff"), linetype = "dashed") +
-  geom_point(aes(y = max_diff, color = "Max Diff")) +
+grid_timing <- grid_benchmark$timing |>
+  filter(grepl("fixed_grid", method)) |>
+  mutate(
+    grid_n = as.numeric(gsub("fixed_grid_", "", method))
+  )
+
+# Combine for plotting
+grid_combined <- left_join(grid_accuracy, grid_timing, by = c("method", "grid_n"))
+```
+
+```{r grid-plot, fig.cap="Fixed-grid accuracy vs grid density"}
+ggplot(grid_combined, aes(x = grid_n)) +
+  geom_line(aes(y = rmse), color = "steelblue", linewidth = 1) +
+  geom_point(aes(y = rmse), color = "steelblue", size = 3) +
   scale_y_log10() +
   labs(
     title = "Fixed-Grid Accuracy vs Grid Density",
     x = "Number of Grid Points",
-    y = "Error from Reference (log scale)",
-    color = "Metric"
+    y = "RMSE from Reference (log scale)"
   ) +
-  theme_minimal() +
-  theme(legend.position = "bottom")
+  theme_minimal()
+```
+
+```{r grid-tradeoff, fig.cap="Speed-accuracy tradeoff"}
+ggplot(grid_combined, aes(x = mean_time, y = rmse, label = grid_n)) +
+  geom_point(size = 4, color = "steelblue") +
+  geom_text(vjust = -1, hjust = 0.5) +
+  scale_y_log10() +
+  labs(
+    title = "Speed-Accuracy Tradeoff for Fixed-Grid Method",
+    subtitle = "Labels show number of grid points",
+    x = "Computation Time (seconds)",
+    y = "RMSE from Reference (log scale)"
+  ) +
+  theme_minimal()
 ```
 
 ## Recommendations
 
-Based on this analysis, here are recommended integration methods for different scenarios:
+Based on this analysis, here are recommended integration methods:
 
 ### Use **`"fast"`** (default) when:
-- Highest accuracy is required (machine precision)
+- Highest accuracy is required 
 - Fitting only 1-2 alpha values
 - Integrand has irregular features requiring adaptive refinement
 - Default choice for most applications
 
 ### Use **`"fixed_grid"`** when:
 - Fitting many alpha values (5+)
-- Speed is critical and moderate accuracy (1e-5 to 1e-6) is acceptable
-- Integrand is relatively smooth between observation times
+- Speed is critical and moderate accuracy acceptable
 - Willing to tune `term2_grid_n` for accuracy/speed trade-off
-  - Start with `term2_grid_n = 100` for most applications
-  - Increase to 200-300 if higher accuracy needed
-  - Decrease to 50 if speed critical and lower accuracy acceptable
+  - `term2_grid_n = 100`: Good default
+  - `term2_grid_n = 200`: Higher accuracy
+  - `term2_grid_n = 50`: Maximum speed
 
 ### Use **`"seeded_adaptive"`** when:
-- Want both good accuracy and reasonable speed
+- Want balance between accuracy and speed
 - Fitting moderate numbers of alpha values (3-5)
-- Uncertain about integrand smoothness
 - Good "middle ground" option
 
 ### Use **`"original"`** when:
 - Debugging or comparison purposes
 - Verifying results against standard implementation
-
-## Computational Cost Breakdown
-
-The table below shows where computational time is spent for different methods:
-
-```{r cost-breakdown}
-cost_breakdown <- data.frame(
-  Component = c(
-    "Expected values computation",
-    "Integration (per beta iteration)",
-    "Weight function evaluation",
-    "Basis evaluation"
-  ),
-  Adaptive = c(
-    "Per integration point (many)",
-    "Adaptive subdivision overhead",
-    "Per integration point",
-    "Per integration point"
-  ),
-  Fixed_Grid = c(
-    "Once per alpha at grid points",
-    "Simple weighted sum",
-    "At grid points only",
-    "Pre-computed once"
-  ),
-  Seeded = c(
-    "At seed points + adaptive",
-    "Adaptive with better init",
-    "Per integration point",
-    "At seeds + adaptive points"
-  )
-)
-
-knitr::kable(
-  cost_breakdown,
-  caption = "Computational Cost by Component and Method"
-)
-```
-
-## Conclusion
-
-This vignette demonstrates that:
-
-1. **All methods produce highly accurate results** with appropriate settings
-2. **Fixed-grid method provides significant speedups** (2-5x) for multiple alpha values
-3. **Seeded adaptive balances** accuracy and speed effectively
-4. **Grid density** can be tuned for accuracy/speed trade-off
-5. **Default "fast" method** remains excellent general-purpose choice
-
-The new integration methods provide users with flexibility to optimize for their specific use case, whether prioritizing accuracy, speed, or a balance of both.
 
 ## Session Info
 
