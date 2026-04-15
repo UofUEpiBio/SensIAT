@@ -20,6 +20,20 @@ compute_influence_terms(
   ...
 )
 
+# S3 method for class 'glm'
+compute_influence_terms(
+  outcome.model,
+  intensity.model,
+  alpha,
+  data,
+  base,
+  tolerance = .Machine$double.eps^(1/3),
+  na.action = na.fail,
+  id = NULL,
+  time = NULL,
+  ...
+)
+
 # S3 method for class '`SensIAT::Single-index-outcome-model`'
 compute_influence_terms(
   outcome.model,
@@ -83,6 +97,9 @@ compute_influence_terms(
 
 - `compute_influence_terms(default)`: Generic method, which throws a not
   implemented error.
+
+- `compute_influence_terms(glm)`: Method for Generalized Linear Models
+  (GLM).
 
 - `` compute_influence_terms(`SensIAT::Single-index-outcome-model`) ``:
   Optimized method for the single index model.

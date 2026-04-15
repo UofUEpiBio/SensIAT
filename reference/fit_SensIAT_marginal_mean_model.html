@@ -18,7 +18,9 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/loss_and_links.html">Fitting with Different Loss and Link Functions</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/internal-call-graph.html">Internal Call Graph Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/loss_and_links.html">Fitting with Different Loss and Link Functions</a></li>
+    <li><a class="dropdown-item" href="../articles/term2-integration-methods.html">Term2 Integration Methods: Performance Comparison</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -33,7 +35,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Fit the Marginal Means Model</h1>
-      <small class="dont-index">Source: <a href="https://github.com/UofUEpiBio/SensIAT/blob/main/R/fit_marginal_model.R" class="external-link"><code>R/fit_marginal_model.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/UofUEpiBio/SensIAT/blob/main/R/fit_sensiat_marginal_mean_model.R" class="external-link"><code>R/fit_sensiat_marginal_mean_model.R</code></a></small>
       <div class="d-none name"><code>fit_SensIAT_marginal_mean_model.Rd</code></div>
     </div>
 
@@ -125,14 +127,16 @@
 <span class="r-in"><span><span class="co"># Create the observation time intensity model</span></span></span>
 <span class="r-in"><span><span class="va">intensity.model</span> <span class="op">&lt;-</span></span></span>
 <span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">..prev_time..</span>, <span class="va">Time</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">Outcome</span><span class="op">)</span><span class="op">)</span> <span class="op">~</span> <span class="va">..prev_outcome..</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata</a></span><span class="op">(</span><span class="va">Visit</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    data <span class="op">=</span> <span class="va">data_with_lags</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">Time</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>        data <span class="op">=</span> <span class="va">data_with_lags</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">Time</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Create the observed outcome model</span></span></span>
 <span class="r-in"><span><span class="va">outcome.model</span> <span class="op">&lt;-</span></span></span>
 <span class="r-in"><span>    <span class="fu"><a href="fit_SensIAT_single_index_fixed_coef_model.html">fit_SensIAT_single_index_fixed_coef_model</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>        <span class="va">Outcome</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">..prev_outcome..</span>, df<span class="op">=</span><span class="fl">3</span><span class="op">)</span> <span class="op">+</span> <span class="va">..delta_time..</span> <span class="op">-</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>        <span class="va">Outcome</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">..prev_outcome..</span>, df <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span> <span class="va">..delta_time..</span> <span class="op">-</span> <span class="fl">1</span>,</span></span>
 <span class="r-in"><span>        id <span class="op">=</span> <span class="va">Subject_ID</span>,</span></span>
-<span class="r-in"><span>        data <span class="op">=</span> <span class="va">data_with_lags</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Time</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>        data <span class="op">=</span> <span class="va">data_with_lags</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Time</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Fit the marginal outcome model</span></span></span>
 <span class="r-in"><span><span class="va">mm</span> <span class="op">&lt;-</span> <span class="fu">fit_SensIAT_marginal_mean_model</span><span class="op">(</span></span></span>
@@ -141,8 +145,9 @@
 <span class="r-in"><span>    alpha <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.6</span>, <span class="op">-</span><span class="fl">0.3</span>, <span class="fl">0</span>, <span class="fl">0.3</span>, <span class="fl">0.6</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    knots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">60</span>, <span class="fl">260</span>, <span class="fl">460</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    intensity.model <span class="op">=</span> <span class="va">intensity.model</span>,</span></span>
-<span class="r-in"><span>    time.vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'..delta_time..'</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    outcome.model <span class="op">=</span> <span class="va">outcome.model</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    time.vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"..delta_time.."</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    outcome.model <span class="op">=</span> <span class="va">outcome.model</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

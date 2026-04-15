@@ -51,30 +51,16 @@ A data frame with terminal observations added.
 ## Examples
 
 ``` r
+if (FALSE) { # \dontrun{
 exdata <- tibble::tibble(
-  patient = rep(1:3, 3:5),
-  day = c(0, 30, 60,
-          0, 30, 60, 90,
-          0, 30, 60, 90, 120),
-  value = TRUE
+    patient = rep(1:3, 3:5),
+    day = c(
+        0, 30, 60,
+        0, 30, 60, 90,
+        0, 30, 60, 90, 120
+    ),
+    value = TRUE
 )
 add_terminal_observations(exdata, patient, day)
-#> # A tibble: 14 × 3
-#> # Groups:   patient [3]
-#>    patient   day value
-#>      <int> <dbl> <lgl>
-#>  1       1     0 TRUE 
-#>  2       1    30 TRUE 
-#>  3       1    60 TRUE 
-#>  4       1   120 NA   
-#>  5       2     0 TRUE 
-#>  6       2    30 TRUE 
-#>  7       2    60 TRUE 
-#>  8       2    90 TRUE 
-#>  9       2   120 NA   
-#> 10       3     0 TRUE 
-#> 11       3    30 TRUE 
-#> 12       3    60 TRUE 
-#> 13       3    90 TRUE 
-#> 14       3   120 TRUE 
+} # }
 ```

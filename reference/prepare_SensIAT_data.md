@@ -78,7 +78,7 @@ A data frame with the following transformations:
 ## Examples
 
 ``` r
-prepare_SensIAT_data( SensIAT_example_data, Subject_ID, Time, Outcome, 830)
+prepare_SensIAT_data(SensIAT_example_data, Subject_ID, Time, Outcome, 830)
 #> # A tibble: 1,000 × 11
 #>    ..id.. ..visit_number.. Subject_ID Visit  Time Outcome ..time.. ..outcome..
 #>     <int>            <int>      <int> <dbl> <dbl>   <dbl>    <dbl>       <dbl>
@@ -96,25 +96,29 @@ prepare_SensIAT_data( SensIAT_example_data, Subject_ID, Time, Outcome, 830)
 #> # ℹ 3 more variables: ..prev_outcome.. <dbl>, ..prev_time.. <dbl>,
 #> #   ..delta_time.. <dbl>
 
-exdata <- tibble::tibble(ID=rep(1:2, c(3,5)),
-                         Time=c(0, 30, 60,
-                                0, 30, 60, 90, 120),
-                         Outcome=floor(runif(8, 1, 100)))
+exdata <- tibble::tibble(
+    ID = rep(1:2, c(3, 5)),
+    Time = c(
+        0, 30, 60,
+        0, 30, 60, 90, 120
+    ),
+    Outcome = floor(runif(8, 1, 100))
+)
 
 prepare_SensIAT_data(exdata, ID, Time, Outcome, 120)
 #> # A tibble: 10 × 10
 #>    ..id.. ..visit_number..    ID  Time Outcome ..time.. ..outcome..
 #>     <int>            <int> <int> <dbl>   <dbl>    <dbl>       <dbl>
-#>  1      1                0     1     0       6        0           6
-#>  2      1                1     1    30      53       30          53
-#>  3      1                2     1    60      69       60          69
+#>  1      1                0     1     0       8        0           8
+#>  2      1                1     1    30      83       30          83
+#>  3      1                2     1    60      60       60          60
 #>  4      1                3     1   120      NA      120          NA
 #>  5      1                4     1   120      NA      120          NA
-#>  6      2                0     2     0      69        0          69
-#>  7      2                1     2    30       4       30           4
-#>  8      2                2     2    60      23       60          23
-#>  9      2                3     2    90      30       90          30
-#> 10      2                4     2   120      64      120          64
+#>  6      2                0     2     0      16        0          16
+#>  7      2                1     2    30       1       30           1
+#>  8      2                2     2    60      47       60          47
+#>  9      2                3     2    90      50       90          50
+#> 10      2                4     2   120      29      120          29
 #> # ℹ 3 more variables: ..prev_outcome.. <dbl>, ..prev_time.. <dbl>,
 #> #   ..delta_time.. <dbl>
 ```

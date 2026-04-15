@@ -4,12 +4,12 @@ A direction is estimated using MAVE, and then the bandwidth is selected by
 minimization of the cross-validated pseudo-integrated squared error.
 Optionally, the initial coefficients of the outcome model can be re-estimated
 by optimization on a spherical manifold.  This option requires the
-ManifoldOptim package (see ManifoldOptim::manifold.optim)."><meta property="og:description" content="Single index model estimation using minimum average variance estimation (MAVE).
+ManifoldOptim package (see ManifoldOptim::manifold.optim())."><meta property="og:description" content="Single index model estimation using minimum average variance estimation (MAVE).
 A direction is estimated using MAVE, and then the bandwidth is selected by
 minimization of the cross-validated pseudo-integrated squared error.
 Optionally, the initial coefficients of the outcome model can be re-estimated
 by optimization on a spherical manifold.  This option requires the
-ManifoldOptim package (see ManifoldOptim::manifold.optim)."></head><body>
+ManifoldOptim package (see ManifoldOptim::manifold.optim())."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -28,7 +28,9 @@ ManifoldOptim package (see ManifoldOptim::manifold.optim)."></head><body>
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/loss_and_links.html">Fitting with Different Loss and Link Functions</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/internal-call-graph.html">Internal Call Graph Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/loss_and_links.html">Fitting with Different Loss and Link Functions</a></li>
+    <li><a class="dropdown-item" href="../articles/term2-integration-methods.html">Term2 Integration Methods: Performance Comparison</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -42,18 +44,18 @@ ManifoldOptim package (see ManifoldOptim::manifold.optim)."></head><body>
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Single Index Model using MAVE and Optimizing Bandwidth.</h1>
+      <h1>Single Index Model using <code>MAVE</code> and Optimizing Bandwidth.</h1>
       <small class="dont-index">Source: <a href="https://github.com/UofUEpiBio/SensIAT/blob/main/R/SensIAT_sim_outcome_modeler_mave.R" class="external-link"><code>R/SensIAT_sim_outcome_modeler_mave.R</code></a></small>
       <div class="d-none name"><code>fit_SensIAT_single_index_norm1coef_model.Rd</code></div>
     </div>
 
     <div class="ref-description section level2">
-    <p>Single index model estimation using minimum average variance estimation (MAVE).
-A direction is estimated using MAVE, and then the bandwidth is selected by
+    <p>Single index model estimation using minimum average variance estimation (<code>MAVE</code>).
+A direction is estimated using <code>MAVE</code>, and then the bandwidth is selected by
 minimization of the cross-validated pseudo-integrated squared error.
 Optionally, the initial coefficients of the outcome model can be re-estimated
 by optimization on a spherical manifold.  This option requires the
-ManifoldOptim package (see <code><a href="https://rdrr.io/pkg/ManifoldOptim/man/manifold.optim.html" class="external-link">ManifoldOptim::manifold.optim</a></code>).</p>
+<span class="pkg">ManifoldOptim</span> package (see <code><a href="https://rdrr.io/pkg/ManifoldOptim/man/manifold.optim.html" class="external-link">ManifoldOptim::manifold.optim()</a></code>).</p>
     </div>
 
     <div class="section level2">
@@ -90,7 +92,7 @@ Should only include follow-up data, i.e. time &gt; 0.</p></dd>
 
 
 <dt id="arg-mave-method">mave.method<a class="anchor" aria-label="anchor" href="#arg-mave-method"></a></dt>
-<dd><p>The method to use for the MAVE estimation.</p></dd>
+<dd><p>The method to use for the <code>MAVE</code> estimation.</p></dd>
 
 
 <dt id="arg-id">id<a class="anchor" aria-label="anchor" href="#arg-id"></a></dt>

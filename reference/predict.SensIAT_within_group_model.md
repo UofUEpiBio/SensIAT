@@ -59,7 +59,7 @@ model <-
         outcome = Outcome,
         time = Time,
         End = 830,
-        knots = c(60,260,460),
+        knots = c(60, 260, 460),
     )
 predict(model, time = c(90, 180))
 #> # A tibble: 10 × 4

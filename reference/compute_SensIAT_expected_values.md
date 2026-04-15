@@ -87,8 +87,10 @@ For the methods shown here
 ## Methods (by class)
 
 - `compute_SensIAT_expected_values(lm)`: (Gaussian) Linear Model method
-  The [stats::integrate](https://rdrr.io/r/stats/integrate.html) method
-  is used to compute the conditional expectations.
+  Uses closed-form analytical solutions for the conditional
+  expectations. For Y distributed as Normal(mu, sigma^2):
+  `E[exp(alpha*Y)] = exp(alpha*mu + alpha^2*sigma^2/2)` and
+  `E[Y*exp(alpha*Y)] = (mu + alpha*sigma^2) * exp(alpha*mu + alpha^2*sigma^2/2)`
 
 - `compute_SensIAT_expected_values(glm)`: Generalized Linear Model
   method
@@ -99,8 +101,8 @@ For the methods shown here
 ## Examples
 
 ``` r
-model <- lm(mpg ~ as.factor(cyl)+disp+wt, data=mtcars)
-compute_SensIAT_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
+model <- lm(mpg ~ as.factor(cyl) + disp + wt, data = mtcars)
+compute_SensIAT_expected_values(model, alpha = c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
 #>                         mpg cyl disp  hp drat    wt  qsec vs am gear carb
 #> Mazda RX4...1          21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
 #> Mazda RX4 Wag...2      21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
@@ -133,9 +135,9 @@ compute_SensIAT_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars
 #> Datsun 710...13         1.117999e+05 3.910732e+03
 #> Hornet 4 Drive...14     1.031021e+04 4.777646e+02
 #> Hornet Sportabout...15  4.176927e+03 2.199103e+02
-model <- glm(cyl ~ mpg+disp+wt, data=mtcars, family=poisson())
-compute_SensIAT_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ]) |>
-    dplyr::mutate('E(y|alpha)' = .data$E_Yexp_alphaY/.data$E_exp_alphaY)
+model <- glm(cyl ~ mpg + disp + wt, data = mtcars, family = poisson())
+compute_SensIAT_expected_values(model, alpha = c(-0.3, 0, 0.3), new.data = mtcars[1:5, ]) |>
+    dplyr::mutate("E(y|alpha)" = .data$E_Yexp_alphaY / .data$E_exp_alphaY)
 #> # A tibble: 15 × 15
 #>      mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb alpha
 #>    <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>

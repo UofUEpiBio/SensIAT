@@ -41,9 +41,11 @@ is found by solving
 $\frac{1}{n}\sum_{i = 1}^{n}{\widehat{\mathbf{\Psi}}}_{\mathcal{L},g}\left( \mathbf{O}_{i};{\mathbf{β}} \right) = 0$,
 for $\beta$, where
 
-$${\widehat{\mathbf{\Psi}}}_{j}\left( \mathbf{O}_{i};{\mathbf{β}} \right) = \sum\limits_{k = 1}^{K_{i}}\{ W_{\mathcal{L},g}\left( T_{ik};{\mathbf{β}} \right)\frac{\lbrack Y_{i}\left( T_{ik} \right) - \widehat{\mathbb{E}}\{ Y\left( T_{ik} \right) \mid {\overline{\mathbf{O}}}_{i}\left( T_{ik} \right)\}\rbrack}{\widehat{\rho}\{ T_{ik} \mid {\overline{\mathbf{O}}}_{i}\left( T_{ik} \right),Y_{i}\left( T_{ik} \right)\}}\} + \int_{t = t_{1}}^{t_{2}}W_{\mathcal{L},g}(t \mid {\mathbf{β}})\left\lbrack \widehat{\mathbb{E}}\left\{ Y(t) \mid {\overline{\mathbf{O}}}_{i}(t) \right\} - s\left\{ \mathbf{B}(t)^{\prime}{\mathbf{β}} \right\} \right\rbrack dt$$
+$${\widehat{\mathbf{\Psi}}}_{\mathcal{L},g}\left( \mathbf{O}_{i};{\mathbf{β}} \right) = \sum\limits_{k = 1}^{K_{i}}\{ W_{\mathcal{L},g}\left( T_{ik};{\mathbf{β}} \right)\frac{\lbrack Y_{i}\left( T_{ik} \right) - \widehat{\mathbb{E}}\{ Y\left( T_{ik} \right) \mid {\overline{\mathbf{O}}}_{i}\left( T_{ik} \right)\}\rbrack}{\widehat{\rho}\{ T_{ik} \mid {\overline{\mathbf{O}}}_{i}\left( T_{ik} \right),Y_{i}\left( T_{ik} \right)\}}\} + \int_{t = t_{1}}^{t_{2}}W_{\mathcal{L},g}(t \mid {\mathbf{β}})\left\lbrack \widehat{\mathbb{E}}\left\{ Y(t) \mid {\overline{\mathbf{O}}}_{i}(t) \right\} - s\left\{ \mathbf{B}(t)^{\prime}{\mathbf{β}} \right\} \right\rbrack dt$$
 The $W_{\mathcal{L},g}(t;{\mathbf{β}})$ term depends on the choice of
-loss function and link function.
+loss function and link function. Then we solve
+$\frac{1}{n}\sum_{i = 1}^{n}{\widehat{\mathbf{\Psi}}}_{\mathcal{L},g}\left( \mathbf{O}_{i};{\mathbf{β}} \right) = 0$
+for $\beta$ using a vectorized root-finding algorithm.
 
 ### Squared Error Loss in the Transformed Space
 
@@ -61,49 +63,17 @@ $$W_{1}(t;{\mathbf{β}}) = \mathbf{V}_{1}^{- 1}\mathbf{B}(t).$$
 
 For the log link, $$g(\mu) = \log(\mu),$$
 
-$$\frac{\partial g(z)}{\partial z} = \frac{1}{z},$$$$W_{1}(t;{\mathbf{β}}) = \mathbf{V}_{1}^{- 1}\mathbf{B}(t)\left\{ \mathbf{B}(t)^{\prime}{\mathbf{β}} \right\}^{- 1}.$$
+$\frac{\partial g(z)}{\partial z} = \frac{1}{z}$,
+
+$$W_{1}(t;{\mathbf{β}}) = \frac{\mathbf{V}_{1}^{- 1}\mathbf{B}(t)}{\mathbf{B}(t)^{\prime}{\mathbf{β}}}.$$
 
 #### Logit Link
 
-For the logit link,
-$$g(\mu) = \log\left( \frac{\mu}{1 - \mu} \right),$$$$\frac{\partial g(z)}{\partial z} = \frac{1}{z(1 - z)},$$$$W_{1}(t;{\mathbf{β}}) = \mathbf{V}_{1}^{- 1}\mathbf{B}(t)\left\{ \mathbf{B}(t)^{\prime}{\mathbf{β}}\left( 1 - \mathbf{B}(t)^{\prime}{\mathbf{β}} \right) \right\}^{- 1}.$$
-
-### Squared error loss in the original space
-
-For squared error loss in the original space, $\mathcal{L}_{2}$, in
-general we have
-$$W_{\mathcal{L}_{2},g}(t;{\mathbf{β}}) = W_{2}(t;{\mathbf{β}}) = \mathbf{V}_{2}({\mathbf{β}})^{- 1}\frac{\partial s\left( \mathbf{B}(t)^{\prime}{\mathbf{β}} \right)}{\partial{\mathbf{β}}},\quad\mathbf{V}_{2}({\mathbf{β}}) = \int_{t = t_{1}}^{t_{2}}\frac{\partial s\left( \mathbf{B}(t)^{\prime}{\mathbf{β}} \right)}{\partial{\mathbf{β}}}\frac{\partial s\left( \mathbf{B}(t)^{\prime}{\mathbf{β}} \right)}{\partial{\mathbf{β}}^{\prime}}dt$$
-
-#### Identity Link
-
-For the identity link, $s(z) = z$, so
-$$s\left( \mathbf{B}(t)^{\prime}{\mathbf{β}} \right) = \mathbf{B}(t)^{\prime}{\mathbf{β}},$$$$\frac{\partial s\left( \mathbf{B}(t)^{\prime}{\mathbf{β}} \right)}{\partial{\mathbf{β}}} = \mathbf{B}(t),$$
-and $$W_{2}(t;{\mathbf{β}}) = \mathbf{V}_{2}^{- 1}\mathbf{B}(t),$$ where
-$$\mathbf{V}_{2} = \int_{t = t_{1}}^{t_{2}}\mathbf{B}(t)\mathbf{B}(t)^{\prime}dt.$$
-
-#### Log Link
-
-For the log link, $s(z) = \exp(z)$, so
-$$s\left( \mathbf{B}(t)^{\prime}{\mathbf{β}} \right) = \exp\left( \mathbf{B}(t)^{\prime}{\mathbf{β}} \right),$$$$\frac{\partial s\left( \mathbf{B}(t)^{\prime}{\mathbf{β}} \right)}{\partial{\mathbf{β}}} = \mathbf{B}(t)\exp\left( \mathbf{B}(t)^{\prime}{\mathbf{β}} \right),$$
-and
-$$W_{2}(t;{\mathbf{β}}) = \mathbf{V}_{2}({\mathbf{β}})^{- 1}\mathbf{B}(t)\exp\left( \mathbf{B}(t)^{\prime}{\mathbf{β}} \right),$$
-where
-$$\mathbf{V}_{2}({\mathbf{β}}) = \int_{t = t_{1}}^{t_{2}}\mathbf{B}(t)\mathbf{B}(t)^{\prime}\exp\left( 2\mathbf{B}(t)^{\prime}{\mathbf{β}} \right)dt.$$
-
-#### Logit Link
-
-For the logit link, $s(z) = \frac{\exp(z)}{1 + \exp(z)}$, so
-$$s\left( \mathbf{B}(t)^{\prime}{\mathbf{β}} \right) = \frac{\exp\left( \mathbf{B}(t)^{\prime}{\mathbf{β}} \right)}{1 + \exp\left( \mathbf{B}(t)^{\prime}{\mathbf{β}} \right)},$$\$\$
-\frac{\partial s(\boldsymbol{B}(t)^\prime \boldsymbol{\beta})}{\partial
-\boldsymbol{\beta}} = \boldsymbol{B}(t)
-\frac{\exp\left(\boldsymbol{B}(t)^\prime
-\bold{\beta}\right)}{\left\\1+\exp\left(\boldsymbol{B}(t)^\prime
-\boldsymbol{\beta}\right)\right\\^2}, \$\$ and \$\$
-W_2(t;\boldsymbol{\beta}) = \boldsymbol{V}\_2(\boldsymbol{\beta})^{-1}
-\boldsymbol{B}(t) \frac{\exp\left(\boldsymbol{B}(t)^\prime
-\bold{\beta}\right)}{\left\\1+\exp\left(\boldsymbol{B}(t)^\prime
-\bold{\beta}\right)\right\\^2}, \$\$ where
-$$\mathbf{V}_{2}({\mathbf{β}}) = \int_{t = t_{1}}^{t_{2}}\mathbf{B}(t)\mathbf{B}(t)^{\prime}\frac{\exp\left( 2\mathbf{B}(t)^{\prime}{\mathbf{β}} \right)}{\left\{ 1 + \exp\left( \mathbf{B}(t)^{\prime}{\mathbf{β}} \right) \right\}^{4}}dt.$$
+For the logit link, $$\begin{aligned}
+{g(\mu)} & {= \log\left( \frac{\mu}{1 - \mu} \right),} \\
+\frac{\partial g(z)}{\partial z} & {= \frac{1}{z(1 - z)},} \\
+{W_{1}(t;{\mathbf{β}})} & {= \mathbf{V}_{1}^{- 1}\mathbf{B}(t)\left. \frac{1}{z(1 - z)} \right|_{z = s\{\mathbf{B}{(t)}^{\prime}{\mathbf{β}}\}} = \mathbf{V}_{1}^{- 1}\mathbf{B}(t)\frac{\left\lbrack 1 + \exp\{\mathbf{B}(t)^{\prime}{\mathbf{β}}\} \right\rbrack^{2}}{\exp\{\mathbf{B}(t)^{\prime}{\mathbf{β}}\}}.}
+\end{aligned}$$
 
 ### Quasi-likelihood Loss
 

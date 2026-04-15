@@ -19,7 +19,7 @@ CRAN release: 2025-09-05
 CRAN release: 2025-08-18
 
 - New options for fitting single index outcome models:
-  - MAVE (Minimum Average Variance Estimation)
+  - `MAVE` (Minimum Average Variance Estimation)
   - Fixed bandwidth, where the bandwidth is held constant and all
     coefficients are allowed to vary freely.
 

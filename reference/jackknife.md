@@ -49,17 +49,17 @@ time points for the specified alpha values.
 ``` r
 if (FALSE) { # \dontrun{
 object <-
-fit_SensIAT_within_group_model(
-    group.data = SensIAT_example_data,
-    outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
-    alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-    id = Subject_ID,
-    outcome = Outcome,
-    time = Time,
-    intensity.args=list(bandwidth = 30),
-    knots = c(60,260,460),
-    End = 830
-)
+    fit_SensIAT_within_group_model(
+        group.data = SensIAT_example_data,
+        outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
+        alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+        id = Subject_ID,
+        outcome = Outcome,
+        time = Time,
+        intensity.args = list(bandwidth = 30),
+        knots = c(60, 260, 460),
+        End = 830
+    )
 jackknife.estimates <- jackknife(object, time = c(90, 180, 270, 360, 450))
 } # }
 ```

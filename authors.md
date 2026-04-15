@@ -25,14 +25,14 @@
 Source:
 [`DESCRIPTION`](https://github.com/UofUEpiBio/SensIAT/blob/main/DESCRIPTION)
 
-Redd A, Gao Y, Yang S, Smith B, Varadhan R, Scharfstein D (2025).
+Redd A, Gao Y, Yang S, Smith B, Varadhan R, Scharfstein D (2026).
 *SensIAT: Sensitivity Analysis for Irregular Assessment Times*. R
 package version 0.3.0.9000, <https://github.com/UofUEpiBio/SensIAT>.
 
     @Manual{,
       title = {SensIAT: Sensitivity Analysis for Irregular Assessment Times},
       author = {Andrew Redd and Yujing Gao and Shu Yang and Bonnie Smith and Ravi Varadhan and Daniel Scharfstein},
-      year = {2025},
+      year = {2026},
       note = {R package version 0.3.0.9000},
       url = {https://github.com/UofUEpiBio/SensIAT},
     }

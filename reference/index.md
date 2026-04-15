@@ -6,9 +6,6 @@
   [`SensIAT_example_fulldata`](https://uofuepibio.github.io/SensIAT/reference/SensIAT_example_data.md)
   : SensIAT Example Data
 
-- [`add_terminal_observations()`](https://uofuepibio.github.io/SensIAT/reference/add_terminal_observations.md)
-  : Add Terminal Observations to a Dataset
-
 - [`autoplot(`*`<SensIAT_fulldata_jackknife_results>`*`)`](https://uofuepibio.github.io/SensIAT/reference/autoplot.SensIAT_fulldata_jackknife_results.md)
   :
 
@@ -32,6 +29,9 @@
   Plot Estimates at Given Times for
   `SensIAT_withingroup_jackknife_results` Objects
 
+- [`benchmark_term2_methods()`](https://uofuepibio.github.io/SensIAT/reference/benchmark_term2_methods.md)
+  : Benchmark Term2 Integration Methods
+
 - [`compute_SensIAT_expected_values()`](https://uofuepibio.github.io/SensIAT/reference/compute_SensIAT_expected_values.md)
   : Compute Conditional Expected Values based on Outcome Model
 
@@ -41,6 +41,9 @@
 - [`fit_SensIAT_marginal_mean_model()`](https://uofuepibio.github.io/SensIAT/reference/fit_SensIAT_marginal_mean_model.md)
   : Fit the Marginal Means Model
 
+- [`fit_SensIAT_marginal_mean_model_generalized()`](https://uofuepibio.github.io/SensIAT/reference/fit_SensIAT_marginal_mean_model_generalized.md)
+  : Fit the marginal mean model for generalize outcomes.
+
 - [`fit_SensIAT_single_index_fixed_coef_model()`](https://uofuepibio.github.io/SensIAT/reference/fit_SensIAT_single_index_fixed_coef_model.md)
   [`fit_SensIAT_single_index_fixed_bandwidth_model()`](https://uofuepibio.github.io/SensIAT/reference/fit_SensIAT_single_index_fixed_coef_model.md)
   :
@@ -48,11 +51,16 @@
   Outcome Modeler for `SensIAT` Single Index Model.
 
 - [`fit_SensIAT_single_index_norm1coef_model()`](https://uofuepibio.github.io/SensIAT/reference/fit_SensIAT_single_index_norm1coef_model.md)
-  : Single Index Model using MAVE and Optimizing Bandwidth.
+  :
+
+  Single Index Model using `MAVE` and Optimizing Bandwidth.
 
 - [`fit_SensIAT_fulldata_model()`](https://uofuepibio.github.io/SensIAT/reference/fit_SensIAT_within_group_model.md)
   [`fit_SensIAT_within_group_model()`](https://uofuepibio.github.io/SensIAT/reference/fit_SensIAT_within_group_model.md)
   : Produce fitted model for group (treatment or control)
+
+- [`fit_marginal_model()`](https://uofuepibio.github.io/SensIAT/reference/fit_marginal_model.md)
+  : Fit SensIAT Marginal Mean Model (Unified)
 
 - [`jackknife()`](https://uofuepibio.github.io/SensIAT/reference/jackknife.md)
   : Perform Jackknife Resampling on an Object
@@ -65,3 +73,9 @@
 - [`prepare_SensIAT_data()`](https://uofuepibio.github.io/SensIAT/reference/prepare_SensIAT_data.md)
   : Prepare Data for Sensitivity Analysis with Irregular Assessment
   Times
+
+- [`simulate_SensIAT_data()`](https://uofuepibio.github.io/SensIAT/reference/simulate_SensIAT_data.md)
+  : Simulate SensIAT Data
+
+- [`simulate_SensIAT_two_groups()`](https://uofuepibio.github.io/SensIAT/reference/simulate_SensIAT_two_groups.md)
+  : Simulate Treatment and Control Groups
