@@ -9,6 +9,8 @@ tests/*_output.RData
 .lintr
 # R Environment Variables
 .Renviron
+# Development configuration files
+.Rprofile
 # Project and IDE files
 pcoriRPackage.Rproj
 .vscode/
@@ -38,3 +40,9 @@ vignettes/*.pdf
 *.DS_Store
 docs
 inst/doc
+
+/.quarto/
+**/*.quarto_ipynb
+.pdf
+/doc/
+/Meta/

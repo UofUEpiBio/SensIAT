@@ -1,5 +1,3 @@
-
-
 #' Compute Conditional Expected Values based on Outcome Model
 #'
 #' @param model An object representing the output of the outcome model.
@@ -18,32 +16,34 @@
 #' @return The `new.data` frame with additional columns `alpha`, `E_Yexp_alphaY`, and `E_exp_alphaY` appended.
 #' @export
 compute_SensIAT_expected_values <-
-function(
-    model,
-    alpha = 0, #< sensitivity parameter
-    new.data = model.frame(model),
-    ...){
-    UseMethod('compute_SensIAT_expected_values')
-}
+    function(model,
+             alpha = 0, #< sensitivity parameter
+             new.data = model.frame(model),
+             ...) {
+        UseMethod("compute_SensIAT_expected_values")
+    }
 
 #' @describeIn compute_SensIAT_expected_values (Gaussian) Linear Model method
-#' The [stats::integrate] method is used to compute the conditional expectations.
+#' Uses closed-form analytical solutions for the conditional expectations.
+#' For Y distributed as Normal(mu, sigma^2):
+#' `E[exp(alpha*Y)] = exp(alpha*mu + alpha^2*sigma^2/2)` and
+#' `E[Y*exp(alpha*Y)] = (mu + alpha*sigma^2) * exp(alpha*mu + alpha^2*sigma^2/2)`
 #' @examples
-#' model <- lm(mpg ~ as.factor(cyl)+disp+wt, data=mtcars)
-#' compute_SensIAT_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
+#' model <- lm(mpg ~ as.factor(cyl) + disp + wt, data = mtcars)
+#' compute_SensIAT_expected_values(model, alpha = c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
 #' @export
-compute_SensIAT_expected_values.lm <- function(model, alpha, new.data, ...){
-    if(length(alpha) > 1L){
+compute_SensIAT_expected_values.lm <- function(model, alpha, new.data, ...) {
+    if (length(alpha) > 1L) {
         return(
             purrr::list_rbind(
-                purrr::map(alpha, \(alpha1)compute_SensIAT_expected_values.lm(model=model, alpha=alpha1, new.data=new.data, ...))
+                purrr::map(alpha, \(alpha1)compute_SensIAT_expected_values.lm(model = model, alpha = alpha1, new.data = new.data, ...))
             )
         )
     }
-    if(nrow(new.data) > 1L){
+    if (nrow(new.data) > 1L) {
         return(
             purrr::list_rbind(
-                purrr::map(1:nrow(new.data), \(i)compute_SensIAT_expected_values.lm(model=model, alpha=alpha, new.data=new.data[i, , drop=FALSE], ...))
+                purrr::map(1:nrow(new.data), \(i)compute_SensIAT_expected_values.lm(model = model, alpha = alpha, new.data = new.data[i, , drop = FALSE], ...))
             )
         )
     }
@@ -54,21 +54,19 @@ compute_SensIAT_expected_values.lm <- function(model, alpha, new.data, ...){
     Xi <- model.matrix(model, new.data)
     mu <- predict(model, newdata = new.data, type = "response")
 
-    # compute the conditional expectations
-    pmf_estimator <- function(y){
-        dnorm(y, mu, sd = sigma)
+    # Handle missing values
+    if (any(is.na(mu)) || any(is.na(sigma))) {
+        E_exp_alphaY <- NA_real_
+        E_Yexp_alphaY <- NA_real_
+    } else {
+        # Use closed-form analytical solutions for Gaussian integrals:
+        # For Y ~ N(μ, σ²):
+        #   E[exp(αY)] = exp(αμ + α²σ²/2)
+        #   E[Y·exp(αY)] = (μ + ασ²) · exp(αμ + α²σ²/2)
+        # These are numerically stable and exact (no integration error)
+        E_exp_alphaY <- exp(alpha * mu + (alpha^2 * sigma^2) / 2)
+        E_Yexp_alphaY <- (mu + alpha * sigma^2) * E_exp_alphaY
     }
-
-    E_exp_alphaY <- stats::integrate(
-        \(y)if_else(pmf_estimator(y) == 0, 0, exp(alpha*y)*pmf_estimator(y)),
-        lower = -Inf,
-        upper = Inf
-    )$value
-    E_Yexp_alphaY <- stats::integrate(
-        \(y)if_else(pmf_estimator(y) == 0, 0, y*exp(alpha*y)*pmf_estimator(y)),
-        lower = -Inf,
-        upper = Inf
-    )$value
     data.frame(
         new.data,
         E_Yexp_alphaY = E_Yexp_alphaY,
@@ -83,46 +81,78 @@ compute_SensIAT_expected_values.lm <- function(model, alpha, new.data, ...){
 #' @param eps The tolerance for the quantile function used to estimate `y.max`, default is `.Machine$double.eps`.
 #'
 #' @examples
-#' model <- glm(cyl ~ mpg+disp+wt, data=mtcars, family=poisson())
-#' compute_SensIAT_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ]) |>
-#'     dplyr::mutate('E(y|alpha)' = .data$E_Yexp_alphaY/.data$E_exp_alphaY)
+#' model <- glm(cyl ~ mpg + disp + wt, data = mtcars, family = poisson())
+#' compute_SensIAT_expected_values(model, alpha = c(-0.3, 0, 0.3), new.data = mtcars[1:5, ]) |>
+#'     dplyr::mutate("E(y|alpha)" = .data$E_Yexp_alphaY / .data$E_exp_alphaY)
 #' @export
-compute_SensIAT_expected_values.glm <- function(model, alpha, new.data, ..., y.max = NULL, eps=.Machine$double.eps){
+compute_SensIAT_expected_values.glm <- function(model, alpha, new.data, ..., y.max = NULL, eps = .Machine$double.eps) {
     # Recursion
-    if(length(alpha) > 1L){
+    if (length(alpha) > 1L) {
         return(
             purrr::list_rbind(
-                purrr::map(alpha, \(alpha1)compute_SensIAT_expected_values.glm(model=model, alpha=alpha1, new.data=new.data, ...))
+                purrr::map(alpha, \(alpha1)compute_SensIAT_expected_values.glm(model = model, alpha = alpha1, new.data = new.data, ...))
             )
         )
     }
-    if(nrow(new.data) > 1L){
+    if (nrow(new.data) > 1L) {
         return(
             purrr::list_rbind(
-                purrr::map(1:nrow(new.data), \(i)compute_SensIAT_expected_values.glm(model=model, alpha=alpha, new.data=new.data[i, , drop=FALSE], ...))
+                purrr::map(1:nrow(new.data), \(i)compute_SensIAT_expected_values.glm(model = model, alpha = alpha, new.data = new.data[i, , drop = FALSE], ...))
             )
         )
     }
 
-    if(family(model)$family == "gaussian"){
-        return(compute_SensIAT_expected_values.lm(model, alpha, new.data, ...))
-    } else
-    if (family(model)$family == "binomial"){
-        mu <- predict(model, newdata = new.data, type = "response")
-        y <- 0:1
-        pmf <- dbinom(y, size = 1, prob = mu)
-        E_exp_alphaY <- sum(exp(alpha*y)*pmf)
-        E_Yexp_alphaY <- sum(y*exp(alpha*y)*pmf)
-    } else
-    if (family(model)$family == "poisson"){
-        mu <- predict(model, newdata = new.data, type = "response")
-        if(is.null(y.max)){
-            y.max <- qpois(1-eps,lambda = mu)
+    if (family(model)$family == "gaussian") {
+        # For gaussian GLMs, use dispersion instead of sigma
+        mu <- as.numeric(predict(model, newdata = new.data, type = "response"))[1]
+        sigma <- sqrt(summary(model)$dispersion)
+        
+        # Handle missing values
+        if (any(is.na(mu)) || any(is.na(sigma))) {
+            E_exp_alphaY <- NA_real_
+            E_Yexp_alphaY <- NA_real_
+        } else {
+            # compute the conditional expectations  
+            E_exp_alphaY <- stats::integrate(
+                function(y) exp(alpha * y) * dnorm(y, mu, sd = sigma),
+                lower = qnorm(eps**2, mu, sd = sigma),
+                upper = qnorm(eps**2, mu, sd = sigma, lower.tail = FALSE)
+            )$value
+            E_Yexp_alphaY <- stats::integrate(
+                function(y) y * exp(alpha * y) * dnorm(y, mu, sd = sigma),
+                lower = qnorm(eps**2, mu, sd = sigma),
+                upper = qnorm(eps**2, mu, sd = sigma, lower.tail = FALSE)
+            )$value
         }
-        y <- seq(0, y.max)
-        pmf <- dpois(0:y.max, lambda = mu)
-        E_exp_alphaY <- sum(exp(alpha*y)*pmf)
-        E_Yexp_alphaY <- sum(y*exp(alpha*y)*pmf)
+    } else if (family(model)$family == "binomial") {
+        mu <- as.numeric(predict(model, newdata = new.data, type = "response"))[1]
+        
+        # Handle missing values
+        if (any(is.na(mu))) {
+            E_exp_alphaY <- NA_real_
+            E_Yexp_alphaY <- NA_real_
+        } else {
+            y <- 0:1
+            pmf <- dbinom(y, size = 1, prob = mu)
+            E_exp_alphaY <- sum(exp(alpha * y) * pmf)
+            E_Yexp_alphaY <- sum(y * exp(alpha * y) * pmf)
+        }
+    } else if (family(model)$family == "poisson") {
+        mu <- as.numeric(predict(model, newdata = new.data, type = "response"))[1]
+        
+        # Handle missing values
+        if (any(is.na(mu))) {
+            E_exp_alphaY <- NA_real_
+            E_Yexp_alphaY <- NA_real_
+        } else {
+            if (is.null(y.max)) {
+                y.max <- qpois(1 - eps, lambda = mu)
+            }
+            y <- seq(0, y.max)
+            pmf <- dpois(0:y.max, lambda = mu)
+            E_exp_alphaY <- sum(exp(alpha * y) * pmf)
+            E_Yexp_alphaY <- sum(y * exp(alpha * y) * pmf)
+        }
     } else {
         stop("Model family not supported")
     }
@@ -138,18 +168,18 @@ compute_SensIAT_expected_values.glm <- function(model, alpha, new.data, ..., y.m
 
 #' @describeIn compute_SensIAT_expected_values Negative Binomial Model method
 #' @export
-compute_SensIAT_expected_values.negbin <- function(model, alpha, new.data, ..., y.max = NULL, eps=.Machine$double.eps^(1/4)){
-    if(length(alpha) > 1L){
+compute_SensIAT_expected_values.negbin <- function(model, alpha, new.data, ..., y.max = NULL, eps = .Machine$double.eps^(1 / 4)) {
+    if (length(alpha) > 1L) {
         return(
             purrr::list_rbind(
-                purrr::map(alpha, \(alpha1)compute_SensIAT_expected_values.negbin(model=model, alpha=alpha1, new.data=new.data, ...))
+                purrr::map(alpha, \(alpha1)compute_SensIAT_expected_values.negbin(model = model, alpha = alpha1, new.data = new.data, ...))
             )
         )
     }
-    if(nrow(new.data) > 1L){
+    if (nrow(new.data) > 1L) {
         return(
             purrr::list_rbind(
-                purrr::map(1:nrow(new.data), \(i)compute_SensIAT_expected_values.negbin(model=model, alpha=alpha, new.data=new.data[i, , drop=FALSE], ...))
+                purrr::map(1:nrow(new.data), \(i)compute_SensIAT_expected_values.negbin(model = model, alpha = alpha, new.data = new.data[i, , drop = FALSE], ...))
             )
         )
     }
@@ -157,19 +187,19 @@ compute_SensIAT_expected_values.negbin <- function(model, alpha, new.data, ..., 
     mu <- predict(model, newdata = new.data, type = "response")
     theta <- model$theta
 
-    pmf_estimator <- function(y){
+    pmf_estimator <- function(y) {
         dnbinom(y, mu = mu, size = theta)
     }
 
 
-    if(is.null(y.max)){
-        y.max <- qnbinom(1-.Machine$double.eps, mu=mu, size=theta)
+    if (is.null(y.max)) {
+        y.max <- qnbinom(1 - .Machine$double.eps, mu = mu, size = theta)
     }
 
     y <- seq(0, y.max)
     pmf <- pmf_estimator(y)
-    E_exp_alphaY=sum( exp(alpha*y)*pmf )
-    E_Yexp_alphaY=sum( y*exp(alpha*y)*pmf )
+    E_exp_alphaY <- sum(exp(alpha * y) * pmf)
+    E_Yexp_alphaY <- sum(y * exp(alpha * y) * pmf)
 
     return(
         tibble(
@@ -180,5 +210,3 @@ compute_SensIAT_expected_values.negbin <- function(model, alpha, new.data, ..., 
         )
     )
 }
-
-

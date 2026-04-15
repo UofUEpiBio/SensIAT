@@ -1,0 +1,283 @@
+---
+title: "Term2 Integration Methods: Performance Comparison"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Term2 Integration Methods: Performance Comparison}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 8,
+  fig.height = 6
+)
+```
+
+```{r setup}
+library(SensIAT)
+library(dplyr)
+library(ggplot2)
+```
+
+## Overview
+This vignette compares integration methods for computing **term2 influence**
+components in `fit_SensIAT_marginal_mean_model_generalized`. We isolate just 
+the term2 computation (the numerical integration step) to provide focused 
+benchmarks without the overhead of full model fitting.
+
+Available methods:
+
+1. **`"fast"`** (default): Adaptive Simpson's with optimized closure-based integrand
+2. **`"original"`**: Standard adaptive Simpson's implementation
+3. **`"fixed_grid"`**: Pre-computed expected values on fixed grid with composite Simpson's
+4. **`"seeded_adaptive"`**: Adaptive Simpson's seeded with pre-computed grid points
+
+We evaluate across:
+
+- **Accuracy**: Difference from high-precision reference
+- **Speed**: Direct term2 computation time
+- **Scalability**: Performance across grid densities
+
+## Setup: Data and Models
+
+We use the package's example data and fit the required outcome model once:
+
+```{r setup-data, eval=FALSE}
+# Load and prepare example data
+data_with_lags <- SensIAT_example_data |>
+  group_by(Subject_ID) |>
+  mutate(
+    ..prev_outcome.. = lag(Outcome, default = NA_real_, order_by = Time),
+    ..prev_time.. = lag(Time, default = 0, order_by = Time),
+    ..delta_time.. = Time - lag(Time, default = NA_real_, order_by = Time)
+  ) |>
+  ungroup()
+
+cat("Data summary:\n")
+cat("  Patients:", n_distinct(data_with_lags$Subject_ID), "\n")
+cat("  Total observations:", nrow(data_with_lags), "\n")
+```
+
+```{r fit-outcome-model, eval=FALSE}
+# Fit outcome model (single-index with splines)
+outcome.model <- fit_SensIAT_single_index_fixed_coef_model(
+  Outcome ~ splines::ns(..prev_outcome.., df = 3) + ..delta_time.. - 1,
+  id = Subject_ID,
+  data = data_with_lags |> filter(Time > 0)
+)
+
+# Imputation function for extrapolation
+impute_fn <- function(t, df) {
+  extrapolate_from_last_observation(
+    t, df, "Time",
+    slopes = c("..delta_time.." = 1)
+  )
+}
+
+# Marginal mean spline knots
+knots <- c(60, 260, 460)
+```
+
+## Isolated Term2 Benchmark
+
+The `benchmark_term2_methods()` function directly compares term2 computation
+methods without repeatedly fitting the full model. This isolates the integration
+performance we care about.
+
+*Note: Results below use precomputed benchmarks shipped with the package.*
+*To regenerate: `source(system.file("extdata", "generate_term2_benchmarks.R", package = "SensIAT"))`*
+
+```{r benchmark-term2, eval=FALSE}
+# Run isolated term2 benchmark
+benchmark_results <- benchmark_term2_methods(
+  data = data_with_lags,
+  id = Subject_ID,
+  time = data_with_lags$Time,
+  outcome.model = outcome.model,
+  knots = knots,
+  alpha = c(-0.05, 0, 0.05),
+  impute_data = impute_fn,
+  link = "identity",
+  methods = c("fast", "original", "fixed_grid", "seeded_adaptive"),
+  grid_sizes = c(50, 100, 200),
+  n_patients = 20,
+  n_iterations = 5,
+  reference_method = "fast"
+)
+```
+
+```{r load-precomputed, echo=FALSE}
+# Load precomputed benchmark results
+load(system.file("extdata", "term2_benchmark_results.rda", package = "SensIAT"))
+benchmark_results <- term2_benchmark_results
+```
+
+### Timing Results
+
+```{r timing-table}
+knitr::kable(
+  benchmark_results$timing |>
+    mutate(
+      mean_time = sprintf("%.4f", mean_time),
+      sd_time = sprintf("%.4f", sd_time),
+      relative_speed = sprintf("%.2f", relative_speed)
+    ),
+  caption = "Term2 Computation Time by Method",
+  col.names = c("Method", "Mean (s)", "SD (s)", "Min (s)", "Max (s)", "Relative")
+)
+```
+
+### Accuracy Results
+
+Accuracy is measured against the `fast` method (adaptive Simpson's):
+
+```{r accuracy-table}
+knitr::kable(
+  benchmark_results$accuracy |>
+    mutate(
+      max_abs_diff = sprintf("%.2e", max_abs_diff),
+      mean_abs_diff = sprintf("%.2e", mean_abs_diff),
+      rmse = sprintf("%.2e", rmse)
+    ) |>
+    select(method, max_abs_diff, rmse),
+  caption = "Accuracy vs Reference (fast method)",
+  col.names = c("Method", "Max |Diff|", "RMSE")
+)
+```
+
+### Visualization
+
+```{r benchmark-plot, fig.cap="Term2 computation time by method"}
+timing_df <- benchmark_results$timing |>
+  mutate(
+    method_type = case_when(
+      grepl("fixed_grid", method) ~ "Fixed Grid",
+      grepl("seeded", method) ~ "Seeded Adaptive",
+      TRUE ~ "Adaptive"
+    )
+  )
+
+ggplot(timing_df, aes(x = reorder(method, mean_time), y = mean_time, fill = method_type)) +
+  geom_col() +
+  geom_errorbar(aes(ymin = mean_time - sd_time, ymax = mean_time + sd_time), width = 0.2) +
+  coord_flip() +
+  labs(
+    title = "Term2 Integration Performance",
+    subtitle = paste(benchmark_results$setup_info$n_patients, "patients,",
+                     benchmark_results$setup_info$n_alphas, "alpha values"),
+    x = NULL,
+    y = "Time (seconds)",
+    fill = "Method Type"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+## Grid Density Analysis
+
+How does accuracy scale with grid density for fixed-grid method?
+
+```{r grid-analysis, eval=FALSE}
+# Benchmark with varying grid sizes
+grid_benchmark <- benchmark_term2_methods(
+  data = data_with_lags,
+  id = Subject_ID,
+  time = data_with_lags$Time,
+  outcome.model = outcome.model,
+  knots = knots,
+  alpha = 0,
+  impute_data = impute_fn,
+  link = "identity",
+  methods = c("fast", "fixed_grid"),
+  grid_sizes = c(25, 50, 75, 100, 150, 200),
+  n_patients = 15,
+  n_iterations = 3,
+  reference_method = "fast"
+)
+```
+
+```{r load-grid-precomputed, echo=FALSE}
+# Use precomputed grid benchmark
+grid_benchmark <- term2_grid_benchmark_results
+```
+
+```{r grid-extract}
+# Extract grid-specific results
+grid_accuracy <- grid_benchmark$accuracy |>
+  filter(grepl("fixed_grid", method)) |>
+  mutate(
+    grid_n = as.numeric(gsub("fixed_grid_", "", method))
+  )
+
+grid_timing <- grid_benchmark$timing |>
+  filter(grepl("fixed_grid", method)) |>
+  mutate(
+    grid_n = as.numeric(gsub("fixed_grid_", "", method))
+  )
+
+# Combine for plotting
+grid_combined <- left_join(grid_accuracy, grid_timing, by = c("method", "grid_n"))
+```
+
+```{r grid-plot, fig.cap="Fixed-grid accuracy vs grid density"}
+ggplot(grid_combined, aes(x = grid_n)) +
+  geom_line(aes(y = rmse), color = "steelblue", linewidth = 1) +
+  geom_point(aes(y = rmse), color = "steelblue", size = 3) +
+  scale_y_log10() +
+  labs(
+    title = "Fixed-Grid Accuracy vs Grid Density",
+    x = "Number of Grid Points",
+    y = "RMSE from Reference (log scale)"
+  ) +
+  theme_minimal()
+```
+
+```{r grid-tradeoff, fig.cap="Speed-accuracy tradeoff"}
+ggplot(grid_combined, aes(x = mean_time, y = rmse, label = grid_n)) +
+  geom_point(size = 4, color = "steelblue") +
+  geom_text(vjust = -1, hjust = 0.5) +
+  scale_y_log10() +
+  labs(
+    title = "Speed-Accuracy Tradeoff for Fixed-Grid Method",
+    subtitle = "Labels show number of grid points",
+    x = "Computation Time (seconds)",
+    y = "RMSE from Reference (log scale)"
+  ) +
+  theme_minimal()
+```
+
+## Recommendations
+
+Based on this analysis, here are recommended integration methods:
+
+### Use **`"fast"`** (default) when:
+- Highest accuracy is required 
+- Fitting only 1-2 alpha values
+- Integrand has irregular features requiring adaptive refinement
+- Default choice for most applications
+
+### Use **`"fixed_grid"`** when:
+- Fitting many alpha values (5+)
+- Speed is critical and moderate accuracy acceptable
+- Willing to tune `term2_grid_n` for accuracy/speed trade-off
+  - `term2_grid_n = 100`: Good default
+  - `term2_grid_n = 200`: Higher accuracy
+  - `term2_grid_n = 50`: Maximum speed
+
+### Use **`"seeded_adaptive"`** when:
+- Want balance between accuracy and speed
+- Fitting moderate numbers of alpha values (3-5)
+- Good "middle ground" option
+
+### Use **`"original"`** when:
+- Debugging or comparison purposes
+- Verifying results against standard implementation
+
+## Session Info
+
+```{r sessioninfo}
+sessionInfo()
+```

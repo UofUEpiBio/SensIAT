@@ -15,8 +15,8 @@ test_that("Compute Influence term1 old vs. new methods", {
 
     intensity.model <-
         rlang::inject(coxph(
-            Surv(prev_time,Time,!is.na(Outcome)) ~
-                prev_outcome+strata(visit.number),
+            Surv(prev_time, Time, !is.na(Outcome)) ~
+                prev_outcome + strata(visit.number),
             id = Subject_ID,
             data = followup.data
         ))
@@ -24,22 +24,26 @@ test_that("Compute Influence term1 old vs. new methods", {
 
     outcome.model <- fit_SensIAT_single_index_fixed_coef_model(
         Outcome ~
-            ns(prev_outcome, df=3) +
+            ns(prev_outcome, df = 3) +
             scale(Time) +
             scale(delta_time) - 1,
         id = Subject_ID,
-        data = followup.data)
+        data = followup.data
+    )
 
 
-    base <- SplineBasis(c(60,60,60,60,260,460,460,460,460))
+    base <- SplineBasis(c(60, 60, 60, 60, 260, 460, 460, 460, 460))
 
 
     centering.statistics <-
         summarize(
             ungroup(filter(model.data, Time > 0, !is.na(Outcome))),
-            across(c(Time, delta_time),
-                   list(mean = ~ mean(.x, na.rm = TRUE),
-                        sd = ~ sd(.x, na.rm = TRUE))
+            across(
+                c(Time, delta_time),
+                list(
+                    mean = ~ mean(.x, na.rm = TRUE),
+                    sd = ~ sd(.x, na.rm = TRUE)
+                )
             )
         ) |>
         as.numeric() |>
@@ -47,10 +51,8 @@ test_that("Compute Influence term1 old vs. new methods", {
         `dimnames<-`(list(c("time", "delta_time"), c("mean", "sd")))
 
 
-
     df_i <- model.data |>
-        filter(Subject_ID==1)
-
+        filter(Subject_ID == 1)
 
 
     old.method <- compute_influence_for_one_alpha_and_one_patient(
@@ -67,19 +69,19 @@ test_that("Compute Influence term1 old vs. new methods", {
         intensity.model = intensity.model,
         outcome.model = outcome.model,
         base = base,
-        control = pcori_control(integration.method = 'quadv'),
+        control = pcori_control(integration.method = "quadv"),
         centering = centering.statistics
     )
     # ----
 
-    baseline_intensity_all =
+    baseline_intensity_all <-
         estimate_baseline_intensity(
             intensity.model = intensity.model,
             data = followup.data,
             bandwidth = NULL
         )
-    exp_gamma <- exp(predict(intensity.model, newdata=followup.data, type='lp', reference='zero'))
-    intensity_weights = baseline_intensity_all$baseline_intensity * exp_gamma
+    exp_gamma <- exp(predict(intensity.model, newdata = followup.data, type = "lp", reference = "zero"))
+    intensity_weights <- baseline_intensity_all$baseline_intensity * exp_gamma
     new.method <-
         compute_sim_influence_term_1_for_all(
             times_all = pull(followup.data, Time),
@@ -90,12 +92,12 @@ test_that("Compute Influence term1 old vs. new methods", {
             outcome_coef = coef(outcome.model),
             base = base,
             bandwidth = outcome.model$bandwidth,
-            kernel = attr(outcome.model, 'kernel')
+            kernel = attr(outcome.model, "kernel")
         )
 
 
     expect_equal(
-        old.method[[1, 'term1']][[1]],
-        new.method[pull(followup.data, Subject_ID) == 1,]
+        old.method[[1, "term1"]][[1]],
+        new.method[pull(followup.data, Subject_ID) == 1, ]
     )
 })

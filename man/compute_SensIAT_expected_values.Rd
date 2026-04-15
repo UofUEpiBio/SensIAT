@@ -67,7 +67,10 @@ For the methods shown here
 \section{Methods (by class)}{
 \itemize{
 \item \code{compute_SensIAT_expected_values(lm)}: (Gaussian) Linear Model method
-The \link[stats:integrate]{stats::integrate} method is used to compute the conditional expectations.
+Uses closed-form analytical solutions for the conditional expectations.
+For Y distributed as Normal(mu, sigma^2):
+\code{E[exp(alpha*Y)] = exp(alpha*mu + alpha^2*sigma^2/2)} and
+\code{E[Y*exp(alpha*Y)] = (mu + alpha*sigma^2) * exp(alpha*mu + alpha^2*sigma^2/2)}
 
 \item \code{compute_SensIAT_expected_values(glm)}: Generalized Linear Model method
 
@@ -75,9 +78,9 @@ The \link[stats:integrate]{stats::integrate} method is used to compute the condi
 
 }}
 \examples{
-model <- lm(mpg ~ as.factor(cyl)+disp+wt, data=mtcars)
-compute_SensIAT_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
-model <- glm(cyl ~ mpg+disp+wt, data=mtcars, family=poisson())
-compute_SensIAT_expected_values(model, alpha= c(-0.3, 0, 0.3), new.data = mtcars[1:5, ]) |>
-    dplyr::mutate('E(y|alpha)' = .data$E_Yexp_alphaY/.data$E_exp_alphaY)
+model <- lm(mpg ~ as.factor(cyl) + disp + wt, data = mtcars)
+compute_SensIAT_expected_values(model, alpha = c(-0.3, 0, 0.3), new.data = mtcars[1:5, ])
+model <- glm(cyl ~ mpg + disp + wt, data = mtcars, family = poisson())
+compute_SensIAT_expected_values(model, alpha = c(-0.3, 0, 0.3), new.data = mtcars[1:5, ]) |>
+    dplyr::mutate("E(y|alpha)" = .data$E_Yexp_alphaY / .data$E_exp_alphaY)
 }

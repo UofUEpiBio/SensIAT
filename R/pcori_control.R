@@ -10,15 +10,13 @@
 #' @return a list of control parameters.
 #' @keywords internal
 pcori_control <-
-    function(
-        integration.method = c('quadvcpp', 'quadv', "linear", "numerical", "piecewise"),
-        intensity.bandwidth = NULL,
-        resolution = 1000,
-        resolution.within.period = 50,
-        tol=.Machine$double.eps^(1/4),
-        ...
-    ){
-        integration.method = match.arg(integration.method)
+    function(integration.method = c("quadvcpp", "quadv", "linear", "numerical", "piecewise"),
+             intensity.bandwidth = NULL,
+             resolution = 1000,
+             resolution.within.period = 50,
+             tol = .Machine$double.eps^(1 / 4),
+             ...) {
+        integration.method <- match.arg(integration.method)
         assert_that(
             is.null(intensity.bandwidth) || is.numeric(intensity.bandwidth),
             is.count(resolution),

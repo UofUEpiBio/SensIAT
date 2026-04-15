@@ -29,59 +29,64 @@
 #' @export
 #' @examples
 #'
-#' prepare_SensIAT_data( SensIAT_example_data, Subject_ID, Time, Outcome, 830)
+#' prepare_SensIAT_data(SensIAT_example_data, Subject_ID, Time, Outcome, 830)
 #'
-#' exdata <- tibble::tibble(ID=rep(1:2, c(3,5)),
-#'                          Time=c(0, 30, 60,
-#'                                 0, 30, 60, 90, 120),
-#'                          Outcome=floor(runif(8, 1, 100)))
+#' exdata <- tibble::tibble(
+#'     ID = rep(1:2, c(3, 5)),
+#'     Time = c(
+#'         0, 30, 60,
+#'         0, 30, 60, 90, 120
+#'     ),
+#'     Outcome = floor(runif(8, 1, 100))
+#' )
 #'
 #' prepare_SensIAT_data(exdata, ID, Time, Outcome, 120)
 #'
 prepare_SensIAT_data <-
-function(data,
-         id.var, time.var, outcome.var,
-         End,
-         add.terminal.observations = TRUE){
-    id.var <- ensym(id.var)
-    outcome.var <- ensym(outcome.var)
-    time.var <- ensym(time.var)
+    function(data,
+             id.var, time.var, outcome.var,
+             End,
+             add.terminal.observations = TRUE) {
+        id.var <- ensym(id.var)
+        outcome.var <- ensym(outcome.var)
+        time.var <- ensym(time.var)
 
-    if(add.terminal.observations && anyNA(data)) # Ensure no NAs in the data
-        rlang::abort("Data contains missing values, cannot add terminal observations.")
-    data_all_with_transforms <- data |>
-        filter((!!time.var) <= !!End) |>
-        arrange(!!id.var, !!time.var) |>
-        mutate(
-            ..id.. = !!id.var,
-            ..time.. = !!time.var,
-            ..outcome.. = !!outcome.var
-        ) |>
-        group_by(..id.., !!id.var) |>
-        mutate(
-            ..visit_number.. = seq_along(..time..) - 1L
-        ) |>
-        ungroup()
-    if(add.terminal.observations){
-        data_all_with_transforms <- data_all_with_transforms |>
-            complete(..id.., ..visit_number..,
-                     fill = tibble::lst(
-                                ..time.. = End,..outcome.. = NA_real_,
-                                !!time.var := End, !!outcome.var := NA_real_
-                                 )
+        if (add.terminal.observations && anyNA(data)) { # Ensure no NAs in the data
+            rlang::abort("Data contains missing values, cannot add terminal observations.")
+        }
+        data_all_with_transforms <- data |>
+            filter((!!time.var) <= !!End) |>
+            arrange(!!id.var, !!time.var) |>
+            mutate(
+                ..id.. = !!id.var,
+                ..time.. = !!time.var,
+                ..outcome.. = !!outcome.var
             ) |>
-            mutate(!!id.var := .data$..id..)
-    }
-    data_all_with_transforms <- data_all_with_transforms |>
-        group_by(..id..) |>
-        arrange(..id.., ..visit_number..) |>
-        mutate(
-            ..time..            := as.double(..time..),
-            ..prev_outcome..    := lag(..outcome.., order_by = ..time..),
-            ..prev_time..       := lag(..time.., order_by =  ..time.., default = 0),
-            ..delta_time..      := ..time.. - lag(..time.., order_by =  ..time.., default = 0)
-        ) |>
-        ungroup()
+            group_by(..id.., !!id.var) |>
+            mutate(
+                ..visit_number.. = seq_along(..time..) - 1L
+            ) |>
+            ungroup()
+        if (add.terminal.observations) {
+            data_all_with_transforms <- data_all_with_transforms |>
+                complete(..id.., ..visit_number..,
+                    fill = tibble::lst(
+                        ..time.. = End, ..outcome.. = NA_real_,
+                        !!time.var := End, !!outcome.var := NA_real_
+                    )
+                ) |>
+                mutate(!!id.var := .data$..id..)
+        }
+        data_all_with_transforms <- data_all_with_transforms |>
+            group_by(..id..) |>
+            arrange(..id.., ..visit_number..) |>
+            mutate(
+                ..time.. := as.double(..time..),
+                ..prev_outcome.. := lag(..outcome.., order_by = ..time..),
+                ..prev_time.. := lag(..time.., order_by = ..time.., default = 0),
+                ..delta_time.. := ..time.. - lag(..time.., order_by = ..time.., default = 0)
+            ) |>
+            ungroup()
 
-    data_all_with_transforms
-}
+        data_all_with_transforms
+    }

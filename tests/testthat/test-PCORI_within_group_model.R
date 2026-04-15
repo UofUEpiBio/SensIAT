@@ -10,14 +10,15 @@ test_that("Altering models", {
             outcome = Outcome,
             time = Time,
             End = 830,
-            knots = c(60,260,460),
+            knots = c(60, 260, 460),
             outcome.args = list(
-                model=~ns(..prev_outcome.., knots=c(9/6, 16/6)) + scale(..delta_time..)-1
+                model = ~ ns(..prev_outcome.., knots = c(9 / 6, 16 / 6)) + scale(..delta_time..) - 1
             )
         )
     expect_identical(old.seed, .Random.seed)
-    model$models$outcome |> formula() |>
-    expect_equal(..outcome..~ns(..prev_outcome.., knots=c(9/6, 16/6)) + scale(..delta_time..)-1, ignore_attr=TRUE)
+    model$models$outcome |>
+        formula() |>
+        expect_equal(..outcome.. ~ ns(..prev_outcome.., knots = c(9 / 6, 16 / 6)) + scale(..delta_time..) - 1, ignore_attr = TRUE)
 })
 test_that("including terminal rows for intensity model", {
     model.no.terminals <-
@@ -29,7 +30,7 @@ test_that("including terminal rows for intensity model", {
             outcome = Outcome,
             time = Time,
             End = 830,
-            knots = c(60,260,460),
+            knots = c(60, 260, 460),
             add.terminal.observations = FALSE
         )
     model.with.terminals <-
@@ -41,7 +42,7 @@ test_that("including terminal rows for intensity model", {
             outcome = Outcome,
             time = Time,
             End = 830,
-            knots = c(60,260,460),
+            knots = c(60, 260, 460),
             add.terminal.observations = TRUE
         )
     model.external.terminals <-
@@ -53,7 +54,7 @@ test_that("including terminal rows for intensity model", {
             outcome = Outcome,
             time = Time,
             End = 830,
-            knots = c(60,260,460),
+            knots = c(60, 260, 460),
             add.terminal.observations = FALSE,
         )
     expect_error(
@@ -65,15 +66,16 @@ test_that("including terminal rows for intensity model", {
             outcome = Outcome,
             time = Time,
             End = 830,
-            knots = c(60,260,460),
+            knots = c(60, 260, 460),
             add.terminal.observations = TRUE,
         ),
-        "Data contains missing values, cannot add terminal observations.")
+        "Data contains missing values, cannot add terminal observations."
+    )
 
 
     expect_false(
         coef(model.no.terminals$models$intensity) ==
-        coef(model.with.terminals$models$intensity)
+            coef(model.with.terminals$models$intensity)
     )
     expect_equal(
         coef(model.with.terminals$models$intensity),

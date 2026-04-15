@@ -38,6 +38,7 @@
 #' @importFrom stats dnorm
 #' @importFrom stats dpois
 #' @importFrom stats family
+#' @importFrom stats formula
 #' @importFrom stats model.frame
 #' @importFrom stats model.matrix
 #' @importFrom stats model.response
@@ -46,6 +47,7 @@
 #' @importFrom stats na.pass
 #' @importFrom stats nlminb
 #' @importFrom stats optim
+#' @importFrom stats plogis
 #' @importFrom stats predict
 #' @importFrom stats predict.glm
 #' @importFrom stats qnbinom
@@ -54,6 +56,7 @@
 #' @importFrom stats rexp
 #' @importFrom stats runif
 #' @importFrom stats sd
+#' @importFrom stats setNames
 #' @importFrom stats terms
 #' @importFrom stats time
 #' @importFrom stats update.formula
@@ -70,5 +73,7 @@
 ## usethis namespace: end
 NULL
 
-globalVariables(c('..id..', '..time..', '..outcome..', '..prev_outcome..',
-                  '..visit_number..', '..delta_time..', '..prev_time..'))
+globalVariables(c(
+    "..id..", "..time..", "..outcome..", "..prev_outcome..",
+    "..visit_number..", "..delta_time..", "..prev_time.."
+))

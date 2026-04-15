@@ -89,7 +89,7 @@ treatment or control group.
 }
 \section{Functions}{
 \itemize{
-\item \code{fit_SensIAT_fulldata_model()}: Fit the sensitivity analysis for both treatment and control groups.
+\item \code{fit_SensIAT_fulldata_model()}: Fit the Marginal Mean Sensitivity Analysis with Tilting Assumption for Both Treatment and Control Groups.
 
 }}
 \section{Intensity Arguments}{
@@ -126,7 +126,7 @@ model <-
         outcome = Outcome,
         time = Time,
         End = 830,
-        knots = c(60,260,460),
+        knots = c(60, 260, 460),
     )
 }
 }

@@ -31,7 +31,7 @@ to zero.
 full.object <-
     fit_SensIAT_fulldata_model(
         data = SensIAT_example_fulldata,
-        trt = Treatment_group == 'treatment',
+        trt = Treatment_group == "treatment",
         outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
         id = Subject_ID,
         outcome = Outcome,

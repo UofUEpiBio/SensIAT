@@ -1,0 +1,46 @@
+{
+  "name": "SensIAT R Development",
+  "image": "rocker/tidyverse:latest",
+  
+  "features": {
+    "ghcr.io/rocker-org/devcontainer-features/quarto-cli:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "REditorSupport.r",
+        "RDebugger.r-debugger",
+        "quarto.quarto",
+        "James-Yu.latex-workshop"
+      ],
+      "settings": {
+        "r.rterm.linux": "/usr/local/bin/R",
+        "r.rterm.windows": "/usr/local/bin/R",
+        "r.bracketedPaste": true,
+        "r.sessionWatcher": true,
+        "r.rpath.linux": "/usr/local/bin/R",
+        "r.rpath.windows": "/usr/local/bin/R",
+        "[r]": {
+          "editor.defaultFormatter": "REditorSupport.r"
+        }
+      }
+    }
+  },
+  
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  
+  "remoteUser": "rstudio",
+  
+  "forwardPorts": [8787],
+  
+  "portsAttributes": {
+    "8787": {
+      "label": "RStudio Server",
+      "onAutoForward": "notify"
+    }
+  }
+}

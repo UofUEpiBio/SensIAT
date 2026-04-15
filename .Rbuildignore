@@ -12,3 +12,11 @@ roadmap.md
 ^pkgdown$
 ^\.github$
 ^Makefile$
+.devcontainer
+^\.Rprofile$
+^codecov\.yml$
+^copilot_docs$^vignettes/.*_cache$
+^vignettes/.*_files$
+^inst/3\. Simu_point_estimate_fast\.R$
+^doc$
+^Meta$

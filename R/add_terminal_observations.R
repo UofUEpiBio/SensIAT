@@ -14,37 +14,41 @@
 #' @return A data frame with terminal observations added.
 #' @seealso [tidyr::complete()]
 #' @examples
+#' \dontrun{
 #' exdata <- tibble::tibble(
-#'   patient = rep(1:3, 3:5),
-#'   day = c(0, 30, 60,
-#'           0, 30, 60, 90,
-#'           0, 30, 60, 90, 120),
-#'   value = TRUE
+#'     patient = rep(1:3, 3:5),
+#'     day = c(
+#'         0, 30, 60,
+#'         0, 30, 60, 90,
+#'         0, 30, 60, 90, 120
+#'     ),
+#'     value = TRUE
 #' )
 #' add_terminal_observations(exdata, patient, day)
-#' @export
+#' }
+#' @keywords internal
 add_terminal_observations <-
-function(data, id, time, end=max(pull(data, {{time}}))){
-    id <- rlang::ensym(id)
-    time <- rlang::ensym(time)
+    function(data, id, time, end = max(pull(data, {{ time }}))) {
+        id <- rlang::ensym(id)
+        time <- rlang::ensym(time)
 
-    force(end)
+        force(end)
 
-    data |>
-        filter({{time}} <= end) |>
-        group_by({{id}}) |>
-        arrange({{time}}) |>
-        mutate(
-            ..visit_number.. = seq_along({{time}})
-        ) |>
-        ungroup() |>
-        tidyr::complete(
-            {{id}},
-            ..visit_number..,
-            fill = structure(list(end), names = rlang::as_name(time)),
-            explicit = FALSE
-            )|>
-        group_by({{id}}) |>
-        filter({{time}} != dplyr::lag({{time}}, default = -Inf)) |>
-        select(-..visit_number..)
-}
+        data |>
+            filter({{ time }} <= end) |>
+            group_by({{ id }}) |>
+            arrange({{ time }}) |>
+            mutate(
+                ..visit_number.. = seq_along({{ time }})
+            ) |>
+            ungroup() |>
+            tidyr::complete(
+                {{ id }},
+                ..visit_number..,
+                fill = structure(list(end), names = rlang::as_name(time)),
+                explicit = FALSE
+            ) |>
+            group_by({{ id }}) |>
+            filter({{ time }} != dplyr::lag({{ time }}, default = -Inf)) |>
+            select(-..visit_number..)
+    }

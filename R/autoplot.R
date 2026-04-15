@@ -1,6 +1,3 @@
-
-
-
 #' Plot a `SensIAT_within_group_model` Object
 #'
 #' This creates a line plot for a `SensIAT_within_group_model` object.
@@ -21,10 +18,10 @@
 #'         id = Subject_ID,
 #'         outcome = Outcome,
 #'         time = Time,
-#'         knots = c(60,260,460),
+#'         knots = c(60, 260, 460),
 #'         End = 830,
 #'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-#'         intensity.args=list(bandwidth=30)
+#'         intensity.args = list(bandwidth = 30)
 #'     )
 #' ggplot2::autoplot(object) +
 #'     # Title not included
@@ -33,20 +30,20 @@
 #'     ggplot2::geom_hline(yintercept = c(1.2, 3), linetype = "dotted", linewidth = 1.5)
 #' }
 autoplot.SensIAT_within_group_model <- function(object, ...) {
-  lower <- object$base@knots[object$base@order]
-  upper <- object$base@knots[length(object$base@knots) - object$base@order + 1]
+    lower <- object$base@knots[object$base@order]
+    upper <- object$base@knots[length(object$base@knots) - object$base@order + 1]
 
-  x <- seq(lower, upper, length.out = 100)
-  df <- predict(object, time=x, type = "response") |>
-      mutate(alpha_factor = factor(alpha))
+    x <- seq(lower, upper, length.out = 100)
+    df <- predict(object, time = x, type = "response") |>
+        mutate(alpha_factor = factor(alpha))
 
-  ggplot2::ggplot(data=df, ggplot2::aes(x = .data$time, y = .data$mean, col = .data$alpha_factor)) +
-    ggplot2::geom_line() +
-    ggplot2::labs(
-        x = rlang::as_string(object$variables$time),
-        y = rlang::as_string(object$variables$outcome),
-        col = expression(alpha)
-    )
+    ggplot2::ggplot(data = df, ggplot2::aes(x = .data$time, y = .data$mean, col = .data$alpha_factor)) +
+        ggplot2::geom_line() +
+        ggplot2::labs(
+            x = rlang::as_string(object$variables$time),
+            y = rlang::as_string(object$variables$outcome),
+            col = expression(alpha)
+        )
 }
 
 #' Plot Estimates at Given Times for `SensIAT_withingroup_jackknife_results` Objects
@@ -68,17 +65,17 @@ autoplot.SensIAT_within_group_model <- function(object, ...) {
 #' #       so this example is here for reference.
 #' \dontrun{
 #' fitted <-
-#' fit_SensIAT_within_group_model(
-#'     group.data = SensIAT_example_data,
-#'     outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
-#'     alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-#'     id = Subject_ID,
-#'     outcome = Outcome,
-#'     time = Time,
-#'     intensity.args=list(bandwidth = 30),
-#'     knots = c(60,260,460),
-#'     End = 830
-#' )
+#'     fit_SensIAT_within_group_model(
+#'         group.data = SensIAT_example_data,
+#'         outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
+#'         alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+#'         id = Subject_ID,
+#'         outcome = Outcome,
+#'         time = Time,
+#'         intensity.args = list(bandwidth = 30),
+#'         knots = c(60, 260, 460),
+#'         End = 830
+#'     )
 #' jackknife.estimates <- SensIAT_jackknife(fitted, time = c(90, 180, 270, 360, 450))
 #' ggplot2::autoplot(jackknife.estimates)
 #' }
@@ -104,8 +101,10 @@ autoplot.SensIAT_withingroup_jackknife_results <- function(object, level = 0.95,
         ggplot2::geom_errorbar(position = dodge) +
         ggplot2::labs(
             x = rlang::as_string(attr(object, "original.object")$variables$time),
-            y = substitute(expression(outcome %+-% sigma),
-                           attr(object, "original.object")$variables),
+            y = substitute(
+                expression(outcome %+-% sigma),
+                attr(object, "original.object")$variables
+            ),
             col = expression(alpha)
         )
 }
@@ -131,7 +130,7 @@ autoplot.SensIAT_withingroup_jackknife_results <- function(object, level = 0.95,
 #' full.object <-
 #'     fit_SensIAT_fulldata_model(
 #'         data = SensIAT_example_fulldata,
-#'         trt = Treatment_group == 'treatment',
+#'         trt = Treatment_group == "treatment",
 #'         outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
 #'         id = Subject_ID,
 #'         outcome = Outcome,
@@ -144,40 +143,49 @@ autoplot.SensIAT_withingroup_jackknife_results <- function(object, level = 0.95,
 autoplot.SensIAT_fulldata_model <- function(object, time, include.rugs = NA, ...) {
     df <- predict(object, time, ...)
 
-    rslt <- ggplot2::ggplot(data = df,
-                            ggplot2::aes(x = .data$alpha_control,
-                                         y = .data$alpha_treatment,
-                                         z = .data$mean_effect)) +
+    rslt <- ggplot2::ggplot(
+        data = df,
+        ggplot2::aes(
+            x = .data$alpha_control,
+            y = .data$alpha_treatment,
+            z = .data$mean_effect
+        )
+    ) +
         ggplot2::labs(
             x = expression(alpha[control]),
             y = expression(alpha[treatment]),
             fill = "Treatment Effect"
         )
 
-    if(rlang::is_installed("metR")){
-      rslt <- rslt +
-        metR::geom_contour_fill() +
-        metR::scale_fill_divergent(mid="white",low="forestgreen",high="orange")
+    if (rlang::is_installed("metR")) {
+        rslt <- rslt +
+            metR::geom_contour_fill() +
+            metR::scale_fill_divergent(mid = "white", low = "forestgreen", high = "orange")
     } else {
-      rlang::inform("Package 'metR' is recomended for creating 'SensIAT' contour plots, please install it.",
-                    .frequency = 'once')
-      rslt <- rslt +
-        ggplot2::geom_contour_filled()
+        rlang::inform("Package 'metR' is recomended for creating 'SensIAT' contour plots, please install it.",
+            .frequency = "once"
+        )
+        rslt <- rslt +
+            ggplot2::geom_contour_filled()
     }
 
-    if (length(time)> 1){
-        rslt <- rslt + ggplot2::facet_wrap(~time, scales = 'free')
+    if (length(time) > 1) {
+        rslt <- rslt + ggplot2::facet_wrap(~time, scales = "free")
     } else {
         rslt <- rslt + ggplot2::ggtitle(paste("Treatment Effect at Time =", time))
     }
 
-    if(isFALSE(include.rugs)) return(rslt)
-    if(is.na(include.rugs)
-       && ( n_distinct(df$alpha_control) > 10
-          || n_distinct(df$alpha_treatment) > 10
-          )
-        ) return(rslt)
-    rslt + ggplot2::geom_rug(sides = 'bl')
+    if (isFALSE(include.rugs)) {
+        return(rslt)
+    }
+    if (is.na(include.rugs) &&
+        (n_distinct(df$alpha_control) > 10 ||
+            n_distinct(df$alpha_treatment) > 10
+        )
+    ) {
+        return(rslt)
+    }
+    rslt + ggplot2::geom_rug(sides = "bl")
 }
 
 
@@ -204,7 +212,7 @@ autoplot.SensIAT_fulldata_model <- function(object, time, include.rugs = NA, ...
 #' full.object <-
 #'     fit_SensIAT_fulldata_model(
 #'         data = SensIAT_example_fulldata,
-#'         trt = Treatment_group == 'treatment',
+#'         trt = Treatment_group == "treatment",
 #'         outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
 #'         id = Subject_ID,
 #'         outcome = Outcome,
@@ -237,30 +245,35 @@ autoplot.SensIAT_fulldata_jackknife_results <-
           )
 
 
-    if(rlang::is_installed("metR")){
-      rslt <- rslt +
-        metR::geom_contour_fill() +
-        metR::scale_fill_divergent(mid="white",low="forestgreen",high="orange")
-    } else {
-      rlang::inform("Package 'metR' is recomended for creating 'SensIAT' contour plots, please install it.",
-                    .frequency = 'once')
-      rslt <- rslt +
-          ggplot2::geom_contour_filled()
+        if (rlang::is_installed("metR")) {
+            rslt <- rslt +
+                metR::geom_contour_fill() +
+                metR::scale_fill_divergent(mid = "white", low = "forestgreen", high = "orange")
+        } else {
+            rlang::inform("Package 'metR' is recomended for creating 'SensIAT' contour plots, please install it.",
+                .frequency = "once"
+            )
+            rslt <- rslt +
+                ggplot2::geom_contour_filled()
+        }
+        time <- unique(object$time)
+        if (length(time) > 1) {
+            rslt <- rslt + ggplot2::facet_wrap(~time, scales = "free")
+        } else {
+            rslt <- rslt + ggplot2::ggtitle(paste("Treatment Effect at Time =", time))
+        }
+
+        if (isFALSE(include.rugs)) {
+            return(rslt)
+        }
+        if (is.na(include.rugs) &&
+            (n_distinct(object$alpha_control) > 10 ||
+                n_distinct(object$alpha_treatment) > 10
+            )
+        ) {
+            return(rslt)
+        }
+
+
+        rslt + ggplot2::geom_rug(sides = "bl")
     }
-      time <- unique(object$time)
-      if (length(time)> 1){
-          rslt <- rslt + ggplot2::facet_wrap(~time, scales = 'free')
-      } else {
-          rslt <- rslt + ggplot2::ggtitle(paste("Treatment Effect at Time =", time))
-      }
-
-      if(isFALSE(include.rugs)) return(rslt)
-      if(is.na(include.rugs)
-         && ( n_distinct(object$alpha_control) > 10
-              || n_distinct(object$alpha_treatment) > 10
-         )
-      ) return(rslt)
-
-
-    rslt + ggplot2::geom_rug(sides = 'bl')
-}

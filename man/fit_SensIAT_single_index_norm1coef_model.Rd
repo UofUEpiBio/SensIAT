@@ -2,7 +2,7 @@
 % Please edit documentation in R/SensIAT_sim_outcome_modeler_mave.R
 \name{fit_SensIAT_single_index_norm1coef_model}
 \alias{fit_SensIAT_single_index_norm1coef_model}
-\title{Single Index Model using MAVE and Optimizing Bandwidth.}
+\title{Single Index Model using \code{MAVE} and Optimizing Bandwidth.}
 \usage{
 fit_SensIAT_single_index_norm1coef_model(
   formula,
@@ -25,7 +25,7 @@ Should only include follow-up data, i.e. time > 0.}
 
 \item{kernel}{The kernel to use for the outcome model.}
 
-\item{mave.method}{The method to use for the MAVE estimation.}
+\item{mave.method}{The method to use for the \code{MAVE} estimation.}
 
 \item{id}{The patient identifier variable for the data.}
 
@@ -43,10 +43,10 @@ Should only include follow-up data, i.e. time > 0.}
 Object of class \code{SensIAT::Single-index-outcome-model} which contains the outcome model portion.
 }
 \description{
-Single index model estimation using minimum average variance estimation (MAVE).
-A direction is estimated using MAVE, and then the bandwidth is selected by
+Single index model estimation using minimum average variance estimation (\code{MAVE}).
+A direction is estimated using \code{MAVE}, and then the bandwidth is selected by
 minimization of the cross-validated pseudo-integrated squared error.
 Optionally, the initial coefficients of the outcome model can be re-estimated
 by optimization on a spherical manifold.  This option requires the
-ManifoldOptim package (see \code{ManifoldOptim::manifold.optim}).
+\pkg{ManifoldOptim} package (see \code{\link[ManifoldOptim:manifold.optim]{ManifoldOptim::manifold.optim()}}).
 }

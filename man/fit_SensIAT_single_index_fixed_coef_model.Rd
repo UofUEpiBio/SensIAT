@@ -63,9 +63,9 @@ object <-
         id = Subject_ID,
         outcome = Outcome,
         time = Time,
-        knots = c(60,260,460),
+        knots = c(60, 260, 460),
         End = 830,
-        intensity.args=list(bandwidth=30)
+        intensity.args = list(bandwidth = 30)
     )
 
 # A basic example using variable bandwidth but with fixed first coefficient.
@@ -76,9 +76,9 @@ object.bw <-
         id = Subject_ID,
         outcome = Outcome,
         time = Time,
-        knots = c(60,260,460),
+        knots = c(60, 260, 460),
         End = 830,
-        intensity.args=list(bandwidth=30)
+        intensity.args = list(bandwidth = 30)
     )
 }
 }

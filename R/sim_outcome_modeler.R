@@ -22,9 +22,9 @@
 #'         id = Subject_ID,
 #'         outcome = Outcome,
 #'         time = Time,
-#'         knots = c(60,260,460),
+#'         knots = c(60, 260, 460),
 #'         End = 830,
-#'         intensity.args=list(bandwidth=30)
+#'         intensity.args = list(bandwidth = 30)
 #'     )
 #'
 #' # A basic example using variable bandwidth but with fixed first coefficient.
@@ -35,111 +35,120 @@
 #'         id = Subject_ID,
 #'         outcome = Outcome,
 #'         time = Time,
-#'         knots = c(60,260,460),
+#'         knots = c(60, 260, 460),
 #'         End = 830,
-#'         intensity.args=list(bandwidth=30)
+#'         intensity.args = list(bandwidth = 30)
 #'     )
 #' }
 fit_SensIAT_single_index_fixed_coef_model <-
-function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., initial=NULL, ...){
-  id <- ensym(id)
-  mf <- rlang::inject(model.frame(formula, data = data, id = !!id))
-  Xi <- model.matrix(formula, data = mf)
+    function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., initial = NULL, ...) {
+        id <- ensym(id)
+        mf <- rlang::inject(model.frame(formula, data = data, id = !!id))
+        Xi <- model.matrix(formula, data = mf)
 
-  Yi <- model.response(mf)
+        Yi <- model.response(mf)
 
-  if(is.null(initial)){
-      requireNamespace('MAVE', quietly = TRUE)
-      initial = coef(MAVE::mave.compute(Xi, Yi, max.dim = 1), 1)
-  } else if(is.function(initial)){
-      initial = initial(Xi, Yi)
-  } else if(is.numeric(initial)){
-      initial = initial
-  } else {
-      stop("initial must be a function, a numeric vector, or NULL")
-  }
+        if (is.null(initial)) {
+            requireNamespace("MAVE", quietly = TRUE)
+            initial <- coef(MAVE::mave.compute(Xi, Yi, max.dim = 1), 1)
+        } else if (is.function(initial)) {
+            initial <- initial(Xi, Yi)
+        } else if (is.numeric(initial)) {
+            initial <- initial
+        } else {
+            stop("initial must be a function, a numeric vector, or NULL")
+        }
 
-  if(initial[1]<0) initial <- -initial
+        if (initial[1] < 0) initial <- -initial
 
-  val <- SIDR_Ravinew(X = Xi, Y = Yi, index_ID= mf[['(id)']],
-                      initial=initial,
-                      kernel = kernel,
-                      method = method,
-                      ...)
-  structure(
-      append(
-        val,
-          list(
-              frame = mf,
-              data = data
-          )
-      ),
-      class = c('SensIAT::outcome-model', 'SensIAT::Single-index-outcome-model'),
-      kernel = kernel,
-      terms = terms(mf),
-      id = id,
-      initial = initial)
-}
+        val <- SIDR_Ravinew(
+            X = Xi, Y = Yi, index_ID = mf[["(id)"]],
+            initial = initial,
+            kernel = kernel,
+            method = method,
+            ...
+        )
+        structure(
+            append(
+                val,
+                list(
+                    frame = mf,
+                    data = data
+                )
+            ),
+            class = c("SensIAT::outcome-model", "SensIAT::Single-index-outcome-model"),
+            kernel = kernel,
+            terms = terms(mf),
+            id = id,
+            initial = initial
+        )
+    }
 
 #' @export
 `model.frame.SensIAT::Single-index-outcome-model` <-
-    function(formula, data=NULL, ...){
-        if(is.null(data))
+    function(formula, data = NULL, ...) {
+        if (is.null(data)) {
             data <- formula$data
-        NextMethod('model.frame', data=data, ...)
+        }
+        NextMethod("model.frame", data = data, ...)
     }
 #' @export
 `model.matrix.SensIAT::Single-index-outcome-model` <-
-    function(object, data = model.frame(object), ...){
+    function(object, data = model.frame(object), ...) {
         model.matrix(terms(object), data = data, ...)
     }
 #' @export
 `formula.SensIAT::Single-index-outcome-model` <-
-    function(x, ...){
+    function(x, ...) {
         as.formula(terms(x))
     }
 #' @export
 `coef.SensIAT::Single-index-outcome-model` <-
-    function(object, ...)object$coef
+    function(object, ...) object$coef
 
 #' @export
 `predict.SensIAT::Single-index-outcome-model` <-
-    function( object
-            , newdata = NULL
-            , type = c('lp', 'response', 'terms')
-            , ...){
-        if(is.null(newdata)) newdata = model.frame(object)
-        type = match.arg(type)
+    function(object,
+             newdata = NULL,
+             type = c("lp", "response", "terms"),
+             ...) {
+        if (is.null(newdata)) newdata <- model.frame(object)
+        type <- match.arg(type)
 
         frame <- model.frame(object, data = newdata)
 
         X_new <- model.matrix(terms(object), data = frame)
 
-        if(type == 'terms') return(X_new)
+        if (type == "terms") {
+            return(X_new)
+        }
 
         lp <- X_new %*% object$coef
-        if(type == 'lp') return(lp)
+        if (type == "lp") {
+            return(lp)
+        }
 
-        response <- vector('numeric', nrow(X_new))
+        response <- vector("numeric", nrow(X_new))
 
 
         lp0 <- model.matrix(terms(object), object$data) %*% object$coef
         Y <- model.response(model.frame(object))
         y <- sort(unique(Y))
 
-        for(i in 1:nrow(X_new)){
-          Fhat <- pcoriaccel_NW(
-            Xb = lp0, Y = Y,
-            xb = lp[i], y_seq = y,
-            h = object$bandwidth,
-            kernel = attr(object, 'kernel'))
-          pmf <- diff(c(0, Fhat))
-          response[i] <- sum(y*pmf)
+        for (i in 1:nrow(X_new)) {
+            Fhat <- pcoriaccel_NW(
+                Xb = lp0, Y = Y,
+                xb = lp[i], y_seq = y,
+                h = object$bandwidth,
+                kernel = attr(object, "kernel")
+            )
+            pmf <- diff(c(0, Fhat))
+            response[i] <- sum(y * pmf)
         }
         return(response)
     }
 
-estimate_starting_coefficients <- function(X,Y, eps = 1e-7){
+estimate_starting_coefficients <- function(X, Y, eps = 1e-7) {
     X <- as.matrix(X)
     Y <- as.vector(Y)
 
@@ -149,167 +158,173 @@ estimate_starting_coefficients <- function(X,Y, eps = 1e-7){
     Y.CP <- outer(Y, Y, "<=")
 
     # centralizing covariates
-    X.cs <- t(t(X)-colMeans(X))
+    X.cs <- t(t(X) - colMeans(X))
 
     # calculating m(y)=\E[X_i 1(Y_i\leq y)]
     # m.y <- (t(X)-colMeans(X)) %*% Y.CP/number_n
     # calculating K=\E[m(Y_i)m(Y_i)^T]
-    m.y <- crossprod(X.cs, Y.CP)/number_n
-    Km <- tcrossprod(m.y)/number_n
+    m.y <- crossprod(X.cs, Y.CP) / number_n
+    Km <- tcrossprod(m.y) / number_n
 
-    eigen(solve(var(X) + eps*diag(number_p), Km))$vectors[,1]
+    eigen(solve(var(X) + eps * diag(number_p), Km))$vectors[, 1]
 }
 
 
-K2_Biweight_kernel <- function(x, h){15/16*(1-(x/h)^2)^2 * (abs(x) <= h)}
-K4_Biweight_kernel <- function(x, h){105/64*(1-3*((x/h)^2))*(1-(x/h)^2)^2 * (abs(x) <= h) }
+K2_Biweight_kernel <- function(x, h) {
+    15 / 16 * (1 - (x / h)^2)^2 * (abs(x) <= h)
+}
+K4_Biweight_kernel <- function(x, h) {
+    105 / 64 * (1 - 3 * ((x / h)^2)) * (1 - (x / h)^2)^2 * (abs(x) <= h)
+}
 
 NW_new <-
-function(Xb, Y, xb, y, h, kernel = "K2_Biweight"){
+    function(Xb, Y, xb, y, h, kernel = "K2_Biweight") {
+        if (kernel == "dnorm") {
+            K <- function(x, h) {
+                dnorm(x / h, 0, 1)
+            } # Gaussian
+        } else if (kernel == "K2_Biweight") {
+            K <- function(x, h) {
+                15 / 16 * (1 - (x / h)^2)^2 * (abs(x) <= h)
+            } # K2_biweight
+            # } else if(kernel=="K4_Biweight"){
+            #     K <- function(x, h){105/64*(1-3*((x/h)^2))*(1-(x/h)^2)^2 * (abs(x) <= h) }# K4_biweight
+        } else {
+            stop("Kernel not recognized")
+        }
 
-    if(kernel == "dnorm"){
-        K <- function(x, h){dnorm(x/h, 0, 1)} # Gaussian
-    } else if(kernel == "K2_Biweight"){
-        K <- function(x, h){15/16*(1-(x/h)^2)^2 * (abs(x) <= h)} # K2_biweight
-    # } else if(kernel=="K4_Biweight"){
-    #     K <- function(x, h){105/64*(1-3*((x/h)^2))*(1-(x/h)^2)^2 * (abs(x) <= h) }# K4_biweight
-    } else {
-        stop("Kernel not recognized")
+        Kxb <- sapply(xb, function(x, Xb) K(Xb - x, h), Xb = Xb)
+
+        Ylty <- sapply(y, function(x, Y) 1 * (Y <= x), Y = Y)
+
+        denom <- colSums(Kxb)
+
+        fyxb <- (denom != 0) * crossprod(Kxb, Ylty) / (denom + (denom == 0))
+
+        return(fyxb)
     }
 
-    Kxb <- sapply(xb, function(x, Xb) K(Xb-x, h), Xb=Xb)
-
-    Ylty <- sapply(y, function(x, Y) 1*(Y <= x), Y=Y)
-
-    denom <- colSums(Kxb)
-
-    fyxb <- (denom!=0)*crossprod(Kxb, Ylty)/(denom + (denom==0))
-
-    return(fyxb)
-
-}
-
 Cond_mean_fn_single2 <-
-    function( alpha #< sensitivity parameter
-            , X     #< Matrix of covariates for all observations, including the spline basis as well as other covariates such as lag(time) and lag(outcome)
-            , Y     #< Outcome vector for all observations
-            , x     #< vector of covariates for the observation of interest
-            , beta
-            , bandwidth
-            , ...  #< for passing kernel forward
-            ){
-
-
+    function(alpha #< sensitivity parameter
+             , X #< Matrix of covariates for all observations, including the spline basis as well as other covariates such as lag(time) and lag(outcome)
+             , Y #< Outcome vector for all observations
+             , x #< vector of covariates for the observation of interest
+             , beta,
+             bandwidth,
+             ... #< for passing kernel forward
+    ) {
         y <- sort(unique(Y))
 
         # conditional distribution
-        #start <- Sys.time()
-        Fhat <- pcoriaccel_NW(
+        # start <- Sys.time()
+        Fhat_matrix <- pcoriaccel_NW(
             Xb = X %*% beta, Y = Y,
             xb = x %*% beta, y_seq = y,
             h = bandwidth,
-            ...)
-        #end <- Sys.time()
-        #end - start
+            ...
+        )
+        # Convert matrix to vector (should be 1 row, length(y) columns)
+        Fhat <- as.vector(Fhat_matrix)
+        # end <- Sys.time()
+        # end - start
 
         # density function
         Fhat1 <- c(0, Fhat[1:(length(y) - 1)])
         pmf <- Fhat - Fhat1
 
         # Question: Are we assuming Y is finite with support range_y or are we approximating an integral here?
-        E_exp_alphaY <- sum( exp(alpha*y)*pmf )
+        E_exp_alphaY <- sum(exp(alpha * y) * pmf)
 
-        E_Yexp_alphaY <- sum( y*exp(alpha*y)*pmf )
+        E_Yexp_alphaY <- sum(y * exp(alpha * y) * pmf)
 
-        E_Y_past <- E_Yexp_alphaY/E_exp_alphaY
+        E_Y_past <- E_Yexp_alphaY / E_exp_alphaY
 
         return(list(
             E_Y_past = E_Y_past,
             E_exp_alphaY = E_exp_alphaY,
             E_Yexp_alphaY = E_Yexp_alphaY
         ))
-
     }
-
 
 
 #' @export
 `compute_SensIAT_expected_values.SensIAT::Single-index-outcome-model` <-
-function(
-    model,
-    alpha,
-    # gamma,
-    new.data = model.frame(model),
-    ...
-    )
-{
-    assert_that(
-        is(model, 'SensIAT::Single-index-outcome-model'),
-        is.numeric(alpha)
-    )
-    if(length(alpha) > 1){
-        return(
-            purrr::map_dfr(
-                alpha,
-                `compute_SensIAT_expected_values.SensIAT::Single-index-outcome-model`,
-                model = model, new.data = new.data,
-                ...
+    function(model,
+             alpha,
+             # gamma,
+             new.data = model.frame(model),
+             ...) {
+        assert_that(
+            is(model, "SensIAT::Single-index-outcome-model"),
+            is.numeric(alpha)
+        )
+        if (length(alpha) > 1) {
+            return(
+                purrr::map_dfr(
+                    alpha,
+                    `compute_SensIAT_expected_values.SensIAT::Single-index-outcome-model`,
+                    model = model, new.data = new.data,
+                    ...
+                )
             )
-        )
+        }
+        if (nrow(new.data) == 0) {
+            return(mutate(
+                new.data,
+                alpha = alpha,
+                E_Y_past = numeric(0),
+                E_exp_alphaY = numeric(0),
+                E_Yexp_alphaY = numeric(0)
+            ))
+        }
+
+        Xi <- model.matrix(terms(model), model$data)
+        Yi <- model.response(model.frame(model))
+        for (var in setdiff(all.vars(terms(model)), tbl_vars(new.data))) {
+            new.data[[var]] <- NA
+        }
+        Xi_new <- model.matrix(terms(model), data = new.data)
+
+        if (nrow(Xi_new) == 0) {
+            return(mutate(
+                new.data,
+                alpha = alpha,
+                E_Y_past = NA_real_,
+                E_exp_alphaY = NA_real_,
+                E_Yexp_alphaY = NA_real_
+            ))
+        }
+
+        E_Y_past <- numeric(nrow(Xi_new))
+        E_exp_alphaY <- numeric(nrow(Xi_new))
+        E_Yexp_alphaY <- numeric(nrow(Xi_new))
+
+        for (k in 1:nrow(Xi_new)) {
+            # df_k <- new.data[k, ]
+            # x = model.matrix(terms(model), data = df_k)
+            temp <- Cond_mean_fn_single2(alpha,
+                X = Xi,
+                Y = Yi,
+                x = Xi_new[k, , drop = FALSE],
+                beta = model$coef,
+                bandwidth = model$bandwidth,
+                kernel = attr(model, "kernel")
+            )
+
+            E_Y_past[k] <- temp$E_Y_past
+            E_exp_alphaY[k] <- temp$E_exp_alphaY
+            E_Yexp_alphaY[k] <- temp$E_Yexp_alphaY
+        }
+
+        tibble(new.data, alpha, E_Y_past, E_Yexp_alphaY, E_exp_alphaY)
     }
-    if (nrow(new.data)==0) return(mutate(
-        new.data,
-        alpha = alpha,
-        E_Y_past = numeric(0),
-        E_exp_alphaY = numeric(0),
-        E_Yexp_alphaY = numeric(0)
-    ))
-
-    Xi <- model.matrix(terms(model), model$data)
-    Yi <- model.response(model.frame(model))
-    for(var in setdiff(all.vars(terms(model)), tbl_vars(new.data)))
-        new.data[[var]] <- NA
-    Xi_new <- model.matrix(terms(model), data=new.data)
-
-    if(nrow(Xi_new)==0) return(mutate(
-        new.data,
-        alpha = alpha,
-        E_Y_past = NA_real_,
-        E_exp_alphaY = NA_real_,
-        E_Yexp_alphaY = NA_real_
-    ))
-
-    E_Y_past <- numeric(nrow(Xi_new))
-    E_exp_alphaY <- numeric(nrow(Xi_new))
-    E_Yexp_alphaY <- numeric(nrow(Xi_new))
-
-    for(k in 1:nrow(Xi_new)){
-        # df_k <- new.data[k, ]
-        # x = model.matrix(terms(model), data = df_k)
-        temp <- Cond_mean_fn_single2(alpha,
-                                     X = Xi,
-                                     Y = Yi,
-                                     x = Xi_new[k,,drop=FALSE],
-                                     beta = model$coef,
-                                     bandwidth = model$bandwidth,
-                                     kernel = attr(model, 'kernel')
-        )
-
-        E_Y_past[k] <- temp$E_Y_past
-        E_exp_alphaY[k] <- temp$E_exp_alphaY
-        E_Yexp_alphaY[k] <- temp$E_Yexp_alphaY
-
-    }
-
-    tibble(new.data, alpha, E_Yexp_alphaY, E_exp_alphaY)
-}
 
 
 #' @describeIn fit_SensIAT_single_index_fixed_coef_model for fitting with a fixed bandwidth
 #' @export
 fit_SensIAT_single_index_fixed_bandwidth_model <-
     function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id..,
-             initial = NULL, ...){
+             initial = NULL, ...) {
         id <- ensym(id)
         mf <- rlang::inject(model.frame(formula, data = data, id = !!id))
         Xi <- model.matrix(formula, data = mf)
@@ -317,24 +332,26 @@ fit_SensIAT_single_index_fixed_bandwidth_model <-
         Yi <- model.response(mf)
 
         force(initial)
-        if(is.null(initial)){
-            requireNamespace('MAVE', quietly = TRUE)
-            initial = coef(MAVE::mave.compute(Xi, Yi, max.dim = 1), 1)
-        } else if(is.function(initial)){
-            initial = initial(Xi, Yi)
-        } else if(is.numeric(initial)){
-            initial = initial
+        if (is.null(initial)) {
+            requireNamespace("MAVE", quietly = TRUE)
+            initial <- coef(MAVE::mave.compute(Xi, Yi, max.dim = 1), 1)
+        } else if (is.function(initial)) {
+            initial <- initial(Xi, Yi)
+        } else if (is.numeric(initial)) {
+            initial <- initial
         } else {
             stop("initial must be a function, a numeric vector, or NULL")
         }
 
-        if(initial[1]<0) initial <- -initial
+        if (initial[1] < 0) initial <- -initial
 
-        val <- SIDRnew_fixed_bandwidth(X = Xi, Y = Yi, ids= mf[['(id)']],
-                            initial=initial,
-                            kernel = kernel,
-                            method = method,
-                            ...)
+        val <- SIDRnew_fixed_bandwidth(
+            X = Xi, Y = Yi, ids = mf[["(id)"]],
+            initial = initial,
+            kernel = kernel,
+            method = method,
+            ...
+        )
         structure(
             append(
                 val,
@@ -343,10 +360,10 @@ fit_SensIAT_single_index_fixed_bandwidth_model <-
                     data = data
                 )
             ),
-            class = c('SensIAT::outcome-model', 'SensIAT::Single-index-outcome-model'),
+            class = c("SensIAT::outcome-model", "SensIAT::Single-index-outcome-model"),
             kernel = kernel,
             id = id,
             terms = terms(mf),
-            initial = initial)
+            initial = initial
+        )
     }
-
