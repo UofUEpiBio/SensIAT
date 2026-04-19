@@ -3,11 +3,11 @@ set -e
 
 echo "Installing system dependencies..."
 
-# Install pandoc if not already present
-if ! command -v pandoc &> /dev/null; then
-    echo "Installing pandoc..."
+# Install pandoc and qpdf if not already present
+if ! command -v pandoc &> /dev/null || ! command -v qpdf &> /dev/null; then
+    echo "Installing pandoc and qpdf..."
     apt-get update
-    apt-get install -y pandoc pandoc-citeproc
+    apt-get install -y pandoc pandoc-citeproc qpdf
 fi
 
 echo "Installing R package dependencies..."
