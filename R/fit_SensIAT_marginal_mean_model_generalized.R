@@ -17,7 +17,7 @@
 #'   - `"original"`: Standard implementation with adaptive Simpson's
 #'   - `"fixed_grid"`: Pre-computed expected values on fixed grid with composite Simpson's rule
 #'   - `"seeded_adaptive"`: Adaptive Simpson's seeded with pre-computed grid points
-#'   - `"gauss_legendre"`: Gauss-Legendre quadrature (requires \\pkg{statmod} package)
+#'   - `"gauss_legendre"`: Gauss-Legendre quadrature (requires \pkg{statmod} package)
 #' @param term2_grid_n Number of grid points/nodes for `fixed_grid`, `seeded_adaptive`, and `gauss_legendre` methods (default 100)
 #' @param use_expected_cache Logical; whether to cache expected values for performance (default TRUE)
 #'
