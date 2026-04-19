@@ -142,6 +142,7 @@ method, including:
 }
 }
 \examples{
+\donttest{
 library(survival)
 library(splines)
 
@@ -178,7 +179,7 @@ fit_SensIAT_marginal_mean_model_generalized(
     link = "log",
     impute_data = \(t, df){
         data_wl <- df |>
-            mutate(
+            dplyr::mutate(
                 ..prev_time.. = Time,
                 ..prev_outcome.. = Outcome,
                 ..delta_time.. = 0
@@ -186,7 +187,6 @@ fit_SensIAT_marginal_mean_model_generalized(
         extrapolate_from_last_observation(t, data_wl, "Time", slopes = c("..delta_time.." = 1))
     }
 )
-time <- data_with_lags$Time
-id <- data_with_lags$Subject_ID
+}
 
 }
