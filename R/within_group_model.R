@@ -57,7 +57,7 @@ globalVariables(c(
 #'    \item `alpha`: Sensitivity parameter values
 #'    \item `coefficients`: Estimated spline coefficients for each alpha
 #'    \item `coefficient.variance`: Variance of coefficients for each alpha
-#'    \item `base`: The SplineBasis object
+#'    \item `base`: The [`SplineBasis`][orthogonalsplinebasis::SplineBasis] object
 #'    \item `V_inverse`: Inverse of the Gram matrix
 #'    \item `link`: The link function used
 #'    \item `loss`: The loss function used

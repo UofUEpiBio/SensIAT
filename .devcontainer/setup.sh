@@ -1,14 +1,9 @@
 #!/bin/bash
 set -e
 
-echo "Installing system dependencies..."
+echo "Setting up SensIAT development environment..."
 
-# Install pandoc and qpdf if not already present
-if ! command -v pandoc &> /dev/null || ! command -v qpdf &> /dev/null; then
-    echo "Installing pandoc and qpdf..."
-    apt-get update
-    apt-get install -y pandoc pandoc-citeproc qpdf
-fi
+# System dependencies (pandoc, qpdf) are installed via devcontainer features
 
 echo "Installing R package dependencies..."
 Rscript .devcontainer/install-deps.R
