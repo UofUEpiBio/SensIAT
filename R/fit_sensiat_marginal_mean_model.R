@@ -118,7 +118,140 @@ fit_SensIAT_marginal_mean_model <-
                 base = base,
                 V_inverse = V_inverse
             ),
-            class = "SensIAT_marginal_outcome_model",
-            call = match.call(expand.dots = TRUE)
+            class = "SensIAT_marginal_mean_model",
+            call = match.call(expand.dots = TRUE),
+            link = "identity",
+            loss = "lp_mse"
         )
     }
+
+# Utility methods for SensIAT_marginal_mean_model ----------------------------
+
+#' @export
+coef.SensIAT_marginal_mean_model <- function(object, alpha = NULL, ...) {
+    if (is.null(alpha)) {
+        # Return named list for all alpha values
+        setNames(object$coefficients, paste0("alpha=", object$alpha))
+    } else {
+        # Find matching alpha and return coefficients
+        idx <- match(alpha, object$alpha)
+        if (any(is.na(idx))) {
+            stop("alpha value(s) not found: ", paste(alpha[is.na(idx)], collapse = ", "))
+        }
+        if (length(idx) == 1) {
+            object$coefficients[[idx]]
+        } else {
+            setNames(object$coefficients[idx], paste0("alpha=", alpha))
+        }
+    }
+}
+
+#' @export
+vcov.SensIAT_marginal_mean_model <- function(object, alpha = NULL, ...) {
+    if (is.null(alpha)) {
+        setNames(object$coefficient.variance, paste0("alpha=", object$alpha))
+    } else {
+        idx <- match(alpha, object$alpha)
+        if (any(is.na(idx))) {
+            stop("alpha value(s) not found: ", paste(alpha[is.na(idx)], collapse = ", "))
+        }
+        if (length(idx) == 1) {
+            object$coefficient.variance[[idx]]
+        } else {
+            setNames(object$coefficient.variance[idx], paste0("alpha=", alpha))
+        }
+    }
+}
+
+#' @export
+print.SensIAT_marginal_mean_model <- function(x, digits = max(3L, getOption("digits") - 3L),
+                                               markdown = isTRUE(getOption("knitr.in.progress")), ...) {
+    link <- attr(x, "link") %||% "identity"
+    loss <- attr(x, "loss") %||% "lp_mse"
+    n_alpha <- length(x$alpha)
+    n_coef <- length(x$coefficients[[1]])
+
+    if (markdown) {
+        cat("\n### SensIAT Marginal Mean Model\n\n")
+        cat("| Property | Value |\n")
+        cat("|:---------|:------|\n")
+        cat("| Link | ", link, " |\n", sep = "")
+        cat("| Loss | ", loss, " |\n", sep = "")
+        cat("| Alpha values | ", n_alpha, " (", paste(x$alpha, collapse = ", "), ") |\n", sep = "")
+        cat("| Spline coefficients | ", n_coef, " |\n\n", sep = "")
+    } else {
+        cat("\nSensIAT Marginal Mean Model\n\n")
+        cat("Link:", link, "\n")
+        cat("Loss:", loss, "\n")
+        cat("Alpha values:", n_alpha, "(", paste(x$alpha, collapse = ", "), ")\n")
+        cat("Spline coefficients:", n_coef, "\n\n")
+    }
+    invisible(x)
+}
+
+#' @export
+summary.SensIAT_marginal_mean_model <- function(object, ...) {
+    # Compute summary statistics for each alpha
+    coef_summary <- purrr::map2(object$coefficients, object$coefficient.variance, function(cf, vr) {
+        se <- sqrt(diag(vr))
+        data.frame(
+            Estimate = cf,
+            Std.Error = se,
+            row.names = paste0("B", seq_along(cf))
+        )
+    })
+    names(coef_summary) <- paste0("alpha=", object$alpha)
+
+    ans <- list(
+        call = attr(object, "call"),
+        alpha = object$alpha,
+        link = attr(object, "link") %||% "identity",
+        loss = attr(object, "loss") %||% "lp_mse",
+        n_obs = nrow(object$data),
+        coefficients = coef_summary
+    )
+    class(ans) <- "summary.SensIAT_marginal_mean_model"
+    ans
+}
+
+#' @export
+print.summary.SensIAT_marginal_mean_model <- function(x, digits = max(3L, getOption("digits") - 3L),
+                                                       markdown = isTRUE(getOption("knitr.in.progress")), ...) {
+    if (markdown) {
+        cat("\n### SensIAT Marginal Mean Model Summary\n\n")
+        cat("| Property | Value |\n")
+        cat("|:---------|:------|\n")
+        cat("| Link | ", x$link, " |\n", sep = "")
+        cat("| Loss | ", x$loss, " |\n", sep = "")
+        cat("| Observations | ", x$n_obs, " |\n\n", sep = "")
+
+        for (nm in names(x$coefficients)) {
+            cat("**Coefficients (", nm, "):**\n\n", sep = "")
+            cf <- x$coefficients[[nm]]
+            cat("| Term | Estimate | Std.Error |\n")
+            cat("|:-----|--------:|----------:|\n")
+            for (i in seq_len(nrow(cf))) {
+                cat("| ", rownames(cf)[i], " | ",
+                    format(cf$Estimate[i], digits = digits), " | ",
+                    format(cf$Std.Error[i], digits = digits), " |\n", sep = "")
+            }
+            cat("\n")
+        }
+    } else {
+        cat("\nSensIAT Marginal Mean Model Summary\n")
+        cat(rep("=", 40), "\n", sep = "")
+        cat("\nLink:", x$link, "\n")
+        cat("Loss:", x$loss, "\n")
+        cat("Observations:", x$n_obs, "\n\n")
+
+        for (nm in names(x$coefficients)) {
+            cat("Coefficients (", nm, "):\n", sep = "")
+            print(x$coefficients[[nm]], digits = digits)
+            cat("\n")
+        }
+    }
+    invisible(x)
+}
+
+# Null-coalescing operator if not available
+`%||%` <- function(x, y) if (is.null(x)) y else x

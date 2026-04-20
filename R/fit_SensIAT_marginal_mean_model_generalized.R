@@ -886,7 +886,109 @@ fit_SensIAT_marginal_mean_model_generalized <-
                 base = base,
                 V.inverse = V.inv
             ),
-            class = "SensIAT_marginal_mean_model_generalized",
-            call = match.call(expand.dots = TRUE)
+            class = c("SensIAT_marginal_mean_model_generalized", "SensIAT_marginal_mean_model"),
+            call = match.call(expand.dots = TRUE),
+            link = link,
+            loss = loss,
+            term2_method = term2_method
         )
     }
+
+# Utility methods for SensIAT_marginal_mean_model_generalized ----------------
+# Note: coef and vcov methods are inherited from SensIAT_marginal_mean_model
+
+#' @export
+print.SensIAT_marginal_mean_model_generalized <- function(x, digits = max(3L, getOption("digits") - 3L),
+                                                           markdown = isTRUE(getOption("knitr.in.progress")), ...) {
+    link <- attr(x, "link")
+    loss <- attr(x, "loss")
+    term2_method <- attr(x, "term2_method")
+    n_alpha <- length(x$alpha)
+    n_coef <- length(x$coefficients[[1]])
+
+    if (markdown) {
+        cat("\n### SensIAT Marginal Mean Model (Generalized)\n\n")
+        cat("| Property | Value |\n")
+        cat("|:---------|:------|\n")
+        cat("| Link | ", link, " |\n", sep = "")
+        cat("| Loss | ", loss, " |\n", sep = "")
+        cat("| Term2 method | ", term2_method, " |\n", sep = "")
+        cat("| Alpha values | ", n_alpha, " (", paste(x$alpha, collapse = ", "), ") |\n", sep = "")
+        cat("| Spline coefficients | ", n_coef, " |\n\n", sep = "")
+    } else {
+        cat("\nSensIAT Marginal Mean Model (Generalized)\n\n")
+        cat("Link:", link, "\n")
+        cat("Loss:", loss, "\n")
+        cat("Term2 method:", term2_method, "\n")
+        cat("Alpha values:", n_alpha, "(", paste(x$alpha, collapse = ", "), ")\n")
+        cat("Spline coefficients:", n_coef, "\n\n")
+    }
+    invisible(x)
+}
+
+#' @export
+summary.SensIAT_marginal_mean_model_generalized <- function(object, ...) {
+    # Compute summary statistics for each alpha
+    coef_summary <- purrr::map2(object$coefficients, object$coefficient.variance, function(cf, vr) {
+        se <- sqrt(diag(vr))
+        data.frame(
+            Estimate = cf,
+            Std.Error = se,
+            row.names = paste0("B", seq_along(cf))
+        )
+    })
+    names(coef_summary) <- paste0("alpha=", object$alpha)
+
+    ans <- list(
+        call = attr(object, "call"),
+        alpha = object$alpha,
+        link = attr(object, "link"),
+        loss = attr(object, "loss"),
+        term2_method = attr(object, "term2_method"),
+        n_obs = nrow(object$data),
+        coefficients = coef_summary
+    )
+    class(ans) <- "summary.SensIAT_marginal_mean_model_generalized"
+    ans
+}
+
+#' @export
+print.summary.SensIAT_marginal_mean_model_generalized <- function(x, digits = max(3L, getOption("digits") - 3L),
+                                                                   markdown = isTRUE(getOption("knitr.in.progress")), ...) {
+    if (markdown) {
+        cat("\n### SensIAT Marginal Mean Model Summary (Generalized)\n\n")
+        cat("| Property | Value |\n")
+        cat("|:---------|:------|\n")
+        cat("| Link | ", x$link, " |\n", sep = "")
+        cat("| Loss | ", x$loss, " |\n", sep = "")
+        cat("| Term2 method | ", x$term2_method, " |\n", sep = "")
+        cat("| Observations | ", x$n_obs, " |\n\n", sep = "")
+
+        for (nm in names(x$coefficients)) {
+            cat("**Coefficients (", nm, "):**\n\n", sep = "")
+            cf <- x$coefficients[[nm]]
+            cat("| Term | Estimate | Std.Error |\n")
+            cat("|:-----|--------:|----------:|\n")
+            for (i in seq_len(nrow(cf))) {
+                cat("| ", rownames(cf)[i], " | ",
+                    format(cf$Estimate[i], digits = digits), " | ",
+                    format(cf$Std.Error[i], digits = digits), " |\n", sep = "")
+            }
+            cat("\n")
+        }
+    } else {
+        cat("\nSensIAT Marginal Mean Model Summary (Generalized)\n")
+        cat(rep("=", 50), "\n", sep = "")
+        cat("\nLink:", x$link, "\n")
+        cat("Loss:", x$loss, "\n")
+        cat("Term2 method:", x$term2_method, "\n")
+        cat("Observations:", x$n_obs, "\n\n")
+
+        for (nm in names(x$coefficients)) {
+            cat("Coefficients (", nm, "):\n", sep = "")
+            print(x$coefficients[[nm]], digits = digits)
+            cat("\n")
+        }
+    }
+    invisible(x)
+}
