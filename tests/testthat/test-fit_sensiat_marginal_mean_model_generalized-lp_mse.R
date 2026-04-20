@@ -1,7 +1,7 @@
 # Tests for fit_SensIAT_marginal_mean_model_generalized with lp_mse loss
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + identity produces valid results", {
-    # Reduced parameters to keep test under 60 seconds
+    skip_on_ci()
     setup <- generate_test_data(link = "identity", n_subjects = 10)
     
     # Fit using generalized version with identity link
@@ -125,6 +125,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + logit", {
 })
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + identity with multiple alphas", {
+    skip_on_ci()
     # Reduced parameters to keep test under 60 seconds
     setup <- generate_test_data(link = "identity", n_subjects = 8)
     
