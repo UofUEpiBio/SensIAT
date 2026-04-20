@@ -107,6 +107,78 @@ fit_SensIAT_single_index_fixed_coef_model <-
     function(object, ...) object$coef
 
 #' @export
+`print.SensIAT::Single-index-outcome-model` <-
+    function(x, digits = max(3L, getOption("digits") - 3L), ...) {
+        cat("\nSingle-Index Outcome Model\n\n")
+        cat("Formula:", deparse(formula(x)), "\n")
+        cat("Kernel: ", attr(x, "kernel"), "\n")
+        cat("Bandwidth:", format(x$bandwidth, digits = digits), "\n\n")
+        cat("Coefficients:\n")
+        print.default(format(coef(x), digits = digits), print.gap = 2L, quote = FALSE)
+        cat("\n")
+        invisible(x)
+    }
+
+#' @export
+`summary.SensIAT::Single-index-outcome-model` <-
+    function(object, ...) {
+        cf <- coef(object)
+        # Get coefficient names from model matrix
+        mm <- model.matrix(object)
+        if (length(cf) == ncol(mm)) {
+            names(cf) <- colnames(mm)
+        }
+
+        ans <- list(
+            call = match.call(),
+            formula = formula(object),
+            coefficients = cf,
+            bandwidth = object$bandwidth,
+            kernel = attr(object, "kernel"),
+            nobs = nrow(object$frame),
+            convergence = object$details$convergence,
+            objective = if (!is.null(object$details$value)) object$details$value else object$details$objective
+        )
+        class(ans) <- "summary.SensIAT::Single-index-outcome-model"
+        ans
+    }
+
+#' @export
+`print.summary.SensIAT::Single-index-outcome-model` <-
+    function(x, digits = max(3L, getOption("digits") - 3L), ...) {
+        cat("\nSingle-Index Outcome Model Summary\n")
+        cat(rep("=", 40), "\n", sep = "")
+        cat("\nFormula:", deparse(x$formula), "\n")
+        cat("Kernel: ", x$kernel, "\n")
+        cat("Bandwidth:", format(x$bandwidth, digits = digits), "\n")
+        cat("Observations:", x$nobs, "\n\n")
+
+        cat("Coefficients:\n")
+        print.default(format(x$coefficients, digits = digits), print.gap = 2L, quote = FALSE)
+
+        if (!is.null(x$convergence)) {
+            cat("\nOptimization:\n")
+            cat("  Convergence:", if (x$convergence == 0) "Yes" else paste("No (code", x$convergence, ")"), "\n")
+            if (!is.null(x$objective)) {
+                cat("  Objective value:", format(x$objective, digits = digits), "\n")
+            }
+        }
+        cat("\n")
+        invisible(x)
+    }
+
+#' @export
+`vcov.SensIAT::Single-index-outcome-model` <-
+    function(object, ...) {
+        # Single-index models do not have closed-form variance estimates.
+        # Use jackknife() on the parent within_group_model for variance estimation.
+        warning("vcov() is not available for Single-index-outcome-model. ",
+                "Use jackknife() on the fitted SensIAT_within_group_model for variance estimation.",
+                call. = FALSE)
+        NULL
+    }
+
+#' @export
 `predict.SensIAT::Single-index-outcome-model` <-
     function(object,
              newdata = NULL,

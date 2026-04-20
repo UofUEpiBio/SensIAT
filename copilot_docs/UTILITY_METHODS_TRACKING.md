@@ -20,7 +20,9 @@ Issue: https://github.com/UofUEpiBio/SensIAT/issues/15
 
 | Class | print | summary | coef | vcov | confint |
 |-------|:-----:|:-------:|:----:|:----:|:-------:|
-| `SensIAT::Single-index-outcome-model` | ❌ | ❌ | ✅ | ❌ | ❌ |
+| `SensIAT::Single-index-outcome-model` | ✅ | ✅ | ✅ | ✅* | ❌ |
+
+*Note: `vcov()` returns NULL with a warning directing users to use `jackknife()` for variance estimation.
 
 ## Jackknife Results Classes
 
