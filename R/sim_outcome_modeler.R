@@ -106,16 +106,44 @@ fit_SensIAT_single_index_fixed_coef_model <-
 `coef.SensIAT::Single-index-outcome-model` <-
     function(object, ...) object$coef
 
+# Helper to detect if running in knitr context
+in_knitr <- function() {
+    isTRUE(getOption("knitr.in.progress"))
+}
+
 #' @export
 `print.SensIAT::Single-index-outcome-model` <-
-    function(x, digits = max(3L, getOption("digits") - 3L), ...) {
-        cat("\nSingle-Index Outcome Model\n\n")
-        cat("Formula:", deparse(formula(x)), "\n")
-        cat("Kernel: ", attr(x, "kernel"), "\n")
-        cat("Bandwidth:", format(x$bandwidth, digits = digits), "\n\n")
-        cat("Coefficients:\n")
-        print.default(format(coef(x), digits = digits), print.gap = 2L, quote = FALSE)
-        cat("\n")
+    function(x, digits = max(3L, getOption("digits") - 3L), markdown = in_knitr(), ...) {
+        cf <- coef(x)
+        mm <- model.matrix(x)
+        if (length(cf) == ncol(mm)) {
+            names(cf) <- colnames(mm)
+        }
+
+        if (markdown) {
+            cat("\n### Single-Index Outcome Model\n\n")
+            cat("**Formula:** `", deparse(formula(x)), "`\n\n", sep = "")
+            cat("| Property | Value |\n")
+            cat("|:---------|:------|\n")
+            cat("| Kernel | ", attr(x, "kernel"), " |\n", sep = "")
+            cat("| Bandwidth | ", format(x$bandwidth, digits = digits), " |\n\n", sep = "")
+            cat("**Coefficients:**\n\n")
+            cat("| Term | Estimate |\n")
+            cat("|:-----|--------:|\n")
+            for (i in seq_along(cf)) {
+                nm <- if (!is.null(names(cf))) names(cf)[i] else paste0("[", i, "]")
+                cat("| ", nm, " | ", format(cf[i], digits = digits), " |\n", sep = "")
+            }
+            cat("\n")
+        } else {
+            cat("\nSingle-Index Outcome Model\n\n")
+            cat("Formula:", deparse(formula(x)), "\n")
+            cat("Kernel: ", attr(x, "kernel"), "\n")
+            cat("Bandwidth:", format(x$bandwidth, digits = digits), "\n\n")
+            cat("Coefficients:\n")
+            print.default(format(cf, digits = digits), print.gap = 2L, quote = FALSE)
+            cat("\n")
+        }
         invisible(x)
     }
 
@@ -145,25 +173,53 @@ fit_SensIAT_single_index_fixed_coef_model <-
 
 #' @export
 `print.summary.SensIAT::Single-index-outcome-model` <-
-    function(x, digits = max(3L, getOption("digits") - 3L), ...) {
-        cat("\nSingle-Index Outcome Model Summary\n")
-        cat(rep("=", 40), "\n", sep = "")
-        cat("\nFormula:", deparse(x$formula), "\n")
-        cat("Kernel: ", x$kernel, "\n")
-        cat("Bandwidth:", format(x$bandwidth, digits = digits), "\n")
-        cat("Observations:", x$nobs, "\n\n")
-
-        cat("Coefficients:\n")
-        print.default(format(x$coefficients, digits = digits), print.gap = 2L, quote = FALSE)
-
-        if (!is.null(x$convergence)) {
-            cat("\nOptimization:\n")
-            cat("  Convergence:", if (x$convergence == 0) "Yes" else paste("No (code", x$convergence, ")"), "\n")
-            if (!is.null(x$objective)) {
-                cat("  Objective value:", format(x$objective, digits = digits), "\n")
+    function(x, digits = max(3L, getOption("digits") - 3L), markdown = in_knitr(), ...) {
+        if (markdown) {
+            cat("\n### Single-Index Outcome Model Summary\n\n")
+            cat("**Formula:** `", deparse(x$formula), "`\n\n", sep = "")
+            cat("| Property | Value |\n")
+            cat("|:---------|:------|\n")
+            cat("| Kernel | ", x$kernel, " |\n", sep = "")
+            cat("| Bandwidth | ", format(x$bandwidth, digits = digits), " |\n", sep = "")
+            cat("| Observations | ", x$nobs, " |\n\n", sep = "")
+            cat("**Coefficients:**\n\n")
+            cat("| Term | Estimate |\n")
+            cat("|:-----|--------:|\n")
+            cf <- x$coefficients
+            for (i in seq_along(cf)) {
+                nm <- if (!is.null(names(cf))) names(cf)[i] else paste0("[", i, "]")
+                cat("| ", nm, " | ", format(cf[i], digits = digits), " |\n", sep = "")
             }
+            if (!is.null(x$convergence)) {
+                cat("\n**Optimization:**\n\n")
+                cat("| Property | Value |\n")
+                cat("|:---------|:------|\n")
+                cat("| Convergence | ", if (x$convergence == 0) "Yes" else paste("No (code", x$convergence, ")"), " |\n", sep = "")
+                if (!is.null(x$objective)) {
+                    cat("| Objective | ", format(x$objective, digits = digits), " |\n", sep = "")
+                }
+            }
+            cat("\n")
+        } else {
+            cat("\nSingle-Index Outcome Model Summary\n")
+            cat(rep("=", 40), "\n", sep = "")
+            cat("\nFormula:", deparse(x$formula), "\n")
+            cat("Kernel: ", x$kernel, "\n")
+            cat("Bandwidth:", format(x$bandwidth, digits = digits), "\n")
+            cat("Observations:", x$nobs, "\n\n")
+
+            cat("Coefficients:\n")
+            print.default(format(x$coefficients, digits = digits), print.gap = 2L, quote = FALSE)
+
+            if (!is.null(x$convergence)) {
+                cat("\nOptimization:\n")
+                cat("  Convergence:", if (x$convergence == 0) "Yes" else paste("No (code", x$convergence, ")"), "\n")
+                if (!is.null(x$objective)) {
+                    cat("  Objective value:", format(x$objective, digits = digits), "\n")
+                }
+            }
+            cat("\n")
         }
-        cat("\n")
         invisible(x)
     }
 
