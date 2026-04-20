@@ -11,8 +11,8 @@ Issue: https://github.com/UofUEpiBio/SensIAT/issues/15
 
 | Class | print | summary | coef | vcov | confint |
 |-------|:-----:|:-------:|:----:|:----:|:-------:|
-| `SensIAT_within_group_model` | ❌ | ❌ | ❌ | ❌ | ❌ |
-| `SensIAT_fulldata_model` | ❌ | ❌ | ❌ | ❌ | ❌ |
+| `SensIAT_within_group_model` | ✅ | ✅ | ✅ | ✅ | ❌ |
+| `SensIAT_fulldata_model` | ✅ | ✅ | ✅ | ✅ | ❌ |
 | `SensIAT_marginal_mean_model` | ✅ | ✅ | ✅ | ✅ | ❌ |
 | `SensIAT_marginal_mean_model_generalized` | ✅ | ✅ | ✅* | ✅* | ❌ |
 
@@ -52,8 +52,8 @@ Starting with methods that will be called by higher-level methods:
 1. `SensIAT::Single-index-outcome-model` - outcome model (foundation layer) ✅
 2. `SensIAT_marginal_mean_model` - marginal model (builds on outcome model) ✅
 3. `SensIAT_marginal_mean_model_generalized` - generalized marginal model ✅
-4. `SensIAT_within_group_model` - within-group model (user-facing)
-5. `SensIAT_fulldata_model` - full data model (user-facing)
+4. `SensIAT_within_group_model` - within-group model (user-facing) ✅
+5. `SensIAT_fulldata_model` - full data model (user-facing) ✅
 6. `SensIAT_withingroup_jackknife_results` - jackknife results
 7. `SensIAT_fulldata_jackknife_results` - jackknife results
 

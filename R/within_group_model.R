@@ -213,3 +213,139 @@ fit_SensIAT_within_group_model <- function(group.data,
         call = match.call(expand.dots = TRUE)
     )
 }
+
+# Utility methods for SensIAT_within_group_model ------------------------------
+
+# Null-coalescing operator if not available
+`%||%` <- function(x, y) if (is.null(x)) y else x
+
+#' @export
+coef.SensIAT_within_group_model <- function(object, alpha = NULL, ...) {
+    if (is.null(alpha)) {
+        setNames(object$coefficients, paste0("alpha=", object$alpha))
+    } else {
+        idx <- match(alpha, object$alpha)
+        if (any(is.na(idx))) {
+            stop("alpha value(s) not found: ", paste(alpha[is.na(idx)], collapse = ", "))
+        }
+        if (length(idx) == 1) {
+            object$coefficients[[idx]]
+        } else {
+            setNames(object$coefficients[idx], paste0("alpha=", alpha))
+        }
+    }
+}
+
+#' @export
+vcov.SensIAT_within_group_model <- function(object, alpha = NULL, ...) {
+    if (is.null(alpha)) {
+        setNames(object$coefficient.variance, paste0("alpha=", object$alpha))
+    } else {
+        idx <- match(alpha, object$alpha)
+        if (any(is.na(idx))) {
+            stop("alpha value(s) not found: ", paste(alpha[is.na(idx)], collapse = ", "))
+        }
+        if (length(idx) == 1) {
+            object$coefficient.variance[[idx]]
+        } else {
+            setNames(object$coefficient.variance[idx], paste0("alpha=", alpha))
+        }
+    }
+}
+
+#' @export
+print.SensIAT_within_group_model <- function(x, digits = max(3L, getOption("digits") - 3L),
+                                              markdown = isTRUE(getOption("knitr.in.progress")), ...) {
+    n_alpha <- length(x$alpha)
+    n_coef <- length(x$coefficients[[1]])
+    n_obs <- length(unique(x$data[[as.character(x$variables$id)]]))
+    outcome_class <- class(x$models$outcome)[1]
+
+    if (markdown) {
+        cat("\n### SensIAT Within-Group Model\n\n")
+        cat("| Property | Value |\n")
+        cat("|:---------|:------|\n")
+        cat("| Subjects | ", n_obs, " |\n", sep = "")
+        cat("| Alpha values | ", n_alpha, " (", paste(x$alpha, collapse = ", "), ") |\n", sep = "")
+        cat("| Spline coefficients | ", n_coef, " |\n", sep = "")
+        cat("| End time | ", x$End, " |\n", sep = "")
+        cat("| Outcome model | ", outcome_class, " |\n\n", sep = "")
+    } else {
+        cat("\nSensIAT Within-Group Model\n\n")
+        cat("Subjects:", n_obs, "\n")
+        cat("Alpha values:", n_alpha, "(", paste(x$alpha, collapse = ", "), ")\n")
+        cat("Spline coefficients:", n_coef, "\n")
+        cat("End time:", x$End, "\n")
+        cat("Outcome model:", outcome_class, "\n\n")
+    }
+    invisible(x)
+}
+
+#' @export
+summary.SensIAT_within_group_model <- function(object, ...) {
+    # Compute summary statistics for each alpha
+    coef_summary <- purrr::map2(object$coefficients, object$coefficient.variance, function(cf, vr) {
+        se <- sqrt(diag(vr))
+        data.frame(
+            Estimate = cf,
+            Std.Error = se,
+            row.names = paste0("B", seq_along(cf))
+        )
+    })
+    names(coef_summary) <- paste0("alpha=", object$alpha)
+
+    n_obs <- length(unique(object$data[[as.character(object$variables$id)]]))
+
+    ans <- list(
+        call = attr(object, "call"),
+        alpha = object$alpha,
+        n_subjects = n_obs,
+        n_obs = nrow(object$data),
+        End = object$End,
+        outcome_model_class = class(object$models$outcome)[1],
+        coefficients = coef_summary
+    )
+    class(ans) <- "summary.SensIAT_within_group_model"
+    ans
+}
+
+#' @export
+print.summary.SensIAT_within_group_model <- function(x, digits = max(3L, getOption("digits") - 3L),
+                                                      markdown = isTRUE(getOption("knitr.in.progress")), ...) {
+    if (markdown) {
+        cat("\n### SensIAT Within-Group Model Summary\n\n")
+        cat("| Property | Value |\n")
+        cat("|:---------|:------|\n")
+        cat("| Subjects | ", x$n_subjects, " |\n", sep = "")
+        cat("| Observations | ", x$n_obs, " |\n", sep = "")
+        cat("| End time | ", x$End, " |\n", sep = "")
+        cat("| Outcome model | ", x$outcome_model_class, " |\n\n", sep = "")
+
+        for (nm in names(x$coefficients)) {
+            cat("**Coefficients (", nm, "):**\n\n", sep = "")
+            cf <- x$coefficients[[nm]]
+            cat("| Term | Estimate | Std.Error |\n")
+            cat("|:-----|--------:|----------:|\n")
+            for (i in seq_len(nrow(cf))) {
+                cat("| ", rownames(cf)[i], " | ",
+                    format(cf$Estimate[i], digits = digits), " | ",
+                    format(cf$Std.Error[i], digits = digits), " |\n", sep = "")
+            }
+            cat("\n")
+        }
+    } else {
+        cat("\nSensIAT Within-Group Model Summary\n")
+        cat(rep("=", 40), "\n", sep = "")
+        cat("\nSubjects:", x$n_subjects, "\n")
+        cat("Observations:", x$n_obs, "\n")
+        cat("End time:", x$End, "\n")
+        cat("Outcome model:", x$outcome_model_class, "\n\n")
+
+        for (nm in names(x$coefficients)) {
+            cat("Coefficients (", nm, "):\n", sep = "")
+            print(x$coefficients[[nm]], digits = digits)
+            cat("\n")
+        }
+    }
+    invisible(x)
+}
