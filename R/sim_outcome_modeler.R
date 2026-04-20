@@ -80,7 +80,8 @@ fit_SensIAT_single_index_fixed_coef_model <-
             kernel = kernel,
             terms = terms(mf),
             id = id,
-            initial = initial
+            initial = initial,
+            restriction = "fixed_coef"
         )
     }
 
@@ -120,11 +121,19 @@ in_knitr <- function() {
             names(cf) <- colnames(mm)
         }
 
+        restriction <- attr(x, "restriction")
+        restriction_label <- switch(restriction,
+            fixed_coef = "Fixed first coefficient (= 1)",
+            fixed_bandwidth = "Fixed bandwidth",
+            if (!is.null(restriction)) restriction else "Unknown"
+        )
+
         if (markdown) {
             cat("\n### Single-Index Outcome Model\n\n")
             cat("**Formula:** `", deparse(formula(x)), "`\n\n", sep = "")
             cat("| Property | Value |\n")
             cat("|:---------|:------|\n")
+            cat("| Restriction | ", restriction_label, " |\n", sep = "")
             cat("| Kernel | ", attr(x, "kernel"), " |\n", sep = "")
             cat("| Bandwidth | ", format(x$bandwidth, digits = digits), " |\n\n", sep = "")
             cat("**Coefficients:**\n\n")
@@ -138,6 +147,7 @@ in_knitr <- function() {
         } else {
             cat("\nSingle-Index Outcome Model\n\n")
             cat("Formula:", deparse(formula(x)), "\n")
+            cat("Restriction:", restriction_label, "\n")
             cat("Kernel: ", attr(x, "kernel"), "\n")
             cat("Bandwidth:", format(x$bandwidth, digits = digits), "\n\n")
             cat("Coefficients:\n")
@@ -163,6 +173,7 @@ in_knitr <- function() {
             coefficients = cf,
             bandwidth = object$bandwidth,
             kernel = attr(object, "kernel"),
+            restriction = attr(object, "restriction"),
             nobs = nrow(object$frame),
             convergence = object$details$convergence,
             objective = if (!is.null(object$details$value)) object$details$value else object$details$objective
@@ -174,11 +185,19 @@ in_knitr <- function() {
 #' @export
 `print.summary.SensIAT::Single-index-outcome-model` <-
     function(x, digits = max(3L, getOption("digits") - 3L), markdown = in_knitr(), ...) {
+        restriction <- x$restriction
+        restriction_label <- switch(restriction,
+            fixed_coef = "Fixed first coefficient (= 1)",
+            fixed_bandwidth = "Fixed bandwidth",
+            if (!is.null(restriction)) restriction else "Unknown"
+        )
+
         if (markdown) {
             cat("\n### Single-Index Outcome Model Summary\n\n")
             cat("**Formula:** `", deparse(x$formula), "`\n\n", sep = "")
             cat("| Property | Value |\n")
             cat("|:---------|:------|\n")
+            cat("| Restriction | ", restriction_label, " |\n", sep = "")
             cat("| Kernel | ", x$kernel, " |\n", sep = "")
             cat("| Bandwidth | ", format(x$bandwidth, digits = digits), " |\n", sep = "")
             cat("| Observations | ", x$nobs, " |\n\n", sep = "")
@@ -204,6 +223,7 @@ in_knitr <- function() {
             cat("\nSingle-Index Outcome Model Summary\n")
             cat(rep("=", 40), "\n", sep = "")
             cat("\nFormula:", deparse(x$formula), "\n")
+            cat("Restriction:", restriction_label, "\n")
             cat("Kernel: ", x$kernel, "\n")
             cat("Bandwidth:", format(x$bandwidth, digits = digits), "\n")
             cat("Observations:", x$nobs, "\n\n")
@@ -492,6 +512,7 @@ fit_SensIAT_single_index_fixed_bandwidth_model <-
             kernel = kernel,
             id = id,
             terms = terms(mf),
-            initial = initial
+            initial = initial,
+            restriction = "fixed_bandwidth"
         )
     }
