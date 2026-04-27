@@ -17,6 +17,7 @@ compute_term2_influence_seeded_adaptive(
   inv_link,
   W,
   expected_grid = NULL,
+  identity_closed_form_scale = FALSE,
   n_grid = 50,
   include_obs_times = TRUE,
   time_var = NULL,
