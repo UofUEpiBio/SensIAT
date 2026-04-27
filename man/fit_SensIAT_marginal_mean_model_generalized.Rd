@@ -57,7 +57,7 @@ Should handle extrapolation from the last observed time point.}
 \item \code{"original"}: Standard implementation with adaptive Simpson's
 \item \code{"fixed_grid"}: Pre-computed expected values on fixed grid with composite Simpson's rule
 \item \code{"seeded_adaptive"}: Adaptive Simpson's seeded with pre-computed grid points
-\item \code{"gauss_legendre"}: Gauss-Legendre quadrature (requires \\pkg{statmod} package)
+\item \code{"gauss_legendre"}: Gauss-Legendre quadrature (requires \pkg{statmod} package)
 }}
 
 \item{term2_grid_n}{Number of grid points/nodes for \code{fixed_grid}, \code{seeded_adaptive}, and \code{gauss_legendre} methods (default 100)}
@@ -142,6 +142,7 @@ method, including:
 }
 }
 \examples{
+\donttest{
 library(survival)
 library(splines)
 
@@ -178,7 +179,7 @@ fit_SensIAT_marginal_mean_model_generalized(
     link = "log",
     impute_data = \(t, df){
         data_wl <- df |>
-            mutate(
+            dplyr::mutate(
                 ..prev_time.. = Time,
                 ..prev_outcome.. = Outcome,
                 ..delta_time.. = 0
@@ -186,7 +187,6 @@ fit_SensIAT_marginal_mean_model_generalized(
         extrapolate_from_last_observation(t, data_wl, "Time", slopes = c("..delta_time.." = 1))
     }
 )
-time <- data_with_lags$Time
-id <- data_with_lags$Subject_ID
+}
 
 }
