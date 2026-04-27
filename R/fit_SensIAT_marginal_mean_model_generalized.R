@@ -200,8 +200,10 @@ fit_SensIAT_marginal_mean_model_generalized <-
 
                 W <- function(t, beta) {
                     B <- pcoriaccel_evaluate_basis(base, t)
-                    # For identity link: ds/dz = 1, so weight function is constant
-                    as.vector(V.inv %*% B)
+                    # Match the original implementation: accumulate identity-link
+                    # influence on the basis scale and apply V^{-1} only in the
+                    # final closed-form coefficient solve.
+                    as.vector(B)
                 }
             } else if (link == "log") {
                 # link.fun <- log
@@ -337,20 +339,35 @@ fit_SensIAT_marginal_mean_model_generalized <-
         }
 
         id <- rlang::eval_tidy({{id}}, data)
+        needed.vars <- unique(c(
+            all.vars(terms(intensity.model)),
+            all.vars(terms(outcome.model))
+        ))
         fu <- time > 0
+        complete_in_needed <- stats::complete.cases(data[, needed.vars, drop = FALSE])
+        followup_complete <- fu & complete_in_needed
+        
+        # Match colleague code: compute term2 for all unique ids in data,
+        # but term1 only for observations with valid followup (term1=0 for non-followup ids).
         unique_ids <- unique(id)
 
-        # tmin assumed to be > 0 so that all included.obs imply followup.
+        # Match the original implementation's complete follow-up cohort while
+        # restricting term1 observations to the spline support.
         if (tmin == 0) {
             rlang::warn("tmin must be > 0")
         }
-        included.obs <- time >= tmin & time <= tmax
+        included.obs <- time >= tmin & time <= tmax & followup_complete
 
         intensity <- estimate_baseline_intensity(
             intensity.model = intensity.model,
-            data = data[included.obs, ]
+            data = data[followup_complete, , drop = FALSE]
         )
-        exp_gamma <- predict(intensity.model, newdata = data[included.obs, ], type = "risk", reference = "zero")
+        exp_gamma <- predict(
+            intensity.model,
+            newdata = data[followup_complete, , drop = FALSE],
+            type = "risk",
+            reference = "zero"
+        )
         intensity_weights <- intensity$baseline_intensity * exp_gamma
 
         # Select term2 computation function and determine if we need grid pre-computation
@@ -371,16 +388,16 @@ fit_SensIAT_marginal_mean_model_generalized <-
         # These computations are done once outside the alpha loop for efficiency
         
         # Y contribution to term1 (scaled by intensity weights) - doesn't depend on alpha
-        Y_obs <- Y[included.obs]
+        Y_obs <- Y[followup_complete]
         Y_scaled_by_intensity <- Y_obs / intensity_weights
         
-        # Observation times for included observations
-        obs_times <- time[included.obs]
+        # Observation times for the complete follow-up cohort
+        obs_times <- time[followup_complete]
         n_obs <- length(obs_times)
         
         # Pre-compute patient index mappings (which observations belong to which patient)
         patient_obs_indices <- lapply(unique_ids, function(pid) {
-            which(id[included.obs] == pid)
+            which(id[followup_complete] == pid)
         })
         names(patient_obs_indices) <- as.character(unique_ids)
         
@@ -390,13 +407,15 @@ fit_SensIAT_marginal_mean_model_generalized <-
         })
         names(patient_data_list) <- as.character(unique_ids)
         
-        # For identity link, W(t, beta) = V.inv %*% B(t) doesn't depend on beta or alpha
-        # Pre-compute all weight vectors for each observation time
+        # For identity link, term1 is accumulated on the basis scale and is zero
+        # outside the spline support, matching the original implementation.
         if (link == "identity") {
-            # Pre-compute weights for all observation times (matrix: n_obs x ncol(base))
             precomputed_weights <- lapply(obs_times, function(t) {
-                B <- pcoriaccel_evaluate_basis(base, t)
-                as.vector(V.inv %*% B)
+                if ((t <= tmin) || (t >= tmax)) {
+                    rep(0, ncol(base))
+                } else {
+                    as.vector(pcoriaccel_evaluate_basis(base, t))
+                }
             })
         } else {
             precomputed_weights <- NULL
@@ -425,11 +444,13 @@ fit_SensIAT_marginal_mean_model_generalized <-
             term_spec_global <- delete.response(terms(outcome.model))
             # Build template with all variables from outcome model
             template_df <- outcome.model$data[1, , drop = FALSE]
+            # Detect actual prev_outcome and delta_time column names (dotted or non-dotted)
+            prev_outcome_col_global <- if ("..prev_outcome.." %in% names(template_df)) "..prev_outcome.." else if ("prev_outcome" %in% names(template_df)) "prev_outcome" else "..prev_outcome.."
+            delta_time_col_global   <- if ("..delta_time.."   %in% names(template_df)) "..delta_time.."   else if ("delta_time"   %in% names(template_df)) "delta_time"   else "..delta_time.."
+            time_col_global         <- if ("..time.."         %in% names(template_df)) "..time.."         else if ("Time"         %in% names(template_df)) "Time"         else if ("time" %in% names(template_df)) "time" else NULL
             # Set core variables to baseline values
-            template_df[["..prev_outcome.."]] <- 0
-            if ("..delta_time.." %in% names(template_df)) {
-                template_df[["..delta_time.."]] <- 0
-            }
+            template_df[[prev_outcome_col_global]] <- 0
+            template_df[[delta_time_col_global]]   <- 0
             template_row <- model.matrix(term_spec_global, data = template_df)
             mm_colnames_global <- colnames(template_row)
             idx_delta_global <- which(mm_colnames_global == "..delta_time..")
@@ -465,10 +486,8 @@ fit_SensIAT_marginal_mean_model_generalized <-
                 ns_cache <- new.env(parent = emptyenv())
                 for (val in unique_prev_outcomes) {
                     df1 <- patient_data_local[1, , drop = FALSE]
-                    df1[["..prev_outcome.."]] <- val
-                    if ("..delta_time.." %in% names(df1)) {
-                        df1[["..delta_time.."]] <- 0
-                    }
+                    df1[[prev_outcome_col_global]] <- val
+                    df1[[delta_time_col_global]] <- 0
                     row0 <- model.matrix(term_spec_global, data = df1)
                     ns_cache[[as.character(val)]] <- row0
                 }
@@ -476,7 +495,8 @@ fit_SensIAT_marginal_mean_model_generalized <-
                 list(
                     patient_times = patient_times,
                     patient_outcomes = patient_outcomes,
-                    ns_cache = ns_cache
+                    ns_cache = ns_cache,
+                    first_row = patient_data_local[1, , drop = FALSE]
                 )
             })
             names(patient_pmf_cache) <- as.character(unique_ids)
@@ -547,7 +567,7 @@ fit_SensIAT_marginal_mean_model_generalized <-
             expected <- compute_SensIAT_expected_values(
                 model = outcome.model,
                 alpha = current_alpha,
-                new.data = data[included.obs, ]
+                new.data = data[followup_complete, , drop = FALSE]
             )
             
             # Alpha-dependent correction term
@@ -604,10 +624,25 @@ fit_SensIAT_marginal_mean_model_generalized <-
                         patient_times <- pmf_cache$patient_times
                         patient_outcomes <- pmf_cache$patient_outcomes
                         ns_cache <- pmf_cache$ns_cache
+                        first_row_global <- pmf_cache$first_row
                         
                         expected_get <- function(t) {
                             k <- as.character(signif(t, 12))
                             if (!exists(k, cache_env, inherits = FALSE)) {
+                                # For nodes before the patient's first visit, use first row's context
+                                # (which contains the pre-baseline prev_outcome) rather than the
+                                # first observed outcome, which hasn't occurred yet at time t.
+                                if (t < patient_times[1L]) {
+                                    df1 <- first_row_global
+                                    df1[[delta_time_col_global]] <- t - if (!is.null(time_col_global) && time_col_global %in% names(df1)) {
+                                        # Use prev_time if available to compute proper delta
+                                        prev_time_col <- if ("prev_time" %in% names(df1)) "prev_time" else NULL
+                                        if (!is.null(prev_time_col)) df1[[prev_time_col]] else 0
+                                    } else 0
+                                    if (df1[[delta_time_col_global]] < 0) df1[[delta_time_col_global]] <- t
+                                    if (!is.null(time_col_global)) df1[[time_col_global]] <- t
+                                    x_row <- model.matrix(term_spec_global, data = df1)[1, , drop = TRUE]
+                                } else {
                                 # Use fast pmf path with pre-computed constants
                                 idx <- findInterval(t, patient_times, left.open = FALSE)
                                 if (idx < 1L) idx <- 1L
@@ -615,35 +650,33 @@ fit_SensIAT_marginal_mean_model_generalized <-
                                 
                                 prev_outcome <- patient_outcomes[idx]
                                 delta_time <- t - patient_times[idx]
+                                if (delta_time < 0) delta_time <- 0
                                 
                                 if (is.na(prev_outcome) || is.null(prev_outcome)) {
                                     df1 <- outcome.model$data[1, , drop = FALSE]
-                                    df1[["..prev_outcome.."]] <- 0
-                                    df1[["..delta_time.."]] <- delta_time
-                                    if ("Time" %in% names(df1)) {
-                                        df1[["Time"]] <- t
-                                    }
+                                    df1[[prev_outcome_col_global]] <- 0
+                                    df1[[delta_time_col_global]] <- delta_time
+                                    if (!is.null(time_col_global)) df1[[time_col_global]] <- t
                                     x_row <- model.matrix(term_spec_global, data = df1)[1, , drop = TRUE]
                                 } else {
                                     key_po <- as.character(prev_outcome)
                                     if (exists(key_po, envir = ns_cache, inherits = FALSE) && !is.na(idx_delta_global)) {
                                         x_row <- ns_cache[[key_po]][1, , drop = TRUE]
                                         x_row[idx_delta_global] <- delta_time
-                                        # Also update Time to the current time t
-                                        time_idx_vec <- which(names(x_row) == "Time")
+                                        # Also update time column to current t
+                                        time_idx_vec <- which(names(x_row) %in% c("Time", "time", "..time.."))
                                         if (length(time_idx_vec) > 0) {
                                             x_row[time_idx_vec] <- t
                                         }
                                     } else {
                                         df1 <- outcome.model$data[1, , drop = FALSE]
-                                        df1[["..prev_outcome.."]] <- prev_outcome
-                                        df1[["..delta_time.."]] <- delta_time
-                                        if ("Time" %in% names(df1)) {
-                                            df1[["Time"]] <- t
-                                        }
+                                        df1[[prev_outcome_col_global]] <- prev_outcome
+                                        df1[[delta_time_col_global]] <- delta_time
+                                        if (!is.null(time_col_global)) df1[[time_col_global]] <- t
                                         x_row <- model.matrix(term_spec_global, data = df1)[1, , drop = TRUE]
                                     }
                                 }
+                                } # end else (t >= patient_times[1])
                                 
                                 xb <- sum(x_row * beta_outcome_global)
                                 pmf <- pcoriaccel_estimate_pmf(Xb = Xb_all_global, Y = Yi_global, xi = xb, 
@@ -738,6 +771,7 @@ fit_SensIAT_marginal_mean_model_generalized <-
                         inv_link = inv.link,
                         W = W,
                         expected_get = expected_get_fn,
+                        identity_closed_form_scale = (link == "identity"),
                         expected_grid = expected_grid_arg,
                         n_grid = term2_grid_n,
                         time_var = time.var.name
@@ -794,11 +828,10 @@ fit_SensIAT_marginal_mean_model_generalized <-
                 term1_matrix <- do.call(rbind, map(influence_by_patient, getElement, 'term1'))
                 term2_matrix <- do.call(rbind, map(influence_by_patient, getElement, 'term2'))
                 
-                # Closed-form solution: beta_hat = V^{-1} * mean(term1 + term2)
+                # Match fit_SensIAT_marginal_mean_model(): solve on the basis scale
+                # and apply V^{-1} only once at the end.
                 uncorrected_beta_hat <- (colSums(term1_matrix) + colSums(term2_matrix)) / length(unique_ids)
-                V <- GramMatrix(base)
-                V_inv <- solve(V)
-                solution_par <- as.vector(V_inv %*% uncorrected_beta_hat)
+                solution_par <- as.vector(V.inv %*% uncorrected_beta_hat)
                 
                 solution <- list(
                     par = solution_par,

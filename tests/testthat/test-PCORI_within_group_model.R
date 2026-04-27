@@ -1,11 +1,17 @@
+create_within_group_test_fixture <- function() {
+    ids <- head(unique(SensIAT_example_data$Subject_ID), 8)
+    dplyr::filter(SensIAT_example_data, Subject_ID %in% ids)
+}
+
 test_that("Altering models", {
     runif(1)
     old.seed <- .Random.seed
+    fixture_data <- create_within_group_test_fixture()
     model <-
         fit_SensIAT_within_group_model(
-            group.data = SensIAT_example_data,
+            group.data = fixture_data,
             outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
-            alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+            alpha = 0,
             id = Subject_ID,
             outcome = Outcome,
             time = Time,
@@ -21,11 +27,12 @@ test_that("Altering models", {
         expect_equal(..outcome.. ~ ns(..prev_outcome.., knots = c(9 / 6, 16 / 6)) + scale(..delta_time..) - 1, ignore_attr = TRUE)
 })
 test_that("including terminal rows for intensity model", {
+    fixture_data <- create_within_group_test_fixture()
     model.no.terminals <-
         fit_SensIAT_within_group_model(
-            group.data = SensIAT_example_data,
+            group.data = fixture_data,
             outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
-            alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+            alpha = 0,
             id = Subject_ID,
             outcome = Outcome,
             time = Time,
@@ -35,9 +42,9 @@ test_that("including terminal rows for intensity model", {
         )
     model.with.terminals <-
         fit_SensIAT_within_group_model(
-            group.data = SensIAT_example_data,
+            group.data = fixture_data,
             outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
-            alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+            alpha = 0,
             id = Subject_ID,
             outcome = Outcome,
             time = Time,
@@ -47,9 +54,9 @@ test_that("including terminal rows for intensity model", {
         )
     model.external.terminals <-
         fit_SensIAT_within_group_model(
-            group.data = add_terminal_observations(SensIAT_example_data, Subject_ID, Time, end = 830),
+            group.data = add_terminal_observations(fixture_data, Subject_ID, Time, end = 830),
             outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
-            alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+            alpha = 0,
             id = Subject_ID,
             outcome = Outcome,
             time = Time,
@@ -59,9 +66,9 @@ test_that("including terminal rows for intensity model", {
         )
     expect_error(
         fit_SensIAT_within_group_model(
-            group.data = add_terminal_observations(SensIAT_example_data, Subject_ID, Time, end = 830),
+            group.data = add_terminal_observations(fixture_data, Subject_ID, Time, end = 830),
             outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
-            alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+            alpha = 0,
             id = Subject_ID,
             outcome = Outcome,
             time = Time,

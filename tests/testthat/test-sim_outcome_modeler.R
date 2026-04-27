@@ -1,7 +1,22 @@
 test_that("outcome model structure", {
+    # Build a small deterministic fixture instead of sourcing basic.R on the full dataset.
+    # The test is about structure, not about accuracy with the full dataset.
+    ids <- head(unique(SensIAT_example_data$Subject_ID), 8)
+    small_data <- dplyr::filter(SensIAT_example_data, Subject_ID %in% ids)
+
     runif(1)
     old.seed <- .Random.seed
-    source(system.file("examples/basic.R", package = "SensIAT"))
+    object <- fit_SensIAT_within_group_model(
+        group.data = small_data,
+        outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
+        id = Subject_ID,
+        outcome = Outcome,
+        time = Time,
+        knots = c(60, 260, 460),
+        End = 830,
+        alpha = 0,
+        intensity.args = list(bandwidth = 30)
+    )
     new.seed <- .Random.seed
     expect_identical(old.seed, new.seed)
 

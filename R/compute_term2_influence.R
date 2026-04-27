@@ -68,6 +68,7 @@ compute_term2_influence_original <- function(
   inv_link,
   W,
   expected_get = NULL,
+    identity_closed_form_scale = FALSE,
   time_var = NULL,
   ...
 ) {
@@ -120,11 +121,15 @@ compute_term2_influence_original <- function(
             expected$E_exp_alphaY <= 0) {
             return(rep(0, ncol(base)))
         }
-        B <- pcoriaccel_evaluate_basis(base, t)
-        weight * as.numeric(
-            expected$E_Yexp_alphaY / expected$E_exp_alphaY -
-                inv_link(crossprod(B, marginal_beta))
-        )
+        if (isTRUE(identity_closed_form_scale)) {
+            as.numeric(weight) * as.numeric(expected$E_Yexp_alphaY / expected$E_exp_alphaY)
+        } else {
+            B <- pcoriaccel_evaluate_basis(base, t)
+            weight * as.numeric(
+                expected$E_Yexp_alphaY / expected$E_exp_alphaY -
+                    inv_link(crossprod(B, marginal_beta))
+            )
+        }
     }
 
     # Integrate over each segment and accumulate results
@@ -186,6 +191,7 @@ compute_term2_influence_fast <- function(
   inv_link,
   W,
   expected_get = NULL,
+    identity_closed_form_scale = FALSE,
   time_var = NULL,
   ...
 ) {
@@ -239,11 +245,15 @@ compute_term2_influence_fast <- function(
             expected$E_exp_alphaY <= 0) {
             return(rep(0, ncol(base)))
         }
-        B <- pcoriaccel_evaluate_basis(base, t)
-        weight * as.numeric(
-            expected$E_Yexp_alphaY / expected$E_exp_alphaY -
-                inv_link(crossprod(B, marginal_beta))
-        )
+        if (isTRUE(identity_closed_form_scale)) {
+            as.numeric(weight) * as.numeric(expected$E_Yexp_alphaY / expected$E_exp_alphaY)
+        } else {
+            B <- pcoriaccel_evaluate_basis(base, t)
+            weight * as.numeric(
+                expected$E_Yexp_alphaY / expected$E_exp_alphaY -
+                    inv_link(crossprod(B, marginal_beta))
+            )
+        }
     }
 
     # Integrate over each segment and accumulate results
