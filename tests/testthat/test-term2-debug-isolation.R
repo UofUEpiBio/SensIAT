@@ -1,5 +1,5 @@
 test_that("isolate and debug term2 computation only", {
-  skip_on_cran()
+  skip_on_ci()
   
   # Use the built-in simulation helper with proper data generation
   setup <- generate_test_data(link = "identity", n_subjects = 10, seed = 12345)
@@ -149,7 +149,7 @@ test_that("isolate and debug term2 computation only", {
 
 
 test_that("check parameterization differences in term2 methods", {
-  skip_on_cran()
+  skip_on_ci()
   
   # Use the built-in simulation helper for proper test data
   setup <- generate_test_data(link = "identity", n_subjects = 10, seed = 54321)

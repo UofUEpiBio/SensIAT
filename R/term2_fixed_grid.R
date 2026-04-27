@@ -57,6 +57,7 @@ compute_term2_influence_fixed_grid <- function(
   inv_link,
   W,
   expected_grid = NULL,
+    identity_closed_form_scale = FALSE,
   n_grid = 100,
   rule = c("simpson", "trapezoid"),
   include_obs_times = TRUE,
@@ -109,16 +110,15 @@ compute_term2_influence_fixed_grid <- function(
             }
             
             weight <- W(t, marginal_beta)
-            eta <- sum(B * marginal_beta)
-            mu_hat <- inv_link(eta)
-            
-            # Ensure weight is a numeric vector (not matrix)
             weight <- as.numeric(weight)
-            # Compute scalar difference
-            diff_scalar <- as.numeric(E_Yexp / E_exp - mu_hat)
-            
-            # Element-wise multiplication
-            weight * diff_scalar
+            if (isTRUE(identity_closed_form_scale)) {
+                weight * as.numeric(E_Yexp / E_exp)
+            } else {
+                eta <- sum(B * marginal_beta)
+                mu_hat <- inv_link(eta)
+                diff_scalar <- as.numeric(E_Yexp / E_exp - mu_hat)
+                weight * diff_scalar
+            }
         },
         grid,
         B_grid,
