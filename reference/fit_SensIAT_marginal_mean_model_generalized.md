@@ -1493,7 +1493,7 @@ fit_SensIAT_marginal_mean_model_generalized(
 #> attr(,"response")
 #> [1] 1
 #> attr(,".Environment")
-#> <environment: 0x55fd347d7fe0>
+#> <environment: 0x55e865f9ba88>
 #> attr(,"predvars")
 #> list(Outcome, ns(..prev_outcome.., knots = c(1.5, 2.66666666666667
 #> ), Boundary.knots = c(0, 6), intercept = FALSE), ..delta_time..)

@@ -20,6 +20,7 @@ compute_term2_influence_original(
   inv_link,
   W,
   expected_get = NULL,
+  identity_closed_form_scale = FALSE,
   time_var = NULL,
   ...
 )

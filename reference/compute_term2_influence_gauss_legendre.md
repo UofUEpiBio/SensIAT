@@ -20,6 +20,7 @@ compute_term2_influence_gauss_legendre(
   inv_link,
   W,
   expected_grid = NULL,
+  identity_closed_form_scale = FALSE,
   n_nodes = 50,
   time_var = NULL,
   ...
