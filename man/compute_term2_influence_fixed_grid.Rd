@@ -50,9 +50,11 @@ compute_term2_influence_fixed_grid(
 
 \item{expected_grid}{Optional pre-computed expected values at grid points:
 list with elements:
-- grid: numeric vector of time points
-- B_grid: list of basis evaluations at grid points
-- E_grid: list of expected values list(E_exp_alphaY, E_Yexp_alphaY)}
+\itemize{
+\item grid: numeric vector of time points
+\item B_grid: list of basis evaluations at grid points
+\item E_grid: list of expected values list(E_exp_alphaY, E_Yexp_alphaY)
+}}
 
 \item{n_grid}{Number of grid points to use if expected_grid not provided}
 

@@ -22,6 +22,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Andrew Redd \email{andrew.redd@hsc.utah.edu} (\href{https://orcid.org/0000-0002-6149-2438}{ORCID})
   \item Yujing Gao \email{ygao39@ncsu.edu}
   \item Shu Yang \email{syang24@ncsu.edu}
   \item Bonnie Smith \email{bsmit179@jhmi.edu}

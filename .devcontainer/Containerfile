@@ -1,0 +1,13 @@
+FROM ghcr.io/rocker-org/devcontainer/r-ver:4.5
+
+# System dependencies for R packages
+RUN apt-get update && apt-get install -y libuv1t64 && rm -rf /var/lib/apt/lists/*
+
+RUN install2.r --error -n4 assertthat generics glue KernSmooth \
+    MASS MAVE methods orthogonalsplinebasis pracma purrr rlang splines \
+    stats survival tibble tidyr utils dfoptim furrr future inline knitr \
+    ManifoldOptim metR progress rmarkdown spelling testthat tidyverse
+
+RUN install2.r --error -n4 devtools roxygen2 pkgdown remotes BB bench covr quarto statmod
+
+CMD ["bash"]
