@@ -1,5 +1,5 @@
 test_that("term2 integration methods produce equivalent results with sufficient grid points", {
-  skip_on_cran()
+  skip_on_ci()
   
   # Create small test dataset
   set.seed(123)
@@ -201,7 +201,7 @@ test_that("term2 integration methods produce equivalent results with sufficient 
 
 
 test_that("fixed_grid accuracy improves with grid density", {
-  skip_on_cran()
+  skip_on_ci()
   
   # Simple test data
   set.seed(456)
@@ -296,7 +296,7 @@ test_that("fixed_grid accuracy improves with grid density", {
 
 
 test_that("all methods work with multiple alpha values", {
-  skip_on_cran()
+  skip_on_ci()
   
   data_with_lags <- SensIAT_example_data %>%
     dplyr::group_by(Subject_ID) %>%

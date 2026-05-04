@@ -39,6 +39,7 @@ compute_term2_influence_seeded_adaptive <- function(
   inv_link,
   W,
   expected_grid = NULL,
+    identity_closed_form_scale = FALSE,
   n_grid = 50,
   include_obs_times = TRUE,
   time_var = NULL,
@@ -123,15 +124,15 @@ compute_term2_influence_seeded_adaptive <- function(
         }
         
         # Compute integrand value (beta-dependent)
-        weight <- W(t, marginal_beta)
-        eta <- sum(B * marginal_beta)
-        mu_hat <- inv_link(eta)
-        
-        # Ensure clean numeric types
-        weight <- as.numeric(weight)
-        diff_scalar <- as.numeric(E_Yexp / E_exp - mu_hat)
-        
-        weight * diff_scalar
+        weight <- as.numeric(W(t, marginal_beta))
+        if (isTRUE(identity_closed_form_scale)) {
+            weight * as.numeric(E_Yexp / E_exp)
+        } else {
+            eta <- sum(B * marginal_beta)
+            mu_hat <- inv_link(eta)
+            diff_scalar <- as.numeric(E_Yexp / E_exp - mu_hat)
+            weight * diff_scalar
+        }
     }
     
     # Use seeded adaptive Simpson's with pre-computed grid as initial partition

@@ -1,11 +1,13 @@
 # Tests for numerical and piecewise integration methods
 # These are alternative integration methods used when integration.method = "numerical" or "piecewise"
 
-test_that("numerical integration method executes without error", {
-    data("SensIAT_example_data", package = "SensIAT", envir = environment())
-    
-    # Prepare data (same pattern as other integration tests)
+# File-level fixture: fit models once, shared across all tests below.
+# The integration tests work on a single patient so model accuracy is not the
+# concern — we only need finite coefficient estimates from a valid fit.
+local({
+    ids <- head(unique(SensIAT_example_data$Subject_ID), 20)
     model.data <- SensIAT_example_data |>
+        dplyr::filter(Subject_ID %in% ids) |>
         dplyr::group_by(Subject_ID) |>
         dplyr::arrange(Time) |>
         dplyr::mutate(
@@ -19,16 +21,14 @@ test_that("numerical integration method executes without error", {
     followup.data <- model.data |>
         dplyr::filter(Time > 0)
 
-    # Fit models
-    intensity.model <-
-        rlang::inject(coxph(
-            Surv(prev_time, Time, !is.na(Outcome)) ~
-                prev_outcome + strata(visit.number),
-            id = Subject_ID,
-            data = followup.data
-        ))
+    intensity.model <<- rlang::inject(coxph(
+        Surv(prev_time, Time, !is.na(Outcome)) ~
+            prev_outcome + strata(visit.number),
+        id = Subject_ID,
+        data = followup.data
+    ))
 
-    outcome.model <- fit_SensIAT_single_index_fixed_coef_model(
+    outcome.model <<- fit_SensIAT_single_index_fixed_coef_model(
         Outcome ~
             splines::ns(prev_outcome, df = 3) +
             prev_outcome +
@@ -37,9 +37,9 @@ test_that("numerical integration method executes without error", {
         data = followup.data
     )
 
-    base <- orthogonalsplinebasis::SplineBasis(c(60, 60, 60, 60, 260, 460, 460, 460, 460))
+    base <<- orthogonalsplinebasis::SplineBasis(c(60, 60, 60, 60, 260, 460, 460, 460, 460))
 
-    centering.statistics <-
+    centering.statistics <<-
         dplyr::summarize(
             dplyr::ungroup(dplyr::filter(model.data, Time > 0, !is.na(Outcome))),
             dplyr::across(
@@ -54,10 +54,10 @@ test_that("numerical integration method executes without error", {
         matrix(ncol = 2, byrow = TRUE) |>
         `dimnames<-`(list(c("time", "delta_time"), c("mean", "sd")))
 
-    df_i <- model.data |>
-        dplyr::filter(Subject_ID == 1)
+    df_i <<- model.data |>
+        dplyr::filter(Subject_ID == min(Subject_ID))
 
-    variables <- list(
+    variables <<- list(
         time = rlang::sym("Time"),
         id = rlang::sym("Subject_ID"),
         outcome = rlang::sym("Outcome"),
@@ -65,8 +65,9 @@ test_that("numerical integration method executes without error", {
         prev_outcome = rlang::sym("prev_outcome"),
         delta_time = rlang::sym("delta_time")
     )
+})
 
-    # Test numerical integration method with alpha = 0
+test_that("numerical integration method executes without error", {
     result_numerical <- compute_influence_for_one_alpha_and_one_patient(
         df_i,
         alpha = 0,
@@ -97,70 +98,6 @@ test_that("numerical integration method executes without error", {
 })
 
 test_that("piecewise integration method executes without error", {
-    data("SensIAT_example_data", package = "SensIAT", envir = environment())
-    
-    # Use same setup as numerical test
-    model.data <- SensIAT_example_data |>
-        dplyr::group_by(Subject_ID) |>
-        dplyr::arrange(Time) |>
-        dplyr::mutate(
-            prev_time = dplyr::lag(Time),
-            prev_outcome = dplyr::lag(Outcome),
-            delta_time = Time - dplyr::lag(Time),
-            visit.number = seq_along(Time)
-        ) |>
-        dplyr::filter(!is.na(Outcome))
-
-    followup.data <- model.data |>
-        dplyr::filter(Time > 0)
-
-    intensity.model <-
-        rlang::inject(coxph(
-            Surv(prev_time, Time, !is.na(Outcome)) ~
-                prev_outcome + strata(visit.number),
-            id = Subject_ID,
-            data = followup.data
-        ))
-
-    outcome.model <- fit_SensIAT_single_index_fixed_coef_model(
-        Outcome ~
-            splines::ns(prev_outcome, df = 3) +
-            prev_outcome +
-            delta_time - 1,
-        id = Subject_ID,
-        data = followup.data
-    )
-
-    base <- orthogonalsplinebasis::SplineBasis(c(60, 60, 60, 60, 260, 460, 460, 460, 460))
-
-    centering.statistics <-
-        dplyr::summarize(
-            dplyr::ungroup(dplyr::filter(model.data, Time > 0, !is.na(Outcome))),
-            dplyr::across(
-                c(Time, delta_time),
-                list(
-                    mean = ~ mean(.x, na.rm = TRUE),
-                    sd = ~ sd(.x, na.rm = TRUE)
-                )
-            )
-        ) |>
-        as.numeric() |>
-        matrix(ncol = 2, byrow = TRUE) |>
-        `dimnames<-`(list(c("time", "delta_time"), c("mean", "sd")))
-
-    df_i <- model.data |>
-        dplyr::filter(Subject_ID == 1)
-
-    variables <- list(
-        time = rlang::sym("Time"),
-        id = rlang::sym("Subject_ID"),
-        outcome = rlang::sym("Outcome"),
-        prev_time = rlang::sym("prev_time"),
-        prev_outcome = rlang::sym("prev_outcome"),
-        delta_time = rlang::sym("delta_time")
-    )
-
-    # Test piecewise integration method
     result_piecewise <- compute_influence_for_one_alpha_and_one_patient(
         df_i,
         alpha = 0,
@@ -191,10 +128,10 @@ test_that("piecewise integration method executes without error", {
 })
 
 test_that("numerical and piecewise methods produce reasonable results compared to quadv", {
-    data("SensIAT_example_data", package = "SensIAT", envir = environment())
-    
-    # Simplified setup for comparison test
-    model.data <- SensIAT_example_data |>
+    # This test checks integration method accuracy, not model accuracy.
+    # It needs a stable model fit (full dataset) so differences reflect only
+    # the integration method, not coefficient instability from small samples.
+    model.data.full <- SensIAT_example_data |>
         dplyr::group_by(Subject_ID) |>
         dplyr::arrange(Time) |>
         dplyr::mutate(
@@ -204,173 +141,73 @@ test_that("numerical and piecewise methods produce reasonable results compared t
             visit.number = seq_along(Time)
         ) |>
         dplyr::filter(!is.na(Outcome))
-
-    followup.data <- model.data |>
-        dplyr::filter(Time > 0)
-
-    intensity.model <-
-        rlang::inject(coxph(
-            Surv(prev_time, Time, !is.na(Outcome)) ~
-                prev_outcome + strata(visit.number),
-            id = Subject_ID,
-            data = followup.data
-        ))
-
-    outcome.model <- fit_SensIAT_single_index_fixed_coef_model(
-        Outcome ~
-            splines::ns(prev_outcome, df = 3) +
-            prev_outcome +
-            delta_time - 1,
-        id = Subject_ID,
-        data = followup.data
+    followup.full <- dplyr::filter(model.data.full, Time > 0)
+    intensity.full <- rlang::inject(coxph(
+        Surv(prev_time, Time, !is.na(Outcome)) ~ prev_outcome + strata(visit.number),
+        id = Subject_ID, data = followup.full
+    ))
+    outcome.full <- fit_SensIAT_single_index_fixed_coef_model(
+        Outcome ~ splines::ns(prev_outcome, df = 3) + prev_outcome + delta_time - 1,
+        id = Subject_ID, data = followup.full
     )
-
-    base <- orthogonalsplinebasis::SplineBasis(c(60, 60, 60, 60, 260, 460, 460, 460, 460))
-
-    centering.statistics <-
-        dplyr::summarize(
-            dplyr::ungroup(dplyr::filter(model.data, Time > 0, !is.na(Outcome))),
-            dplyr::across(
-                c(Time, delta_time),
-                list(
-                    mean = ~ mean(.x, na.rm = TRUE),
-                    sd = ~ sd(.x, na.rm = TRUE)
-                )
-            )
-        ) |>
-        as.numeric() |>
+    centering.full <- dplyr::summarize(
+        dplyr::ungroup(dplyr::filter(model.data.full, Time > 0, !is.na(Outcome))),
+        dplyr::across(c(Time, delta_time),
+            list(mean = ~ mean(.x, na.rm = TRUE), sd = ~ sd(.x, na.rm = TRUE)))
+    ) |> as.numeric() |>
         matrix(ncol = 2, byrow = TRUE) |>
         `dimnames<-`(list(c("time", "delta_time"), c("mean", "sd")))
+    df_i_full <- dplyr::filter(model.data.full, Subject_ID == 1)
 
-    df_i <- model.data |>
-        dplyr::filter(Subject_ID == 1)
-
-    variables <- list(
-        time = rlang::sym("Time"),
-        id = rlang::sym("Subject_ID"),
-        outcome = rlang::sym("Outcome"),
-        prev_time = rlang::sym("prev_time"),
-        prev_outcome = rlang::sym("prev_outcome"),
-        delta_time = rlang::sym("delta_time")
-    )
-
-    # Compute with all three methods
+    # term1 does not use integration — all methods must agree exactly
     result_quadv <- compute_influence_for_one_alpha_and_one_patient(
-        df_i, alpha = 0,
+        df_i_full, alpha = 0,
         variables = variables,
-        intensity.model = intensity.model,
-        outcome.model = outcome.model,
+        intensity.model = intensity.full,
+        outcome.model = outcome.full,
         base = base,
         control = pcori_control(integration.method = "quadv"),
-        centering = centering.statistics
+        centering = centering.full
     )
 
     result_numerical <- compute_influence_for_one_alpha_and_one_patient(
-        df_i, alpha = 0,
+        df_i_full, alpha = 0,
         variables = variables,
-        intensity.model = intensity.model,
-        outcome.model = outcome.model,
+        intensity.model = intensity.full,
+        outcome.model = outcome.full,
         base = base,
         control = pcori_control(integration.method = "numerical", resolution = 500),
-        centering = centering.statistics
+        centering = centering.full
     )
 
     result_piecewise <- compute_influence_for_one_alpha_and_one_patient(
-        df_i, alpha = 0,
+        df_i_full, alpha = 0,
         variables = variables,
-        intensity.model = intensity.model,
-        outcome.model = outcome.model,
+        intensity.model = intensity.full,
+        outcome.model = outcome.full,
         base = base,
         control = pcori_control(integration.method = "piecewise", resolution.within.period = 50),
-        centering = centering.statistics
+        centering = centering.full
     )
 
-    # All methods should produce similar term1 (this doesn't use integration)
+    # term1 does not use integration — all methods must agree exactly
     expect_equal(result_quadv$term1[[1]], result_numerical$term1[[1]], tolerance = 1e-6)
     expect_equal(result_quadv$term1[[1]], result_piecewise$term1[[1]], tolerance = 1e-6)
 
-    # Term2 should be reasonably close (numerical methods less accurate but should be in ballpark)
-    # Use relative tolerance since absolute values can vary
-    term2_quadv <- result_quadv$term2[[1]]
+    term2_quadv     <- result_quadv$term2[[1]]
     term2_numerical <- result_numerical$term2[[1]]
     term2_piecewise <- result_piecewise$term2[[1]]
 
-    # Check that numerical methods are within 10% of quadv (relaxed tolerance for numerical integration)
     relative_diff_numerical <- abs(term2_numerical - term2_quadv) / (abs(term2_quadv) + 1e-10)
     relative_diff_piecewise <- abs(term2_piecewise - term2_quadv) / (abs(term2_quadv) + 1e-10)
 
-    # Most elements should be reasonably close (relaxed threshold for piecewise method which can be less accurate)
-    expect_true(mean(relative_diff_numerical < 0.1) > 0.8, 
+    expect_true(mean(relative_diff_numerical < 0.1) > 0.8,
                 info = "Numerical method should match quadv for most elements")
     expect_true(mean(relative_diff_piecewise < 0.2) > 0.6,
                 info = "Piecewise method should match quadv reasonably (within 20% for 60% of elements)")
 })
 
 test_that("numerical integration methods work with non-zero alpha", {
-    data("SensIAT_example_data", package = "SensIAT", envir = environment())
-    
-    # Minimal setup
-    model.data <- SensIAT_example_data |>
-        dplyr::group_by(Subject_ID) |>
-        dplyr::arrange(Time) |>
-        dplyr::mutate(
-            prev_time = dplyr::lag(Time),
-            prev_outcome = dplyr::lag(Outcome),
-            delta_time = Time - dplyr::lag(Time),
-            visit.number = seq_along(Time)
-        ) |>
-        dplyr::filter(!is.na(Outcome))
-
-    followup.data <- model.data |>
-        dplyr::filter(Time > 0)
-
-    intensity.model <-
-        rlang::inject(coxph(
-            Surv(prev_time, Time, !is.na(Outcome)) ~
-                prev_outcome + strata(visit.number),
-            id = Subject_ID,
-            data = followup.data
-        ))
-
-    outcome.model <- fit_SensIAT_single_index_fixed_coef_model(
-        Outcome ~
-            splines::ns(prev_outcome, df = 3) +
-            prev_outcome +
-            delta_time - 1,
-        id = Subject_ID,
-        data = followup.data
-    )
-
-    base <- orthogonalsplinebasis::SplineBasis(c(60, 60, 60, 60, 260, 460, 460, 460, 460))
-
-    centering.statistics <-
-        dplyr::summarize(
-            dplyr::ungroup(dplyr::filter(model.data, Time > 0, !is.na(Outcome))),
-            dplyr::across(
-                c(Time, delta_time),
-                list(
-                    mean = ~ mean(.x, na.rm = TRUE),
-                    sd = ~ sd(.x, na.rm = TRUE)
-                )
-            )
-        ) |>
-        as.numeric() |>
-        matrix(ncol = 2, byrow = TRUE) |>
-        `dimnames<-`(list(c("time", "delta_time"), c("mean", "sd")))
-
-    df_i <- model.data |>
-        dplyr::filter(Subject_ID == 1)
-
-    variables <- list(
-        time = rlang::sym("Time"),
-        id = rlang::sym("Subject_ID"),
-        outcome = rlang::sym("Outcome"),
-        prev_time = rlang::sym("prev_time"),
-        prev_outcome = rlang::sym("prev_outcome"),
-        delta_time = rlang::sym("delta_time")
-    )
-
-    # Test with alpha = 0.3
     result_numerical_pos <- compute_influence_for_one_alpha_and_one_patient(
         df_i, alpha = 0.3,
         variables = variables,

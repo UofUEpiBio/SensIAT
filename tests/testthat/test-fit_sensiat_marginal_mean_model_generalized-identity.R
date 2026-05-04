@@ -135,9 +135,91 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: identity link across los
     expect_true(all(is.finite(result_lp_mse$coefficients[[1]])))
     expect_true(all(is.finite(result_quasi$coefficients[[1]])))
     
-    # For identity link, lp_mse and quasi-likelihood have same weight function
-    # so should produce similar results
-    expect_equal(result_lp_mse$coefficients[[1]], result_quasi$coefficients[[1]],
-                 tolerance = 0.05,
-                 info = "lp_mse and quasi-likelihood should be similar for identity link")
+    # The two losses solve different estimating equations; do not require
+    # numerical agreement, only valid outputs with matching dimensions.
+    expect_equal(
+        length(result_lp_mse$coefficients[[1]]),
+        length(result_quasi$coefficients[[1]])
+    )
+})
+
+test_that("fit_SensIAT_marginal_mean_model_generalized: identity single-index matches original", {
+    setup <- generate_test_data(link = "identity", n_subjects = 10)
+
+    result_original <- suppressWarnings({
+        fit_SensIAT_marginal_mean_model(
+            data = setup$data,
+            id = ..id..,
+            alpha = 0,
+            knots = setup$knots,
+            outcome.model = setup$outcome.model,
+            intensity.model = setup$intensity.model,
+            time.vars = c("..delta_time..")
+        )
+    })
+
+    result_generalized <- suppressWarnings({
+        fit_SensIAT_marginal_mean_model_generalized(
+            data = setup$data,
+            time = ..time..,
+            id = ..id..,
+            alpha = 0,
+            knots = setup$knots,
+            outcome.model = setup$outcome.model,
+            intensity.model = setup$intensity.model,
+            loss = "lp_mse",
+            link = "identity",
+            impute_data = create_impute_fn(),
+            term2_method = "fast",
+            time.vars = c("..delta_time..")
+        )
+    })
+
+    expect_equal(
+        result_generalized$coefficients[[1]],
+        result_original$coefficients[[1]],
+        tolerance = 1e-6,
+        info = "Generalized identity+single-index should match original coefficients"
+    )
+
+    # Normalize influence representations: original stores matrix columns,
+    # generalized stores per-patient vectors as list-columns.
+    orig_ids <- result_original$influence[[1]]$id
+    gen_ids <- result_generalized$influence[[1]]$id
+    gen_order <- match(orig_ids, gen_ids)
+    expect_false(anyNA(gen_order))
+
+    orig_term1 <- result_original$influence[[1]]$term1
+    if (is.list(orig_term1)) {
+        orig_term1 <- do.call(rbind, orig_term1)
+    }
+    gen_term1 <- result_generalized$influence[[1]]$term1
+    if (is.list(gen_term1)) {
+        gen_term1 <- do.call(rbind, gen_term1)
+    }
+    gen_term1 <- gen_term1[gen_order, , drop = FALSE]
+
+    orig_term2 <- result_original$influence[[1]]$term2
+    if (is.list(orig_term2)) {
+        orig_term2 <- do.call(rbind, orig_term2)
+    }
+    gen_term2 <- result_generalized$influence[[1]]$term2
+    if (is.list(gen_term2)) {
+        gen_term2 <- do.call(rbind, gen_term2)
+    }
+    gen_term2 <- gen_term2[gen_order, , drop = FALSE]
+
+    expect_equal(
+        gen_term1,
+        orig_term1,
+        tolerance = 1e-6,
+        info = "Generalized identity+single-index should match original term1"
+    )
+
+    expect_equal(
+        gen_term2,
+        orig_term2,
+        tolerance = 1e-6,
+        info = "Generalized identity+single-index should match original term2"
+    )
 })

@@ -17,6 +17,7 @@ compute_term2_influence_fixed_grid(
   inv_link,
   W,
   expected_grid = NULL,
+  identity_closed_form_scale = FALSE,
   n_grid = 100,
   rule = c("simpson", "trapezoid"),
   include_obs_times = TRUE,

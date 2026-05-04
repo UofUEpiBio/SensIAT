@@ -58,6 +58,7 @@ compute_term2_influence_gauss_legendre <- function(
   inv_link,
   W,
   expected_grid = NULL,
+    identity_closed_form_scale = FALSE,
   n_nodes = 50,
   time_var = NULL,
   ...
@@ -118,17 +119,15 @@ compute_term2_influence_gauss_legendre <- function(
         }
         
         # Compute weight from W function
-        weight <- W(t, marginal_beta)
-        eta <- sum(B * marginal_beta)
-        mu_hat <- inv_link(eta)
-        
-        # Ensure weight is a numeric vector
-        weight <- as.numeric(weight)
-        # Compute scalar difference
-        diff_scalar <- as.numeric(E_Yexp / E_exp - mu_hat)
-        
-        # Accumulate weighted contribution
-        result <- result + w_gl * weight * diff_scalar
+        weight <- as.numeric(W(t, marginal_beta))
+        if (isTRUE(identity_closed_form_scale)) {
+            result <- result + w_gl * weight * as.numeric(E_Yexp / E_exp)
+        } else {
+            eta <- sum(B * marginal_beta)
+            mu_hat <- inv_link(eta)
+            diff_scalar <- as.numeric(E_Yexp / E_exp - mu_hat)
+            result <- result + w_gl * weight * diff_scalar
+        }
     }
     
     # Ensure finite output
