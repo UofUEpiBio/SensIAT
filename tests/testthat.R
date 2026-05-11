@@ -9,4 +9,6 @@
 library(testthat)
 library(SensIAT)
 
-test_check("SensIAT")
+# Use the verbose debug reporter so CI shows every expectation and context.
+# This helps identify exactly where tests are hanging or slowing down.
+test_check("SensIAT", reporter = DebugReporter$new())
