@@ -9,6 +9,13 @@
 library(testthat)
 library(SensIAT)
 
-# Use the verbose debug reporter so CI shows every expectation and context.
-# This helps identify exactly where tests are hanging or slowing down.
-test_check("SensIAT", reporter = DebugReporter$new())
+# Suppress solver output from optimization routines in test output
+# and use ProgressReporter for clear per-test feedback
+options(
+  # Suppress BB solver iteration messages
+  BB.iter.warnings = FALSE,
+  # Reduce clutter in CI output
+  digits = 5
+)
+
+test_check("SensIAT", reporter = ProgressReporter$new(show_praise = TRUE))
