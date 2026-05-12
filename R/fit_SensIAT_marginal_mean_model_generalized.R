@@ -139,7 +139,8 @@ fit_SensIAT_marginal_mean_model_generalized <-
              ..., #< passed to impute_data
              BBsolve.control = list(
                  maxit = 1000,
-                 tol = 1e-6
+                 tol = 1e-6,
+                 trace = FALSE
              ),
              term2_method = c("fast", "original", "fixed_grid", "seeded_adaptive", "gauss_legendre"),
              term2_grid_n = 100,
@@ -167,6 +168,7 @@ fit_SensIAT_marginal_mean_model_generalized <-
         }
 
         id <- enquo(id)
+        BBsolve.control <- utils::modifyList(list(trace = FALSE), BBsolve.control)
 
         Y <- dplyr::pull(data, rlang::f_lhs(formula(outcome.model)))
 
