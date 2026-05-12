@@ -73,7 +73,9 @@ fit_SensIAT_single_index_fixed_coef_model <-
                 val,
                 list(
                     frame = mf,
-                    data = data
+                    data = data,
+                    Xb_train = as.vector(Xi %*% val$coef),
+                    Yi = Yi
                 )
             ),
             class = c("SensIAT::outcome-model", "SensIAT::Single-index-outcome-model"),
@@ -278,14 +280,23 @@ Cond_mean_fn_single2 <-
             ))
         }
 
-        Xi <- model.matrix(terms(model), model$data)
-        Yi <- model.response(model.frame(model))
+        # Use cached training data if available (avoids rebuilding the N×p design matrix
+        # on every call — this inner function is invoked ~9000× per profiling run)
+        Xb_train <- model$Xb_train
+        Yi       <- model$Yi
+        if (is.null(Xb_train) || is.null(Yi)) {
+            Xi       <- model.matrix(terms(model), model$data)
+            Yi       <- model.response(model.frame(model))
+            Xb_train <- as.vector(Xi %*% model$coef)
+        }
+
         for (var in setdiff(all.vars(terms(model)), tbl_vars(new.data))) {
             new.data[[var]] <- NA
         }
-        Xi_new <- model.matrix(terms(model), data = new.data)
+        Xi_new   <- model.matrix(terms(model), data = new.data)
+        xb_query <- as.vector(Xi_new %*% model$coef)
 
-        if (nrow(Xi_new) == 0) {
+        if (length(xb_query) == 0) {
             return(mutate(
                 new.data,
                 alpha = alpha,
@@ -295,28 +306,22 @@ Cond_mean_fn_single2 <-
             ))
         }
 
-        E_Y_past <- numeric(nrow(Xi_new))
-        E_exp_alphaY <- numeric(nrow(Xi_new))
-        E_Yexp_alphaY <- numeric(nrow(Xi_new))
+        # Vectorised C++ call: all query points at once, no CDF matrix materialised
+        result_mat    <- pcoriaccel_NW_expectations(
+            Xb     = Xb_train,
+            Y      = Yi,
+            xb     = xb_query,
+            alpha  = alpha,
+            h      = model$bandwidth,
+            kernel = attr(model, "kernel")
+        )
+        E_exp_alphaY  <- result_mat[, 1L]
+        E_Yexp_alphaY <- result_mat[, 2L]
+        E_Y_past      <- ifelse(E_exp_alphaY != 0, E_Yexp_alphaY / E_exp_alphaY, 0)
 
-        for (k in 1:nrow(Xi_new)) {
-            # df_k <- new.data[k, ]
-            # x = model.matrix(terms(model), data = df_k)
-            temp <- Cond_mean_fn_single2(alpha,
-                X = Xi,
-                Y = Yi,
-                x = Xi_new[k, , drop = FALSE],
-                beta = model$coef,
-                bandwidth = model$bandwidth,
-                kernel = attr(model, "kernel")
-            )
-
-            E_Y_past[k] <- temp$E_Y_past
-            E_exp_alphaY[k] <- temp$E_exp_alphaY
-            E_Yexp_alphaY[k] <- temp$E_Yexp_alphaY
-        }
-
-        tibble(new.data, alpha, E_Y_past, E_Yexp_alphaY, E_exp_alphaY)
+        data.frame(new.data, alpha = alpha, E_Y_past = E_Y_past,
+                   E_Yexp_alphaY = E_Yexp_alphaY, E_exp_alphaY = E_exp_alphaY,
+                   check.names = FALSE)
     }
 
 
@@ -357,7 +362,9 @@ fit_SensIAT_single_index_fixed_bandwidth_model <-
                 val,
                 list(
                     frame = mf,
-                    data = data
+                    data = data,
+                    Xb_train = as.vector(Xi %*% val$coef),
+                    Yi = Yi
                 )
             ),
             class = c("SensIAT::outcome-model", "SensIAT::Single-index-outcome-model"),

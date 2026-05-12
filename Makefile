@@ -9,3 +9,6 @@ check:
 
 install:
 	Rscript -e 'devtools::install()'
+
+test:
+	Rscript -e 'devtools::test()'
