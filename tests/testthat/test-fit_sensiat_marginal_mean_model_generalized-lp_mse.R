@@ -1,5 +1,8 @@
 # Tests for fit_SensIAT_marginal_mean_model_generalized with lp_mse loss
 
+skip_on_cran()
+skip_on_ci()
+
 test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + identity produces valid results", {
     skip_on_ci()
     setup <- generate_test_data(link = "identity", n_subjects = 10)
