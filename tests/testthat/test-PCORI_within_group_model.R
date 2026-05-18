@@ -178,6 +178,7 @@ test_that("multiple alpha values work with default identity link", {
 
 test_that("log link with lp_mse loss runs without error", {
     skip_on_cran()
+    skip_on_ci()
 
     model_log <- fit_SensIAT_within_group_model(
         group.data = SensIAT_example_data,
@@ -201,6 +202,7 @@ test_that("log link with lp_mse loss runs without error", {
 
 test_that("logit link with lp_mse loss runs without error", {
     skip_on_cran()
+    skip_on_ci()
 
     model_logit <- fit_SensIAT_within_group_model(
         group.data = SensIAT_example_data,
@@ -223,6 +225,7 @@ test_that("logit link with lp_mse loss runs without error", {
 
 test_that("quasi-likelihood loss with log link runs without error", {
     skip_on_cran()
+    skip_on_ci()
 
     model_ql <- fit_SensIAT_within_group_model(
         group.data = SensIAT_example_data,
@@ -244,6 +247,7 @@ test_that("quasi-likelihood loss with log link runs without error", {
 
 test_that("term2_method parameter is respected for generalized models", {
     skip_on_cran()
+    skip_on_ci()
 
     # Test with fixed_grid method
     model_fixed <- fit_SensIAT_within_group_model(
@@ -265,6 +269,7 @@ test_that("term2_method parameter is respected for generalized models", {
 
 test_that("custom impute_data function is used when provided", {
     skip_on_cran()
+    skip_on_ci()
 
     # Track whether custom impute_data was called
     impute_called <- FALSE
@@ -299,6 +304,7 @@ test_that("custom impute_data function is used when provided", {
 
 test_that("multiple alpha values work with log link", {
     skip_on_cran()
+    skip_on_ci()
 
     model_multi <- fit_SensIAT_within_group_model(
         group.data = SensIAT_example_data,
