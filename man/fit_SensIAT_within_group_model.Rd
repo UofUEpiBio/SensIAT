@@ -102,7 +102,7 @@ A \code{SensIAT_within_group_model} object containing:
 \item \code{alpha}: Sensitivity parameter values
 \item \code{coefficients}: Estimated spline coefficients for each alpha
 \item \code{coefficient.variance}: Variance of coefficients for each alpha
-\item \code{base}: The SplineBasis object
+\item \code{base}: The \code{\link[orthogonalsplinebasis:SplineBasis]{SplineBasis}} object
 \item \code{V_inverse}: Inverse of the Gram matrix
 \item \code{link}: The link function used
 \item \code{loss}: The loss function used

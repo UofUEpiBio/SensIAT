@@ -17,7 +17,7 @@ fit_SensIAT_marginal_mean_model_generalized(
   link = c("identity", "log", "logit"),
   spline.degree = 3L,
   ...,
-  BBsolve.control = list(maxit = 1000, tol = 1e-06),
+  BBsolve.control = list(maxit = 1000, tol = 1e-06, trace = FALSE),
   term2_method = c("fast", "original", "fixed_grid", "seeded_adaptive", "gauss_legendre"),
   term2_grid_n = 100,
   use_expected_cache = TRUE
