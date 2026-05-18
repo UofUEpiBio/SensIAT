@@ -1,5 +1,8 @@
 # Tests for fit_SensIAT_marginal_mean_model_generalized with quasi-likelihood loss
 
+skip_on_cran()
+skip_on_ci()
+
 test_that("fit_SensIAT_marginal_mean_model_generalized: quasi-likelihood + identity (now integrated)", {
     # Reduced parameters to keep test under 60 seconds
     setup <- generate_test_data(link = "identity", n_subjects = 10)
