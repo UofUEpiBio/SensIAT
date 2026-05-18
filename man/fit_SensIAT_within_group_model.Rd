@@ -146,33 +146,20 @@ The \code{influence.args} list may contain the following elements:
 }
 
 \examples{
-\donttest{
 # Example 1: Default identity link (original analytic solution)
 model <-
-    fit_SensIAT_within_group_model(
-        group.data = SensIAT_example_data,
-        outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
-        alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
-        id = Subject_ID,
-        outcome = Outcome,
-        time = Time,
-        End = 830,
-        knots = c(60, 260, 460),
-    )
-
-# Example 2: Log link with generalized iterative solver
-model_log <-
-    fit_SensIAT_within_group_model(
-        group.data = SensIAT_example_data,
-        outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
-        alpha = 0,
-        id = Subject_ID,
-        outcome = Outcome,
-        time = Time,
-        End = 830,
-        knots = c(60, 260, 460),
-        link = "log",
-        loss = "lp_mse"
-    )
-}
+  fit_SensIAT_within_group_model(
+    group.data = SensIAT_example_data,
+    outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
+    alpha = c(-0.6, -0.3, 0, 0.3, 0.6),
+    id = Subject_ID,
+    outcome = Outcome,
+    time = Time,
+    End = 830,
+    knots = c(60, 260, 460),
+    # # For example, of you wanted to use a different
+    # # loss function or link:  
+    # link = "log",
+    # loss = "lp_mse"
+  )
 }
