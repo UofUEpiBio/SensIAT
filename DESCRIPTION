@@ -69,3 +69,4 @@ URL: https://github.com/UofUEpiBio/SensIAT, https://uofuepibio.github.io/SensIAT
 BugReports: https://github.com/UofUEpiBio/SensIAT/issues
 VignetteBuilder: knitr
 Config/roxygen2/version: 8.0.0
+RoxygenNote: 7.3.3
