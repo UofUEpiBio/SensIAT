@@ -368,21 +368,21 @@ test_that("all methods work with multiple alpha values", {
 
 test_that("integration utility functions work correctly", {
   # Test create_integration_grid
-  grid1 <- create_integration_grid(0, 100, n_grid = 11)
+  grid1 <- SensIAT:::create_integration_grid(0, 100, n_grid = 11)
   expect_length(grid1, 11)
   expect_equal(min(grid1), 0)
   expect_equal(max(grid1), 100)
   
   # With observation times
   obs_times <- c(10, 30, 70)
-  grid2 <- create_integration_grid(0, 100, n_grid = 11, obs_times = obs_times)
+  grid2 <- SensIAT:::create_integration_grid(0, 100, n_grid = 11, obs_times = obs_times)
   expect_true(all(obs_times %in% grid2))
   expect_gte(length(grid2), 11)  # Should include uniform grid + obs times
   
   # Test composite_trapezoid
   values <- list(1, 4, 9, 16)  # y = x^2 at x = 1, 2, 3, 4
   grid <- c(1, 2, 3, 4)
-  integral <- composite_trapezoid(values, grid)
+  integral <- SensIAT:::composite_trapezoid(values, grid)
   # Trapezoid rule for x^2 from 1 to 4
   # = 0.5*1*(1+4) + 0.5*1*(4+9) + 0.5*1*(9+16) = 2.5 + 6.5 + 12.5 = 21.5
   expect_equal(integral, 21.5)
@@ -390,7 +390,7 @@ test_that("integration utility functions work correctly", {
   # Test composite_simpson (odd number of points)
   values3 <- list(1, 4, 9)  # y = x^2 at x = 1, 2, 3
   grid3 <- c(1, 2, 3)
-  integral3 <- composite_simpson(values3, grid3)
+  integral3 <- SensIAT:::composite_simpson(values3, grid3)
   # Simpson's rule for x^2 from 1 to 3 with h=1
   # = (h/3) * (f(1) + 4*f(2) + f(3)) = (1/3) * (1 + 16 + 9) = 26/3
   expect_equal(integral3, 26/3, tolerance = 1e-10)

@@ -33,6 +33,26 @@ pcoriaccel_NW <- function(Xb, Y, xb, y_seq, h, kernel = "K2_Biweight") {
     .Call(`_SensIAT_pcoriaccel_NW`, Xb, Y, xb, y_seq, h, kernel)
 }
 
+#' Compute conditional expectations E[exp(alpha*Y)|xb] and E[Y*exp(alpha*Y)|xb]
+#'
+#' Faster alternative to calling [pcoriaccel_NW()] and post-processing: computes
+#' both expectations in a single pass without materialising the Q x M CDF matrix.
+#'
+#' @param Xb     Numeric vector of training linear predictors (length N)
+#' @param Y      Numeric vector of training outcomes (length N)
+#' @param xb     Numeric vector of query linear predictors (length Q)
+#' @param alpha  Sensitivity parameter (scalar)
+#' @param h      Bandwidth (scalar)
+#' @param kernel Kernel name: `"dnorm"` or `"K2_Biweight"`
+#'
+#' @return A Q x 2 numeric matrix. Column 1 is E[exp(alpha*Y)|xb[j]],
+#'   column 2 is E[Y*exp(alpha*Y)|xb[j]], for j = 1..Q.
+#'
+#' @keywords internal
+pcoriaccel_NW_expectations <- function(Xb, Y, xb, alpha, h, kernel = "K2_Biweight") {
+    .Call(`_SensIAT_pcoriaccel_NW_expectations`, Xb, Y, xb, alpha, h, kernel)
+}
+
 #' Multiplies two matrices.  If the first argument is a vector, it is interpreted as a row vector.
 #' Otherwise, if the second argument is a vector, it is interpreted as a column vector.
 #' @param matrA first matrix
