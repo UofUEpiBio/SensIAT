@@ -44,7 +44,7 @@ benchmark_term2_methods(
 - outcome.model:
 
   A fitted outcome model (e.g., from
-  fit_SensIAT_single_index_fixed_coef_model)
+  [`fit_SensIAT_single_index_fixed_coef_model()`](https://uofuepibio.github.io/SensIAT/reference/fit_SensIAT_single_index_fixed_coef_model.md))
 
 - knots:
 
@@ -69,8 +69,8 @@ benchmark_term2_methods(
 
 - methods:
 
-  Character vector of methods to benchmark. Options: "fast", "original",
-  "fixed_grid", "seeded_adaptive", "gauss_legendre"
+  Character vector of methods to benchmark. Options: `"fast"`,
+  `"original"`, `"fixed_grid"`, `"seeded_adaptive"`, `"gauss_legendre"`
 
 - grid_sizes:
 

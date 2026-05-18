@@ -22,7 +22,7 @@ fit_SensIAT_marginal_mean_model_generalized(
   link = c("identity", "log", "logit"),
   spline.degree = 3L,
   ...,
-  BBsolve.control = list(maxit = 1000, tol = 1e-06),
+  BBsolve.control = list(maxit = 1000, tol = 1e-06, trace = FALSE),
   term2_method = c("fast", "original", "fixed_grid", "seeded_adaptive", "gauss_legendre"),
   term2_grid_n = 100,
   use_expected_cache = TRUE
@@ -105,7 +105,7 @@ fit_SensIAT_marginal_mean_model_generalized(
   - `"seeded_adaptive"`: Adaptive Simpson's seeded with pre-computed
     grid points
 
-  - `"gauss_legendre"`: Gauss-Legendre quadrature (requires \pkgstatmod
+  - `"gauss_legendre"`: Gauss-Legendre quadrature (requires statmod
     package)
 
 - term2_grid_n:
@@ -207,6 +207,7 @@ formulas, this function supports any outcome model with a
 ## Examples
 
 ``` r
+# \donttest{
 library(survival)
 library(splines)
 
@@ -243,7 +244,7 @@ fit_SensIAT_marginal_mean_model_generalized(
     link = "log",
     impute_data = \(t, df){
         data_wl <- df |>
-            mutate(
+            dplyr::mutate(
                 ..prev_time.. = Time,
                 ..prev_outcome.. = Outcome,
                 ..delta_time.. = 0
@@ -251,7 +252,6 @@ fit_SensIAT_marginal_mean_model_generalized(
         extrapolate_from_last_observation(t, data_wl, "Time", slopes = c("..delta_time.." = 1))
     }
 )
-#> Iteration:  0  ||F(x0)||:  227.2529 
 #> $models
 #> $models$intensity
 #> Call:
@@ -1493,7 +1493,7 @@ fit_SensIAT_marginal_mean_model_generalized(
 #> attr(,"response")
 #> [1] 1
 #> attr(,".Environment")
-#> <environment: 0x55e865f9ba88>
+#> <environment: 0x565132286520>
 #> attr(,"predvars")
 #> list(Outcome, ns(..prev_outcome.., knots = c(1.5, 2.66666666666667
 #> ), Boundary.knots = c(0, 6), intercept = FALSE), ..delta_time..)
@@ -1590,11 +1590,10 @@ fit_SensIAT_marginal_mean_model_generalized(
 #>     alpha = 0, knots = c(60, 260, 460), outcome.model = outcome.model, 
 #>     intensity.model = intensity.model, impute_data = function(t, 
 #>         df) {
-#>         data_wl <- mutate(df, ..prev_time.. = Time, ..prev_outcome.. = Outcome, 
+#>         data_wl <- dplyr::mutate(df, ..prev_time.. = Time, ..prev_outcome.. = Outcome, 
 #>             ..delta_time.. = 0)
 #>         extrapolate_from_last_observation(t, data_wl, "Time", 
 #>             slopes = c(..delta_time.. = 1))
 #>     }, loss = "lp_mse", link = "log")
-time <- data_with_lags$Time
-id <- data_with_lags$Subject_ID
+# }
 ```

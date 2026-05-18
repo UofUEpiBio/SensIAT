@@ -12,6 +12,7 @@ A link to the paper describing the methodology can be found
 ## Installation
 
 ``` r
+
 # Install from CRAN
 install.packages("SensIAT")
 ```
@@ -19,6 +20,7 @@ install.packages("SensIAT")
 You can also install the current development version from GitHub:
 
 ``` r
+
 devtools::install_github("UofUEpiBio/pcoriRPackage")
 ```
 
@@ -30,6 +32,7 @@ A link to the paper describing the methodology can be found
 ## Installation
 
 ``` r
+
 # Install from CRAN
 install.packages("SensIAT")
 ```
@@ -37,6 +40,7 @@ install.packages("SensIAT")
 You can also install the current development version from GitHub:
 
 ``` r
+
 devtools::install_github("UofUEpiBio/pcoriRPackage")
 ```
 

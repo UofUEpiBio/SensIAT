@@ -21,7 +21,11 @@ fit_SensIAT_within_group_model(
   outcome.args = list(),
   influence.args = list(),
   spline.degree = 3,
-  add.terminal.observations = TRUE
+  add.terminal.observations = TRUE,
+  loss = c("lp_mse", "quasi-likelihood"),
+  link = c("identity", "log", "logit"),
+  term2_method = c("fast", "original", "fixed_grid", "seeded_adaptive", "gauss_legendre"),
+  impute_data = NULL
 )
 ```
 
@@ -102,6 +106,29 @@ fit_SensIAT_within_group_model(
   If TRUE, data may not contain any `NA`s. if FALSE, data will be
   assumed to already include the terminal observations
 
+- loss:
+
+  The loss function to use. Options are `"lp_mse"` (default) and
+  `"quasi-likelihood"`. Only used when `link` is not `"identity"`.
+
+- link:
+
+  The link function to use. Options are `"identity"` (default), `"log"`,
+  and `"logit"`. When `"identity"`, the original analytic formula is
+  used; otherwise, the generalized iterative solver is used.
+
+- term2_method:
+
+  Method for computing term2 influence components. Options are: `"fast"`
+  (default), `"original"`, `"fixed_grid"`, `"seeded_adaptive"`,
+  `"gauss_legendre"`. Only used when `link` is not `"identity"`.
+
+- impute_data:
+
+  A function that takes `(t, df)` and returns the imputed data at time
+  `t`. If `NULL` (default), a standard imputation function is generated
+  automatically.
+
 ## Value
 
 a list with class `SensIAT-fulldata-fitted-model` with two components,
@@ -109,10 +136,35 @@ a list with class `SensIAT-fulldata-fitted-model` with two components,
 `SensIAT-within-group-fitted-model` fit with the fit_within_group_model
 function.
 
-Should return everything needed to define the fit of the model. This can
-then be used for producing the estimates of mean, variance, and in turn
-treatment effect. For the full data model a list with two models one
-each for the treatment and control groups.
+A `SensIAT_within_group_model` object containing:
+
+- `models`: List with `intensity` and `outcome` sub-models
+
+- `data`: The transformed data used for fitting
+
+- `variables`: List of variable names (id, outcome, time)
+
+- `End`: The end time for the analysis
+
+- `influence`: Influence function values by patient
+
+- `alpha`: Sensitivity parameter values
+
+- `coefficients`: Estimated spline coefficients for each alpha
+
+- `coefficient.variance`: Variance of coefficients for each alpha
+
+- `base`: The
+  [`SplineBasis`](https://rdrr.io/pkg/orthogonalsplinebasis/man/SplineBasis.html)
+  object
+
+- `V_inverse`: Inverse of the Gram matrix
+
+- `link`: The link function used
+
+- `loss`: The loss function used
+
+- `term2_method`: The term2 integration method used
 
 ## Details
 
@@ -159,6 +211,7 @@ The `influence.args` list may contain the following elements:
 
 ``` r
 # \donttest{
+# Example 1: Default identity link (original analytic solution)
 model <-
     fit_SensIAT_within_group_model(
         group.data = SensIAT_example_data,
@@ -169,6 +222,21 @@ model <-
         time = Time,
         End = 830,
         knots = c(60, 260, 460),
+    )
+
+# Example 2: Log link with generalized iterative solver
+model_log <-
+    fit_SensIAT_within_group_model(
+        group.data = SensIAT_example_data,
+        outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
+        alpha = 0,
+        id = Subject_ID,
+        outcome = Outcome,
+        time = Time,
+        End = 830,
+        knots = c(60, 260, 460),
+        link = "log",
+        loss = "lp_mse"
     )
 # }
 ```

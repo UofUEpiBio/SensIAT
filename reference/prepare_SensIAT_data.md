@@ -78,6 +78,7 @@ A data frame with the following transformations:
 ## Examples
 
 ``` r
+
 prepare_SensIAT_data(SensIAT_example_data, Subject_ID, Time, Outcome, 830)
 #> # A tibble: 1,000 × 11
 #>    ..id.. ..visit_number.. Subject_ID Visit  Time Outcome ..time.. ..outcome..

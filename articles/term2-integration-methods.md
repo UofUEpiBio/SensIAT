@@ -1,6 +1,7 @@
 # Term2 Integration Methods: Performance Comparison
 
 ``` r
+
 library(SensIAT)
 library(dplyr)
 #> 
@@ -44,6 +45,7 @@ We use the package’s example data and fit the required outcome model
 once:
 
 ``` r
+
 # Load and prepare example data
 data_with_lags <- SensIAT_example_data |>
   group_by(Subject_ID) |>
@@ -60,6 +62,7 @@ cat("  Total observations:", nrow(data_with_lags), "\n")
 ```
 
 ``` r
+
 # Fit outcome model (single-index with splines)
 outcome.model <- fit_SensIAT_single_index_fixed_coef_model(
   Outcome ~ splines::ns(..prev_outcome.., df = 3) + ..delta_time.. - 1,
@@ -92,6 +95,7 @@ package.* *To regenerate:
 `source(system.file("extdata", "generate_term2_benchmarks.R", package = "SensIAT"))`*
 
 ``` r
+
 # Run isolated term2 benchmark
 benchmark_results <- benchmark_term2_methods(
   data = data_with_lags,
@@ -113,6 +117,7 @@ benchmark_results <- benchmark_term2_methods(
 ### Timing Results
 
 ``` r
+
 knitr::kable(
   benchmark_results$timing |>
     mutate(
@@ -133,13 +138,14 @@ knitr::kable(
 | fast                | 10.9520  | 0.4285 |  10.649 |  11.255 | 6.95     |
 | seeded_adaptive_100 | 15.9460  | 0.3267 |  15.715 |  16.177 | 10.12    |
 
-Term2 Computation Time by Method
+Term2 Computation Time by Method {.table}
 
 ### Accuracy Results
 
 Accuracy is measured against the `fast` method (adaptive Simpson’s):
 
 ``` r
+
 knitr::kable(
   benchmark_results$accuracy |>
     mutate(
@@ -160,11 +166,12 @@ knitr::kable(
 | seeded_adaptive_50  | 3.91e-05     | 9.83e-06 |
 | seeded_adaptive_100 | 1.62e-05     | 4.57e-06 |
 
-Accuracy vs Reference (fast method)
+Accuracy vs Reference (fast method) {.table}
 
 ### Visualization
 
 ``` r
+
 timing_df <- benchmark_results$timing |>
   mutate(
     method_type = case_when(
@@ -200,6 +207,7 @@ Term2 computation time by method
 How does accuracy scale with grid density for fixed-grid method?
 
 ``` r
+
 # Benchmark with varying grid sizes
 grid_benchmark <- benchmark_term2_methods(
   data = data_with_lags,
@@ -219,6 +227,7 @@ grid_benchmark <- benchmark_term2_methods(
 ```
 
 ``` r
+
 # Extract grid-specific results
 grid_accuracy <- grid_benchmark$accuracy |>
   filter(grepl("fixed_grid", method)) |>
@@ -237,6 +246,7 @@ grid_combined <- left_join(grid_accuracy, grid_timing, by = c("method", "grid_n"
 ```
 
 ``` r
+
 ggplot(grid_combined, aes(x = grid_n)) +
   geom_line(aes(y = rmse), color = "steelblue", linewidth = 1) +
   geom_point(aes(y = rmse), color = "steelblue", size = 3) +
@@ -255,6 +265,7 @@ density](term2-integration-methods_files/figure-html/grid-plot-1.png)
 Fixed-grid accuracy vs grid density
 
 ``` r
+
 ggplot(grid_combined, aes(x = mean_time, y = rmse, label = grid_n)) +
   geom_point(size = 4, color = "steelblue") +
   geom_text(vjust = -1, hjust = 0.5) +
@@ -307,6 +318,7 @@ Based on this analysis, here are recommended integration methods:
 ## Session Info
 
 ``` r
+
 sessionInfo()
 #> R version 4.6.0 (2026-04-24)
 #> Platform: x86_64-pc-linux-gnu
@@ -351,7 +363,7 @@ sessionInfo()
 #> [33] MASS_7.3-65                 ragg_1.5.2                 
 #> [35] pkgconfig_2.0.3             desc_1.4.3                 
 #> [37] pkgdown_2.2.0               pillar_1.11.1              
-#> [39] bslib_0.10.0                gtable_0.3.6               
+#> [39] bslib_0.11.0                gtable_0.3.6               
 #> [41] glue_1.8.1                  Rcpp_1.1.1-1.1             
 #> [43] systemfonts_1.3.2           xfun_0.57                  
 #> [45] tibble_3.3.1                tidyselect_1.2.1           
