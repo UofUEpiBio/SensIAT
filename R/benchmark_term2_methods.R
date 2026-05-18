@@ -13,14 +13,14 @@
 #' @param data Data frame with longitudinal observations
 #' @param id Unquoted column name for subject identifier
 #' @param time Numeric vector of observation times
-#' @param outcome.model A fitted outcome model (e.g., from fit_SensIAT_single_index_fixed_coef_model)
+#' @param outcome.model A fitted outcome model (e.g., from [fit_SensIAT_single_index_fixed_coef_model()])
 #' @param knots Knots for marginal mean model spline basis
 #' @param spline_degree Degree of B-spline basis (default: 3)
 #' @param alpha Numeric vector of sensitivity parameters to test
 #' @param impute_data Function to impute data at arbitrary times: `function(t, patient_data) -> data.frame`
 #' @param link Link function: "identity" or "log"
 #' @param methods Character vector of methods to benchmark. Options:
-#'   "fast", "original", "fixed_grid", "seeded_adaptive", "gauss_legendre"
+#'   `"fast"`, `"original"`, `"fixed_grid"`, `"seeded_adaptive"`, `"gauss_legendre"`
 #' @param grid_sizes For grid-based methods, vector of grid sizes to test (default: c(50, 100, 200))
 #' @param n_patients Number of patients to use for benchmark (NULL = all patients)
 #' @param n_iterations Number of timing iterations per method

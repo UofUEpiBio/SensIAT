@@ -29,7 +29,7 @@ benchmark_term2_methods(
 
 \item{time}{Numeric vector of observation times}
 
-\item{outcome.model}{A fitted outcome model (e.g., from fit_SensIAT_single_index_fixed_coef_model)}
+\item{outcome.model}{A fitted outcome model (e.g., from \code{\link[=fit_SensIAT_single_index_fixed_coef_model]{fit_SensIAT_single_index_fixed_coef_model()}})}
 
 \item{knots}{Knots for marginal mean model spline basis}
 
@@ -42,7 +42,7 @@ benchmark_term2_methods(
 \item{link}{Link function: "identity" or "log"}
 
 \item{methods}{Character vector of methods to benchmark. Options:
-"fast", "original", "fixed_grid", "seeded_adaptive", "gauss_legendre"}
+\code{"fast"}, \code{"original"}, \code{"fixed_grid"}, \code{"seeded_adaptive"}, \code{"gauss_legendre"}}
 
 \item{grid_sizes}{For grid-based methods, vector of grid sizes to test (default: c(50, 100, 200))}
 

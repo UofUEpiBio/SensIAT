@@ -6,7 +6,10 @@
     "ghcr.io/rocker-org/devcontainer-features/quarto-cli:1": {
       "version": "latest"
     },
-    "ghcr.io/devcontainers/features/git:1": {}
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
+      "packages": "qpdf,pandoc"
+    }
   },
   
   "customizations": {

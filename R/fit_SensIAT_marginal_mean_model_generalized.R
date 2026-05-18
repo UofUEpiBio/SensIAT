@@ -17,7 +17,7 @@
 #'   - `"original"`: Standard implementation with adaptive Simpson's
 #'   - `"fixed_grid"`: Pre-computed expected values on fixed grid with composite Simpson's rule
 #'   - `"seeded_adaptive"`: Adaptive Simpson's seeded with pre-computed grid points
-#'   - `"gauss_legendre"`: Gauss-Legendre quadrature (requires \\pkg{statmod} package)
+#'   - `"gauss_legendre"`: Gauss-Legendre quadrature (requires \pkg{statmod} package)
 #' @param term2_grid_n Number of grid points/nodes for `fixed_grid`, `seeded_adaptive`, and `gauss_legendre` methods (default 100)
 #' @param use_expected_cache Logical; whether to cache expected values for performance (default TRUE)
 #'
@@ -76,6 +76,7 @@
 #'
 #'
 #' @examples
+#' \donttest{
 #' library(survival)
 #' library(splines)
 #'
@@ -112,7 +113,7 @@
 #'     link = "log",
 #'     impute_data = \(t, df){
 #'         data_wl <- df |>
-#'             mutate(
+#'             dplyr::mutate(
 #'                 ..prev_time.. = Time,
 #'                 ..prev_outcome.. = Outcome,
 #'                 ..delta_time.. = 0
@@ -120,8 +121,7 @@
 #'         extrapolate_from_last_observation(t, data_wl, "Time", slopes = c("..delta_time.." = 1))
 #'     }
 #' )
-#' time <- data_with_lags$Time
-#' id <- data_with_lags$Subject_ID
+#' }
 #'
 #' @export
 fit_SensIAT_marginal_mean_model_generalized <-
@@ -139,7 +139,8 @@ fit_SensIAT_marginal_mean_model_generalized <-
              ..., #< passed to impute_data
              BBsolve.control = list(
                  maxit = 1000,
-                 tol = 1e-6
+                 tol = 1e-6,
+                 trace = FALSE
              ),
              term2_method = c("fast", "original", "fixed_grid", "seeded_adaptive", "gauss_legendre"),
              term2_grid_n = 100,
@@ -167,6 +168,7 @@ fit_SensIAT_marginal_mean_model_generalized <-
         }
 
         id <- enquo(id)
+        BBsolve.control <- utils::modifyList(list(trace = FALSE), BBsolve.control)
 
         Y <- dplyr::pull(data, rlang::f_lhs(formula(outcome.model)))
 

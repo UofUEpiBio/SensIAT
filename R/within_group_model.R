@@ -35,17 +35,40 @@ globalVariables(c(
 #'          observations to the data.  If TRUE, data may not contain any `NA`s.
 #'          if FALSE, data will be assumed to already include the terminal
 #'          observations
+#' @param loss The loss function to use. Options are `"lp_mse"` (default) and `"quasi-likelihood"`.
+#'          Only used when `link` is not `"identity"`.
+#' @param link The link function to use. Options are `"identity"` (default), `"log"`, and `"logit"`.
+#'          When `"identity"`, the original analytic formula is used; otherwise, the generalized
+#'          iterative solver is used.
+#' @param term2_method Method for computing term2 influence components. Options are:
+#'          `"fast"` (default), `"original"`, `"fixed_grid"`, `"seeded_adaptive"`, `"gauss_legendre"`.
+#'          Only used when `link` is not `"identity"`.
+#' @param impute_data A function that takes `(t, df)` and returns the imputed data at time `t`.
+#'          If `NULL` (default), a standard imputation function is generated automatically.
 #'
 #' @return
-#'  Should return everything needed to define the fit of the model.
-#'  This can then be used for producing the estimates of mean, variance,
-#'  and in turn treatment effect.  For the full data model a list with two
-#'  models one each for the treatment and control groups.
+#'  A `SensIAT_within_group_model` object containing:
+#'  \itemize{
+#'    \item `models`: List with `intensity` and `outcome` sub-models
+#'    \item `data`: The transformed data used for fitting
+#'    \item `variables`: List of variable names (id, outcome, time)
+#'    \item `End`: The end time for the analysis
+#'    \item `influence`: Influence function values by patient
+#'    \item `alpha`: Sensitivity parameter values
+#'    \item `coefficients`: Estimated spline coefficients for each alpha
+#'    \item `coefficient.variance`: Variance of coefficients for each alpha
+#'    \item `base`: The [`SplineBasis`][orthogonalsplinebasis::SplineBasis] object
+#'    \item `V_inverse`: Inverse of the Gram matrix
+#'    \item `link`: The link function used
+#'    \item `loss`: The loss function used
+#'    \item `term2_method`: The term2 integration method used
+#'  }
 #'
 #' @export
 #'
 #' @examples
 #' \donttest{
+#' # Example 1: Default identity link (original analytic solution)
 #' model <-
 #'     fit_SensIAT_within_group_model(
 #'         group.data = SensIAT_example_data,
@@ -56,6 +79,21 @@ globalVariables(c(
 #'         time = Time,
 #'         End = 830,
 #'         knots = c(60, 260, 460),
+#'     )
+#'
+#' # Example 2: Log link with generalized iterative solver
+#' model_log <-
+#'     fit_SensIAT_within_group_model(
+#'         group.data = SensIAT_example_data,
+#'         outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
+#'         alpha = 0,
+#'         id = Subject_ID,
+#'         outcome = Outcome,
+#'         time = Time,
+#'         End = 830,
+#'         knots = c(60, 260, 460),
+#'         link = "log",
+#'         loss = "lp_mse"
 #'     )
 #' }
 fit_SensIAT_within_group_model <- function(group.data,
@@ -70,7 +108,11 @@ fit_SensIAT_within_group_model <- function(group.data,
                                            outcome.args = list(),
                                            influence.args = list(),
                                            spline.degree = 3,
-                                           add.terminal.observations = TRUE) {
+                                           add.terminal.observations = TRUE,
+                                           loss = c("lp_mse", "quasi-likelihood"),
+                                           link = c("identity", "log", "logit"),
+                                           term2_method = c("fast", "original", "fixed_grid", "seeded_adaptive", "gauss_legendre"),
+                                           impute_data = NULL) {
     ###### Input clean and capture -------------------------------------------
     # Variables
     id.var <- ensym(id)
@@ -94,6 +136,14 @@ fit_SensIAT_within_group_model <- function(group.data,
         End <- rlang::expr(max({{ time }}, na.rm = TRUE) + 1) %>%
             rlang::eval_tidy(data = group.data, env = parent.frame())
     }
+
+    # Match new generalized parameters
+    loss <- match.arg(loss)
+    link <- match.arg(link)
+    term2_method <- match.arg(term2_method)
+    
+    # Determine whether to use generalized solver
+    use_generalized <- link != "identity"
 
     ###### Create Model Frame -----------------------------------------------
     outcome.extra.vars <- all.vars(outcome.args$model.modifications) |>
@@ -176,16 +226,57 @@ fit_SensIAT_within_group_model <- function(group.data,
     #' * **`delta`** The bin width for fixed quadrature.
     #' * **`resolution`** alternative to `delta` by specifying the number of bins.
     #' * **`fix_discontinuity`** Whether to account for the discontinuity in the influence at observation times.
-    marginal_model <- rlang::inject(fit_SensIAT_marginal_mean_model(
-        data_all_with_transforms,
-        alpha = alpha,
-        knots = knots,
-        intensity.model = intensity.model,
-        outcome.model = outcome.model,
-        spline.degree = spline.degree,
-        !!!influence.args,
-        time.vars = c("..delta_time..")
-    ))
+    
+    # Route to either the original (identity link) or generalized marginal model
+    if (use_generalized) {
+        # Create default impute_data function if not provided
+        if (is.null(impute_data)) {
+            # Capture outcome variable name from formula
+            outcome_var_name <- as.character(rlang::f_lhs(formula(outcome.model)))
+            
+            impute_data <- function(t, df) {
+                # Set up the data with appropriate lag variables
+                data_wl <- df |>
+                    dplyr::mutate(
+                        ..prev_time.. = .data$..time..,
+                        ..prev_outcome.. = .data[[outcome_var_name]],
+                        ..delta_time.. = 0
+                    )
+                extrapolate_from_last_observation(t, data_wl, "..time..", slopes = c("..delta_time.." = 1))
+            }
+        }
+        
+        marginal_model <- rlang::inject(fit_SensIAT_marginal_mean_model_generalized(
+            data = data_all_with_transforms,
+            time = data_all_with_transforms$..time..,
+            id = data_all_with_transforms$..id..,
+            alpha = alpha,
+            knots = knots,
+            outcome.model = outcome.model,
+            intensity.model = intensity.model,
+            impute_data = impute_data,
+            loss = loss,
+            link = link,
+            spline.degree = spline.degree,
+            term2_method = term2_method,
+            !!!influence.args
+        ))
+        
+        # Normalize return structure (generalized uses V.inverse, original uses V_inverse)
+        marginal_model$V_inverse <- marginal_model$V.inverse %||% marginal_model$V_inverse
+        marginal_model$coefficient.variance <- marginal_model$coefficient.variance %||% marginal_model$coefficient_variance
+    } else {
+        marginal_model <- rlang::inject(fit_SensIAT_marginal_mean_model(
+            data_all_with_transforms,
+            alpha = alpha,
+            knots = knots,
+            intensity.model = intensity.model,
+            outcome.model = outcome.model,
+            spline.degree = spline.degree,
+            !!!influence.args,
+            time.vars = c("..delta_time..")
+        ))
+    }
 
     structure(
         list(
@@ -207,7 +298,10 @@ fit_SensIAT_within_group_model <- function(group.data,
                 influence = influence.args
             ),
             base = marginal_model$base,
-            V_inverse = marginal_model$V_inverse
+            V_inverse = marginal_model$V_inverse,
+            link = link,
+            loss = loss,
+            term2_method = term2_method
         ),
         class = "SensIAT_within_group_model",
         call = match.call(expand.dots = TRUE)
