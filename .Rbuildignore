@@ -14,10 +14,20 @@ roadmap.md
 ^Makefile$
 .devcontainer
 ^\.Rprofile$
+^\.Rhistory$
 ^codecov\.yml$
 ^copilot_docs$
-^vignettes/.*_cache$
-^vignettes/.*_files$
-^inst/3\. Simu_point_estimate_fast\.R$
+^vignettes/.*_cache(/.*)?$
+^vignettes/.*_files(/.*)?$
+^vignettes/.*\.html$
+^inst/Simu_point_estimate_fast\.R$
 ^doc$
 ^Meta$
+^\.git$
+^\.Rcheck$
+^SensIAT\.Rcheck$
+^check_.*\.log$
+^tmp_.*$
+^test-file-times\.csv$
+^src/.*\.(o|so|dll)$
+^src/symbols\.rds$

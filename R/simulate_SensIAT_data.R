@@ -29,6 +29,13 @@
 #' @param intensity_bound Upper bound on intensity for rejection sampling.
 #'        Required if intensity_fn is provided. Represents the supremum of the intensity
 #'        function on the interval of interest.
+#' @param outcome_model Optional fitted single-index outcome model. If provided,
+#'        outcomes for follow-up visits are generated from the fitted model via
+#'        [make_single_index_simulator()].
+#' @param outcome_simulator Optional simulator function for follow-up outcomes.
+#'        When provided, it overrides the internal outcome generation function.
+#'        This function should accept `prev_outcome`, `time`, `delta_time`, and
+#'        optionally `newdata`.
 #'
 #' @return A tibble with columns:
 #'   * `Subject_ID` - Subject identifier
@@ -69,6 +76,29 @@
 #'     intensity_bound = 0.05,
 #'     max_visits = 20
 #' )
+#'
+#' # Example using a fitted single-index outcome model to generate outcomes
+#' # via the fitted conditional distribution.
+#' #
+#' # Note: this example uses a fitted model object and is intended for
+#' # parametric bootstrap-style simulation.
+#' #
+#' # 
+#' # 
+#' # outcome_model <- fit_SensIAT_single_index_fixed_coef_model(
+#' #     Outcome ~ prev_outcome + time + delta_time,
+#' #     data = training_data,
+#' #     id = Subject_ID
+#' # )
+#' # sim_data3 <- simulate_SensIAT_data(
+#' #     n_subjects = 50,
+#' #     End = 200,
+#' #     seed = 123,
+#' #     outcome_model = outcome_model,
+#' #     intensity_fn = intensity_fn,
+#' #     intensity_bound = 0.05,
+#' #     max_visits = 20
+#' # )
 #' }
 simulate_SensIAT_data <- function(n_subjects,
                                   End,
@@ -87,7 +117,9 @@ simulate_SensIAT_data <- function(n_subjects,
                                   seed = NULL,
                                   link = "identity",
                                   intensity_fn = NULL,
-                                  intensity_bound = NULL) {
+                                  intensity_bound = NULL,
+                                  outcome_model = NULL,
+                                  outcome_simulator = NULL) {
     # Input validation
     if (!is.numeric(n_subjects) || n_subjects < 1 || n_subjects != floor(n_subjects)) {
         stop("n_subjects must be a positive integer")
@@ -112,7 +144,18 @@ simulate_SensIAT_data <- function(n_subjects,
             stop("intensity_bound must be a positive number")
         }
     }
-    
+
+    # Validate optional outcome simulator inputs
+    if (!is.null(outcome_model) && !is.null(outcome_simulator)) {
+        stop("Cannot provide both outcome_model and outcome_simulator")
+    }
+    if (!is.null(outcome_model)) {
+        outcome_simulator <- make_single_index_simulator(outcome_model)
+    }
+    if (!is.null(outcome_simulator) && !is.function(outcome_simulator)) {
+        stop("outcome_simulator must be a function")
+    }
+
     if (!is.null(seed)) {
         set.seed(seed)
     }
@@ -135,7 +178,8 @@ simulate_SensIAT_data <- function(n_subjects,
                     max_visits = max_visits,
                     link = link,
                     intensity_fn = intensity_fn,
-                    intensity_bound = intensity_bound
+                    intensity_bound = intensity_bound,
+                    outcome_simulator = outcome_simulator
                 )
                 # Check if subject has at least one follow-up observation
                 if (max(subject_data$Time) > 0) {
@@ -170,7 +214,8 @@ simulate_single_subject <- function(subject_id,
                                     max_visits,
                                     link = "identity",
                                     intensity_fn = NULL,
-                                    intensity_bound = NULL) {
+                                    intensity_bound = NULL,
+                                    outcome_simulator = NULL) {
     # Initialize vectors to store visit data
     times <- numeric(max_visits)
     outcomes <- numeric(max_visits)
@@ -215,27 +260,38 @@ simulate_single_subject <- function(subject_id,
         visit_num <- visit_num + 1
         delta_time <- next_time - current_time
         
-        next_outcome <- generate_outcome(
-            prev_outcome = current_outcome,
-            time = next_time,
-            delta_time = delta_time,
-            outcome_coef = outcome_coef,
-            outcome_sd = outcome_sd,
-            link = link
-        )
+        if (!is.null(outcome_simulator)) {
+            next_outcome <- outcome_simulator(
+                prev_outcome = current_outcome,
+                time = next_time,
+                delta_time = delta_time
+            )
+            if (!is.numeric(next_outcome) || length(next_outcome) != 1 || is.na(next_outcome)) {
+                stop("outcome_simulator must return a single numeric value")
+            }
+        } else {
+            next_outcome <- generate_outcome(
+                prev_outcome = current_outcome,
+                time = next_time,
+                delta_time = delta_time,
+                outcome_coef = outcome_coef,
+                outcome_sd = outcome_sd,
+                link = link
+            )
+        }
         
-        # Store the observation
+        # Store generated visit
         times[visit_num] <- next_time
         outcomes[visit_num] <- next_outcome
-        
+
         # Update current state
         current_time <- next_time
         current_outcome <- next_outcome
     }
-    
+
     # Trim to actual number of visits
     n_visits <- visit_num
-    
+
     # Return as tibble
     tibble::tibble(
         Subject_ID = subject_id,
@@ -463,7 +519,9 @@ simulate_SensIAT_two_groups <- function(n_subjects,
                                         seed = NULL,
                                         link = "identity",
                                         intensity_fn = NULL,
-                                        intensity_bound = NULL) {
+                                        intensity_bound = NULL,
+                                        outcome_model = NULL,
+                                        outcome_simulator = NULL) {
     # Input validation
     if (!is.numeric(n_subjects) || n_subjects < 2 || n_subjects != floor(n_subjects)) {
         stop("n_subjects must be a positive integer >= 2")
@@ -485,7 +543,18 @@ simulate_SensIAT_two_groups <- function(n_subjects,
             stop("intensity_bound must be a positive number")
         }
     }
-    
+
+    # Validate optional outcome simulator inputs
+    if (!is.null(outcome_model) && !is.null(outcome_simulator)) {
+        stop("Cannot provide both outcome_model and outcome_simulator")
+    }
+    if (!is.null(outcome_model)) {
+        outcome_simulator <- make_single_index_simulator(outcome_model)
+    }
+    if (!is.null(outcome_simulator) && !is.function(outcome_simulator)) {
+        stop("outcome_simulator must be a function")
+    }
+
     if (!is.null(seed)) {
         set.seed(seed)
     }
@@ -508,7 +577,9 @@ simulate_SensIAT_two_groups <- function(n_subjects,
         seed = NULL,  # Already set seed above
         link = link,
         intensity_fn = intensity_fn,
-        intensity_bound = intensity_bound
+        intensity_bound = intensity_bound,
+        outcome_model = outcome_model,
+        outcome_simulator = outcome_simulator
     ) |>
         dplyr::mutate(Group = "Control")
     
@@ -532,7 +603,9 @@ simulate_SensIAT_two_groups <- function(n_subjects,
         seed = NULL,
         link = link,
         intensity_fn = intensity_fn,
-        intensity_bound = intensity_bound
+        intensity_bound = intensity_bound,
+        outcome_model = outcome_model,
+        outcome_simulator = outcome_simulator
     ) |>
         dplyr::mutate(
             Subject_ID = .data$Subject_ID + n_control,  # Offset IDs
