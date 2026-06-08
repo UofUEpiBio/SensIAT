@@ -22,6 +22,13 @@
 #' @param seed Random seed for reproducibility.
 #' @param link Link function for outcome model. One of "identity", "log", or "logit".
 #'        Determines the scale on which the outcome model operates.
+#' @param intensity_fn Optional function to compute intensity (hazard) of observation.
+#'        If provided, should take arguments (time, prev_outcome, visit_num) and return
+#'        a scalar intensity value. If NULL (default), intensity is computed from
+#'        intensity_coef and baseline_hazard.
+#' @param intensity_bound Upper bound on intensity for rejection sampling.
+#'        Required if intensity_fn is provided. Represents the supremum of the intensity
+#'        function on the interval of interest.
 #'
 #' @return A tibble with columns:
 #'   * `Subject_ID` - Subject identifier
@@ -33,7 +40,7 @@
 #'
 #' @examples
 #' \donttest{
-#' # Simulate data with default parameters
+#' # Default usage (uses exponential gaps derived from intensity_coef and baseline_hazard)
 #' sim_data <- simulate_SensIAT_data(
 #'     n_subjects = 100,
 #'     End = 830,
@@ -46,6 +53,21 @@
 #'     ),
 #'     baseline_hazard = 0.005,
 #'     outcome_sd = 1.5
+#' )
+#'
+#' # Example with custom intensity function and thinning (Exp(lambda_star))
+#' intensity_fn <- function(t, prev_outcome, visit_num) {
+#'   lambda0 <- 0.005
+#'   gamma  <- -0.05
+#'   lambda0 * exp(gamma * prev_outcome)
+#' }
+#' sim_data2 <- simulate_SensIAT_data(
+#'     n_subjects = 50,
+#'     End = 200,
+#'     seed = 123,
+#'     intensity_fn = intensity_fn,
+#'     intensity_bound = 0.05,
+#'     max_visits = 20
 #' )
 #' }
 simulate_SensIAT_data <- function(n_subjects,
@@ -63,7 +85,9 @@ simulate_SensIAT_data <- function(n_subjects,
                                   initial_outcome_sd = 2,
                                   max_visits = 50,
                                   seed = NULL,
-                                  link = "identity") {
+                                  link = "identity",
+                                  intensity_fn = NULL,
+                                  intensity_bound = NULL) {
     # Input validation
     if (!is.numeric(n_subjects) || n_subjects < 1 || n_subjects != floor(n_subjects)) {
         stop("n_subjects must be a positive integer")
@@ -75,6 +99,19 @@ simulate_SensIAT_data <- function(n_subjects,
         stop("max_visits must be at least 2")
     }
     link <- match.arg(link, choices = c("identity", "log", "logit"))
+    
+    # Validate intensity function parameters
+    if (!is.null(intensity_fn)) {
+        if (!is.function(intensity_fn)) {
+            stop("intensity_fn must be a function")
+        }
+        if (is.null(intensity_bound)) {
+            stop("intensity_bound must be provided when using intensity_fn")
+        }
+        if (!is.numeric(intensity_bound) || intensity_bound <= 0) {
+            stop("intensity_bound must be a positive number")
+        }
+    }
     
     if (!is.null(seed)) {
         set.seed(seed)
@@ -96,7 +133,9 @@ simulate_SensIAT_data <- function(n_subjects,
                     initial_outcome_mean = initial_outcome_mean,
                     initial_outcome_sd = initial_outcome_sd,
                     max_visits = max_visits,
-                    link = link
+                    link = link,
+                    intensity_fn = intensity_fn,
+                    intensity_bound = intensity_bound
                 )
                 # Check if subject has at least one follow-up observation
                 if (max(subject_data$Time) > 0) {
@@ -129,7 +168,9 @@ simulate_single_subject <- function(subject_id,
                                     initial_outcome_mean,
                                     initial_outcome_sd,
                                     max_visits,
-                                    link = "identity") {
+                                    link = "identity",
+                                    intensity_fn = NULL,
+                                    intensity_bound = NULL) {
     # Initialize vectors to store visit data
     times <- numeric(max_visits)
     outcomes <- numeric(max_visits)
@@ -160,7 +201,9 @@ simulate_single_subject <- function(subject_id,
             visit_num = visit_num,
             intensity_coef = intensity_coef,
             baseline_hazard = baseline_hazard,
-            End = End
+            End = End,
+            intensity_fn = intensity_fn,
+            intensity_bound = intensity_bound
         )
         
         # Stop if next observation exceeds End time
@@ -216,9 +259,55 @@ simulate_single_subject <- function(subject_id,
 generate_next_observation_time <- function(current_time,
                                            current_outcome,
                                            visit_num,
-                                           intensity_coef,
-                                           baseline_hazard,
-                                           End) {
+                                           intensity_coef = NULL,
+                                           baseline_hazard = NULL,
+                                           End,
+                                           intensity_fn = NULL,
+                                           intensity_bound = NULL) {
+    # Use thinning (Exp(lambda_star)) rejection sampling if intensity_fn is provided
+    if (!is.null(intensity_fn)) {
+        # intensity_bound is interpreted as lambda^* in the algorithm
+        lambda_star <- intensity_bound
+        if (!is.numeric(lambda_star) || lambda_star <= 0) {
+            stop("intensity_bound (lambda_star) must be a positive number")
+        }
+
+        repeat {
+            # Draw candidate gap time from Exp(lambda_star)
+            s_candidate <- stats::rexp(1, rate = lambda_star)
+            t_candidate <- current_time + s_candidate
+
+            # If candidate time exceeds End, return it (calling code will stop)
+            if (t_candidate > End) {
+                return(t_candidate)
+            }
+
+            # Evaluate intensity at candidate time
+            lambda_t <- intensity_fn(t_candidate, current_outcome, visit_num)
+
+            if (!is.numeric(lambda_t) || length(lambda_t) != 1) {
+                stop("intensity_fn must return a single numeric value")
+            }
+            if (lambda_t < 0) {
+                stop("Intensity function returned negative value at t=", t_candidate)
+            }
+            if (lambda_t > lambda_star) {
+                stop(sprintf("Intensity function exceeded provided lambda_star at t=%s: intensity=%s, lambda_star=%s",
+                             format(t_candidate, digits = 6), format(lambda_t, digits = 6), format(lambda_star, digits = 6)))
+            }
+
+            # Accept with probability lambda(t)/lambda_star
+            if (stats::runif(1) < lambda_t / lambda_star) {
+                return(t_candidate)
+            }
+
+            # If rejected, set start time to t_candidate and repeat
+            current_time <- t_candidate
+            # continue loop
+        }
+    }
+    
+    # Fallback: compute intensity from coefficients (backward compatibility)
     # Compute hazard ratio based on current outcome
     # Using non-linear transformation (could use splines in more complex version)
     covariate_effect <- current_outcome
@@ -317,6 +406,13 @@ generate_outcome <- function(prev_outcome,
 #' @param treatment_intensity_effect Multiplicative effect on observation intensity
 #'        (values < 1 mean fewer observations in treatment group).
 #' @param link Link function for outcome model. One of "identity", "log", or "logit".
+#' @param intensity_fn Optional function to compute intensity (hazard) of observation.
+#'        If provided, should take arguments (time, prev_outcome, visit_num) and return
+#'        a scalar intensity value. If NULL (default), intensity is computed from
+#'        `intensity_coef` and `baseline_hazard`.
+#' @param intensity_bound Upper bound on intensity for rejection sampling.
+#'        Required if `intensity_fn` is provided. Represents the supremum of the intensity
+#'        function on the interval of interest.
 #'
 #' @return A tibble with an additional `Treatment` column indicating group assignment.
 #'
@@ -324,11 +420,27 @@ generate_outcome <- function(prev_outcome,
 #'
 #' @examples
 #' \donttest{
-#' # Simulate data with treatment effect
+#' # Default treatment/control simulation (uses exponential gaps derived from coefficients)
 #' sim_data <- simulate_SensIAT_two_groups(
 #'     n_subjects = 100,
 #'     End = 830,
 #'     treatment_effect = 1.5,
+#'     treatment_intensity_effect = 0.9
+#' )
+#'
+#' # Example using custom intensity with thinning
+#' intensity_fn <- function(t, prev_outcome, visit_num) {
+#'   lambda0 <- 0.005
+#'   gamma  <- -0.05
+#'   lambda0 * exp(gamma * prev_outcome)
+#' }
+#' sim_data2 <- simulate_SensIAT_two_groups(
+#'     n_subjects = 100,
+#'     End = 200,
+#'     seed = 123,
+#'     intensity_fn = intensity_fn,
+#'     intensity_bound = 0.05,
+#'     treatment_effect = 1.0,
 #'     treatment_intensity_effect = 0.9
 #' )
 #' }
@@ -349,7 +461,9 @@ simulate_SensIAT_two_groups <- function(n_subjects,
                                         treatment_effect = 0,
                                         treatment_intensity_effect = 1,
                                         seed = NULL,
-                                        link = "identity") {
+                                        link = "identity",
+                                        intensity_fn = NULL,
+                                        intensity_bound = NULL) {
     # Input validation
     if (!is.numeric(n_subjects) || n_subjects < 2 || n_subjects != floor(n_subjects)) {
         stop("n_subjects must be a positive integer >= 2")
@@ -358,6 +472,19 @@ simulate_SensIAT_two_groups <- function(n_subjects,
         stop("End must be a positive number")
     }
     link <- match.arg(link, choices = c("identity", "log", "logit"))
+    
+    # Validate intensity function parameters
+    if (!is.null(intensity_fn)) {
+        if (!is.function(intensity_fn)) {
+            stop("intensity_fn must be a function")
+        }
+        if (is.null(intensity_bound)) {
+            stop("intensity_bound must be provided when using intensity_fn")
+        }
+        if (!is.numeric(intensity_bound) || intensity_bound <= 0) {
+            stop("intensity_bound must be a positive number")
+        }
+    }
     
     if (!is.null(seed)) {
         set.seed(seed)
@@ -379,7 +506,9 @@ simulate_SensIAT_two_groups <- function(n_subjects,
         initial_outcome_sd = initial_outcome_sd,
         max_visits = max_visits,
         seed = NULL,  # Already set seed above
-        link = link
+        link = link,
+        intensity_fn = intensity_fn,
+        intensity_bound = intensity_bound
     ) |>
         dplyr::mutate(Group = "Control")
     
@@ -401,7 +530,9 @@ simulate_SensIAT_two_groups <- function(n_subjects,
         initial_outcome_sd = initial_outcome_sd,
         max_visits = max_visits,
         seed = NULL,
-        link = link
+        link = link,
+        intensity_fn = intensity_fn,
+        intensity_bound = intensity_bound
     ) |>
         dplyr::mutate(
             Subject_ID = .data$Subject_ID + n_control,  # Offset IDs

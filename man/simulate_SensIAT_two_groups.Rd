@@ -18,7 +18,9 @@ simulate_SensIAT_two_groups(
   treatment_effect = 0,
   treatment_intensity_effect = 1,
   seed = NULL,
-  link = "identity"
+  link = "identity",
+  intensity_fn = NULL,
+  intensity_bound = NULL
 )
 }
 \arguments{
@@ -56,6 +58,15 @@ or a numeric value for constant baseline hazard.}
 \item{seed}{Random seed for reproducibility.}
 
 \item{link}{Link function for outcome model. One of "identity", "log", or "logit".}
+
+\item{intensity_fn}{Optional function to compute intensity (hazard) of observation.
+If provided, should take arguments (time, prev_outcome, visit_num) and return
+a scalar intensity value. If NULL (default), intensity is computed from
+\code{intensity_coef} and \code{baseline_hazard}.}
+
+\item{intensity_bound}{Upper bound on intensity for rejection sampling.
+Required if \code{intensity_fn} is provided. Represents the supremum of the intensity
+function on the interval of interest.}
 }
 \value{
 A tibble with an additional \code{Treatment} column indicating group assignment.
@@ -66,11 +77,27 @@ potentially different parameters.
 }
 \examples{
 \donttest{
-# Simulate data with treatment effect
+# Default treatment/control simulation (uses exponential gaps derived from coefficients)
 sim_data <- simulate_SensIAT_two_groups(
     n_subjects = 100,
     End = 830,
     treatment_effect = 1.5,
+    treatment_intensity_effect = 0.9
+)
+
+# Example using custom intensity with thinning
+intensity_fn <- function(t, prev_outcome, visit_num) {
+  lambda0 <- 0.005
+  gamma  <- -0.05
+  lambda0 * exp(gamma * prev_outcome)
+}
+sim_data2 <- simulate_SensIAT_two_groups(
+    n_subjects = 100,
+    End = 200,
+    seed = 123,
+    intensity_fn = intensity_fn,
+    intensity_bound = 0.05,
+    treatment_effect = 1.0,
     treatment_intensity_effect = 0.9
 )
 }

@@ -14,7 +14,9 @@ simulate_single_subject(
   initial_outcome_mean,
   initial_outcome_sd,
   max_visits,
-  link = "identity"
+  link = "identity",
+  intensity_fn = NULL,
+  intensity_bound = NULL
 )
 }
 \arguments{
@@ -46,6 +48,15 @@ or a numeric value for constant baseline hazard.}
 
 \item{link}{Link function for outcome model. One of "identity", "log", or "logit".
 Determines the scale on which the outcome model operates.}
+
+\item{intensity_fn}{Optional function to compute intensity (hazard) of observation.
+If provided, should take arguments (time, prev_outcome, visit_num) and return
+a scalar intensity value. If NULL (default), intensity is computed from
+\code{intensity_coef} and \code{baseline_hazard}.}
+
+\item{intensity_bound}{Upper bound on intensity for rejection sampling.
+Required if \code{intensity_fn} is provided. Represents the supremum of the intensity
+function on the interval of interest.}
 }
 \value{
 A tibble with the subject's longitudinal data.

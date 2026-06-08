@@ -329,6 +329,33 @@ test_that("simulate_SensIAT_data: baseline_hazard affects visit frequency", {
                 info = "Higher baseline hazard should produce more visits")
 })
 
+test_that("simulate_SensIAT_data: custom intensity_fn uses thinning", {
+    set.seed(1010)
+    intensity_fn <- function(t, prev_outcome, visit_num) {
+        0.02 + 0.005 * abs(prev_outcome)
+    }
+
+    data <- simulate_SensIAT_data(
+        n_subjects = 5,
+        End = 100,
+        intensity_fn = intensity_fn,
+        intensity_bound = 0.2,
+        max_visits = 10,
+        link = "identity"
+    )
+
+    expect_s3_class(data, "tbl_df")
+    expect_named(data, c("Subject_ID", "Time", "Outcome"))
+    expect_true(all(data$Time >= 0), info = "Times should be non-negative")
+    expect_true(all(data$Time <= 100), info = "Times should not exceed End")
+
+    time_checks <- data |> 
+        dplyr::group_by(Subject_ID) |> 
+        dplyr::summarise(times_increasing = all(diff(Time) > 0))
+    expect_true(all(time_checks$times_increasing),
+                info = "Times should be strictly increasing within subject")
+})
+
 test_that("simulate_SensIAT_data: validates inputs", {
     expect_error(
         simulate_SensIAT_data(n_subjects = 0, End = 500),

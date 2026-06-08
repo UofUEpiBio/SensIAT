@@ -8,9 +8,11 @@ generate_next_observation_time(
   current_time,
   current_outcome,
   visit_num,
-  intensity_coef,
-  baseline_hazard,
-  End
+  intensity_coef = NULL,
+  baseline_hazard = NULL,
+  End,
+  intensity_fn = NULL,
+  intensity_bound = NULL
 )
 }
 \arguments{
@@ -27,6 +29,15 @@ Can be a scalar or vector (one per visit number stratum).}
 or a numeric value for constant baseline hazard.}
 
 \item{End}{Maximum follow-up time.}
+
+\item{intensity_fn}{Optional function to compute intensity (hazard) of observation.
+If provided, should take arguments (time, prev_outcome, visit_num) and return
+a scalar intensity value. If NULL (default), intensity is computed from
+\code{intensity_coef} and \code{baseline_hazard}.}
+
+\item{intensity_bound}{Upper bound on intensity for rejection sampling.
+Required if \code{intensity_fn} is provided. Represents the supremum of the intensity
+function on the interval of interest.}
 }
 \value{
 Time of next observation.
