@@ -89,3 +89,65 @@ make_single_index_simulator <- function(outcome_model, covariate_mapping = NULL)
     class(simulator) <- c("SensIAT_single_index_simulator", class(simulator))
     return(simulator)
 }
+
+
+#' Create an intensity simulator from a fitted intensity model
+#'
+#' This factory builds a closure that computes an observation intensity
+#' (hazard) at time t given covariates like `prev_outcome` and `visit_num`.
+#' Supports user-supplied functions and `coxph` fitted models (approximate
+#' baseline hazard via `survival::basehaz`).
+#'
+#' @param intensity_model A fitted model (e.g., `coxph`) or a function(t, prev_outcome, visit_num).
+#' @param covariate_mapping Optional named character vector mapping expected covariate names to model variable names.
+#' @return A function of signature `function(t, prev_outcome, visit_num)` returning non-negative numeric intensity.
+#' @keywords internal
+make_intensity_simulator <- function(intensity_model, covariate_mapping = NULL) {
+    if (is.null(intensity_model)) stop("intensity_model must be provided")
+
+    # If user provided a function already, validate and return
+    if (is.function(intensity_model)) {
+        f <- intensity_model
+        return(function(t, prev_outcome, visit_num) {
+            val <- f(t, prev_outcome, visit_num)
+            if (!is.numeric(val) || length(val) != 1) stop("intensity function must return a single numeric value")
+            if (val < 0) stop("intensity function returned negative value")
+            return(val)
+        })
+    }
+
+    # Support coxph-like objects by extracting baseline cumulative hazard
+    if (inherits(intensity_model, "coxph")) {
+        bh <- tryCatch(survival::basehaz(intensity_model, centered = FALSE), error = function(e) NULL)
+        if (is.null(bh) || nrow(bh) == 0) {
+            warning("Could not extract baseline hazard from coxph; falling back to constant hazard of 0.01")
+            return(function(t, prev_outcome, visit_num) 0.01)
+        }
+
+        # bh should have columns 'time' and 'hazard' (cumulative)
+        times <- bh$time
+        cumhaz <- if (!is.null(bh$hazard)) bh$hazard else bh$haz
+        if (is.null(cumhaz)) cumhaz <- bh$hazard
+
+        H0 <- stats::stepfun(times, c(0, cumhaz), right = TRUE)
+
+        intensity_fun <- function(t, prev_outcome, visit_num) {
+            # Build a minimal newdata for linear predictor if model has terms
+            nd <- data.frame(prev_outcome = prev_outcome, visit_num = visit_num)
+            # Predict linear predictor; fall back to 0 on error
+            lp <- tryCatch(as.numeric(stats::predict(intensity_model, newdata = nd, type = "lp")), error = function(e) 0)
+
+            # Approximate hazard via small finite difference of cumulative hazard
+            dt <- max(1e-5, 1e-4 * max(1, abs(t)))
+            h <- (H0(t + dt) - H0(t)) / dt
+            if (!is.finite(h) || h < 0) h <- 0
+            val <- h * exp(lp)
+            if (!is.finite(val)) val <- 0
+            return(as.numeric(val))
+        }
+
+        return(intensity_fun)
+    }
+
+    stop("Unsupported intensity_model type. Provide a function or a coxph object.")
+}
