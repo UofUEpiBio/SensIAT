@@ -18,7 +18,9 @@ simulate_SensIAT_data(
   seed = NULL,
   link = "identity",
   intensity_fn = NULL,
-  intensity_bound = NULL
+  intensity_bound = NULL,
+  outcome_model = NULL,
+  outcome_simulator = NULL
 )
 }
 \arguments{
@@ -56,11 +58,20 @@ Determines the scale on which the outcome model operates.}
 \item{intensity_fn}{Optional function to compute intensity (hazard) of observation.
 If provided, should take arguments (time, prev_outcome, visit_num) and return
 a scalar intensity value. If NULL (default), intensity is computed from
-\code{intensity_coef} and \code{baseline_hazard}.}
+intensity_coef and baseline_hazard.}
 
 \item{intensity_bound}{Upper bound on intensity for rejection sampling.
-Required if \code{intensity_fn} is provided. Represents the supremum of the intensity
+Required if intensity_fn is provided. Represents the supremum of the intensity
 function on the interval of interest.}
+
+\item{outcome_model}{Optional fitted single-index outcome model. If provided,
+outcomes for follow-up visits are generated from the fitted model via
+\code{\link[=make_single_index_simulator]{make_single_index_simulator()}}.}
+
+\item{outcome_simulator}{Optional simulator function for follow-up outcomes.
+When provided, it overrides the internal outcome generation function.
+This function should accept \code{prev_outcome}, \code{time}, \code{delta_time}, and
+optionally \code{newdata}.}
 }
 \value{
 A tibble with columns:
@@ -107,5 +118,28 @@ sim_data2 <- simulate_SensIAT_data(
     intensity_bound = 0.05,
     max_visits = 20
 )
+
+# Example using a fitted single-index outcome model to generate outcomes
+# via the fitted conditional distribution.
+#
+# Note: this example uses a fitted model object and is intended for
+# parametric bootstrap-style simulation.
+#
+# 
+# 
+# outcome_model <- fit_SensIAT_single_index_fixed_coef_model(
+#     Outcome ~ prev_outcome + time + delta_time,
+#     data = training_data,
+#     id = Subject_ID
+# )
+# sim_data3 <- simulate_SensIAT_data(
+#     n_subjects = 50,
+#     End = 200,
+#     seed = 123,
+#     outcome_model = outcome_model,
+#     intensity_fn = intensity_fn,
+#     intensity_bound = 0.05,
+#     max_visits = 20
+# )
 }
 }

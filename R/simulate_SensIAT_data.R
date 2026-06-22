@@ -16,6 +16,7 @@
 #' @param baseline_hazard Baseline hazard function. Either a function of time and visit number,
 #'        or a numeric value for constant baseline hazard.
 #' @param outcome_sd Standard deviation of the outcome residuals.
+#' @param baseline_outcome_fn Optional function to generate baseline outcome value for each subject.
 #' @param initial_outcome_mean Mean of the initial (baseline) outcome.
 #' @param initial_outcome_sd Standard deviation of the initial outcome.
 #' @param max_visits Maximum number of visits per subject (to prevent infinite loops).
@@ -111,6 +112,7 @@ simulate_SensIAT_data <- function(n_subjects,
                                   ),
                                   baseline_hazard = 0.005,
                                   outcome_sd = 1.5,
+                                  baseline_outcome_fn = NULL,
                                   initial_outcome_mean = 5,
                                   initial_outcome_sd = 2,
                                   max_visits = 50,
@@ -173,6 +175,7 @@ simulate_SensIAT_data <- function(n_subjects,
                     outcome_coef = outcome_coef,
                     baseline_hazard = baseline_hazard,
                     outcome_sd = outcome_sd,
+                    baseline_outcome_fn = baseline_outcome_fn,
                     initial_outcome_mean = initial_outcome_mean,
                     initial_outcome_sd = initial_outcome_sd,
                     max_visits = max_visits,
@@ -209,9 +212,10 @@ simulate_single_subject <- function(subject_id,
                                     outcome_coef,
                                     baseline_hazard,
                                     outcome_sd,
+                                    max_visits,
+                                    baseline_outcome_fn = NULL,
                                     initial_outcome_mean,
                                     initial_outcome_sd,
-                                    max_visits,
                                     link = "identity",
                                     intensity_fn = NULL,
                                     intensity_bound = NULL,
@@ -222,14 +226,28 @@ simulate_single_subject <- function(subject_id,
     
     # Baseline observation (time = 0)
     times[1] <- 0
-    if (link == "logit") {
-        # For logit link, generate probability then binary outcome
-        outcomes[1] <- stats::rbinom(1, size = 1, prob = initial_outcome_mean)
-    } else if (link == "log") {
-        # For log link, generate count outcome
-        outcomes[1] <- stats::rpois(1, lambda = initial_outcome_mean)
+    if (!is.null(baseline_outcome_fn)) {
+        if (is.function(baseline_outcome_fn)) {
+            baseline_outcome <- baseline_outcome_fn()
+            if (!is.numeric(baseline_outcome) || length(baseline_outcome) != 1 || is.na(baseline_outcome)) {
+                stop("baseline_outcome_fn must return a single numeric value")
+            }
+        } else if (is.numeric(baseline_outcome_fn)) {
+            baseline_outcome <- sample(baseline_outcome_fn, size=1)
+        } else {
+            stop("baseline_outcome_fn must be a function or a numeric vector.")
+        }
     } else {
-        # For identity link, generate continuous outcome
+        if (link == "logit") {
+            # For logit link, generate probability then binary outcome
+            outcomes[1] <- stats::rbinom(1, size = 1, prob = initial_outcome_mean)
+        } else if (link == "log") {
+            # For log link, generate count outcome
+            outcomes[1] <- stats::rpois(1, lambda = initial_outcome_mean)
+        } else {
+            # For identity link, generate continuous outcome
+            outcomes[1] <- stats::rnorm(1, mean = initial_outcome_mean, sd = initial_outcome_sd)
+        }
         outcomes[1] <- stats::rnorm(1, mean = initial_outcome_mean, sd = initial_outcome_sd)
     }
     

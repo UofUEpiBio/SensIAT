@@ -20,7 +20,9 @@ simulate_SensIAT_two_groups(
   seed = NULL,
   link = "identity",
   intensity_fn = NULL,
-  intensity_bound = NULL
+  intensity_bound = NULL,
+  outcome_model = NULL,
+  outcome_simulator = NULL
 )
 }
 \arguments{
@@ -67,6 +69,15 @@ a scalar intensity value. If NULL (default), intensity is computed from
 \item{intensity_bound}{Upper bound on intensity for rejection sampling.
 Required if \code{intensity_fn} is provided. Represents the supremum of the intensity
 function on the interval of interest.}
+
+\item{outcome_model}{Optional fitted single-index outcome model. If provided,
+outcomes for follow-up visits are generated from the fitted model via
+\code{\link[=make_single_index_simulator]{make_single_index_simulator()}}.}
+
+\item{outcome_simulator}{Optional simulator function for follow-up outcomes.
+When provided, it overrides the internal outcome generation function.
+This function should accept \code{prev_outcome}, \code{time}, \code{delta_time}, and
+optionally \code{newdata}.}
 }
 \value{
 A tibble with an additional \code{Treatment} column indicating group assignment.
