@@ -30,11 +30,31 @@ make_parametric_intensity_simulator <- function(intensity_model, sampled_coef, c
         warning("Could not extract baseline hazard from coxph; using constant hazard 0.01")
         return(function(t, prev_outcome, visit_num) 0.01)
     }
-    times <- bh$time
-    cumhaz <- if (!is.null(bh$hazard)) bh$hazard else bh$haz
-    H0 <- stats::stepfun(times, c(0, cumhaz), right = TRUE)
+    times <- c(0, bh$time)
+    cumhaz <- c(0, if (!is.null(bh$hazard)) bh$hazard else bh$haz)
+    if (length(times) < 2) {
+        warning("Baseline hazard from coxph is degenerate; using constant hazard 0.01")
+        return(function(t, prev_outcome, visit_num) 0.01)
+    }
+    interval_lengths <- diff(times)
+    base_hazard <- diff(cumhaz) / interval_lengths
+    base_hazard[base_hazard < 0] <- 0
 
-    function(t, prev_outcome, visit_num) {
+    baseline_hazard_fn <- function(t) {
+        if (!is.numeric(t) || length(t) != 1 || is.na(t)) {
+            stop("Time must be a single numeric value")
+        }
+        if (t < 0) {
+            return(0)
+        }
+        idx <- findInterval(t, times, rightmost.closed = FALSE)
+        if (idx == 0 || idx > length(base_hazard)) {
+            return(0)
+        }
+        return(base_hazard[idx])
+    }
+
+    fn <- function(t, prev_outcome, visit_num) {
         nd <- data.frame(prev_outcome = prev_outcome, visit_num = visit_num)
         # Build model matrix and compute lp using sampled_coef
         X_new <- tryCatch(model.matrix(model_terms, data = nd), error = function(e) NULL)
@@ -44,22 +64,21 @@ make_parametric_intensity_simulator <- function(intensity_model, sampled_coef, c
             # Align coefficients
             coef_names <- names(sampled_coef)
             cols <- colnames(X_new)
-            # Some models include an intercept column '(Intercept)'
             coef_vec <- sampled_coef
             missing <- setdiff(cols, names(coef_vec))
             if (length(missing) > 0) {
-                # set missing coef to 0
                 coef_vec[missing] <- 0
             }
             lp <- as.numeric(X_new %*% coef_vec[cols])
         }
-        dt <- max(1e-5, 1e-4 * max(1, abs(t)))
-        h <- (H0(t + dt) - H0(t)) / dt
-        if (!is.finite(h) || h < 0) h <- 0
+        h <- baseline_hazard_fn(t)
         val <- h * exp(lp)
-        if (!is.finite(val)) val <- 0
+        if (!is.finite(val) || val < 0) val <- 0
         return(as.numeric(val))
     }
+    attr(fn, "baseline_event_times") <- times[-1]
+    attr(fn, "baseline_hazard_segments") <- base_hazard
+    return(fn)
 }
 
 
@@ -139,8 +158,41 @@ parametric_bootstrap <- function(nboot = 100,
         args <- simulate_args
         if (!is.null(intensity_sim)) {
             args$intensity_fn <- intensity_sim
-            # require an intensity_bound; try to set from simulate_args or default
-            if (is.null(args$intensity_bound)) args$intensity_bound <- 0.05
+            # require an intensity_bound; try to set from simulate_args or compute a safe bound
+            if (is.null(args$intensity_bound)) {
+                End_tmp <- if (!is.null(simulate_args$End)) simulate_args$End else 1
+                max_vis_tmp <- if (!is.null(simulate_args$max_visits)) simulate_args$max_visits else 5
+                init_mean_tmp <- if (!is.null(simulate_args$initial_outcome_mean)) simulate_args$initial_outcome_mean else 0
+                outcome_sd_tmp <- if (!is.null(simulate_args$initial_outcome_sd)) simulate_args$initial_outcome_sd else 1
+
+                times_grid <- unique(c(
+                    seq(0, End_tmp, length.out = max(500, ceiling(End_tmp) * 100)),
+                    sort(c(0, End_tmp, seq(0, End_tmp, length.out = max(50, ceiling(End_tmp) * 10))))
+                ))
+                prev_outcomes <- unique(c(
+                    init_mean_tmp,
+                    0,
+                    init_mean_tmp + 3 * outcome_sd_tmp,
+                    init_mean_tmp - 3 * outcome_sd_tmp
+                ))
+                prev_outcomes <- prev_outcomes[is.finite(prev_outcomes)]
+                evals <- double(0)
+                baseline_times <- attr(intensity_sim, "baseline_event_times")
+                if (!is.null(baseline_times)) {
+                    times_grid <- unique(c(times_grid, baseline_times, pmax(0, baseline_times - 1e-4), pmin(End_tmp, baseline_times + 1e-4)))
+                }
+                for (tt in times_grid) {
+                    for (pv in prev_outcomes) {
+                        for (vn in seq_len(min(5, max_vis_tmp))) {
+                            val <- tryCatch(intensity_sim(tt, pv, vn), error = function(e) 0)
+                            if (!is.finite(val) || val < 0) val <- 0
+                            evals <- c(evals, val)
+                        }
+                    }
+                }
+                upper <- max(1e-6, max(evals, na.rm = TRUE) * 10000, 1e5)
+                args$intensity_bound <- upper
+            }
         }
         if (!is.null(outcome_sim)) args$outcome_simulator <- outcome_sim
 
@@ -149,4 +201,62 @@ parametric_bootstrap <- function(nboot = 100,
         results[[b]] <- sim
     }
     return(results)
+}
+
+#' Parametric bootstrap for a within-group SensIAT model
+#'
+#' @param nboot Number of bootstrap replicates.
+#' @param within_group_model A fitted `SensIAT_within_group_model` object.
+#' @param simulate_args List of arguments to pass to `simulate_SensIAT_data()`.
+#'        If not specified, `End`, `n_subjects`, `initial_outcome_mean`, and
+#'        `initial_outcome_sd` are inferred from the fitted model.
+#' @param seed Optional seed for reproducibility.
+#' @return A list of simulated datasets, one per bootstrap replicate.
+#' @export
+parametric_bootstrap_within_group <- function(nboot = 100,
+                                              within_group_model,
+                                              simulate_args = list(),
+                                              seed = NULL) {
+    if (!inherits(within_group_model, "SensIAT_within_group_model")) {
+        stop("within_group_model must be a SensIAT_within_group_model object")
+    }
+
+    intensity_model <- within_group_model$models$intensity
+    outcome_model <- within_group_model$models$outcome
+    model_data <- within_group_model$data
+
+    if (is.null(simulate_args$End)) {
+        simulate_args$End <- within_group_model$End
+    }
+    if (is.null(simulate_args$n_subjects)) {
+        if (!is.null(model_data$..id..)) {
+            simulate_args$n_subjects <- length(unique(model_data$..id..))
+        } else {
+            simulate_args$n_subjects <- NA_integer_
+        }
+    }
+    if (is.null(simulate_args$initial_outcome_mean)) {
+        baseline_outcomes <- model_data$..outcome..[model_data$..time.. == 0]
+        if (length(baseline_outcomes) > 0) {
+            simulate_args$initial_outcome_mean <- mean(baseline_outcomes, na.rm = TRUE)
+        } else {
+            simulate_args$initial_outcome_mean <- mean(model_data$..outcome.., na.rm = TRUE)
+        }
+    }
+    if (is.null(simulate_args$initial_outcome_sd)) {
+        baseline_outcomes <- model_data$..outcome..[model_data$..time.. == 0]
+        if (length(baseline_outcomes) > 1) {
+            simulate_args$initial_outcome_sd <- stats::sd(baseline_outcomes, na.rm = TRUE)
+        } else {
+            simulate_args$initial_outcome_sd <- stats::sd(model_data$..outcome.., na.rm = TRUE)
+        }
+    }
+
+    parametric_bootstrap(
+        nboot = nboot,
+        intensity_model = intensity_model,
+        outcome_model = outcome_model,
+        simulate_args = simulate_args,
+        seed = seed
+    )
 }
