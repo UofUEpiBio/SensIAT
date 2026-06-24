@@ -30,15 +30,18 @@ fit_SensIAT_fulldata_model <- function(data, trt, ...) {
         control.predicted <- predict(object$control, time, ...)
         treatment.predicted <- predict(object$treatment, time, ...)
 
-        full_join(
+        result <- full_join(
             control.predicted,
             treatment.predicted,
             by = c("time"),
             suffix = c("_control", "_treatment")
-        ) |>
-            mutate(
-                mean_effect = mean_treatment - mean_control,
-                var_effect = var_treatment + var_control
-            )
+        ) %>%
+            mutate(mean_effect = mean_treatment - mean_control)
+
+        if (all(c("var_control", "var_treatment") %in% names(result))) {
+            result <- mutate(result, var_effect = var_treatment + var_control)
+        }
+
+        result
     }
 globalVariables(c("mean_effect", "mean_treatment", "mean_control", "var_effect", "var_treatment", "var_control"))

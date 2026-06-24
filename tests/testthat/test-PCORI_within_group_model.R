@@ -322,3 +322,48 @@ test_that("multiple alpha values work with log link", {
     expect_length(model_multi$coefficient.variance, 3)
     expect_equal(model_multi$alpha, c(-0.3, 0, 0.3))
 })
+
+test_that("predict handles generalized links and returns natural-scale means", {
+    skip_on_cran()
+    skip_on_ci()
+
+    model_log <- fit_SensIAT_within_group_model(
+        group.data = SensIAT_example_data,
+        outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
+        alpha = 0,
+        id = Subject_ID,
+        outcome = Outcome,
+        time = Time,
+        End = 830,
+        knots = c(60, 260, 460),
+        link = "log",
+        loss = "lp_mse"
+    )
+
+    times <- c(90, 180)
+    pred_log <- predict(model_log, time = times)
+    B <- do.call(rbind, map(times, pcoriaccel_evaluate_basis, spline_basis = model_log$base))
+    eta_log <- as.vector(B %*% model_log$coefficients[[1]])
+    expect_equal(pred_log$mean, exp(eta_log))
+    expect_true(all(pred_log$mean > 0))
+
+    model_logit <- fit_SensIAT_within_group_model(
+        group.data = SensIAT_example_data,
+        outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
+        alpha = 0,
+        id = Subject_ID,
+        outcome = Outcome,
+        time = Time,
+        End = 830,
+        knots = c(60, 260, 460),
+        link = "logit",
+        loss = "lp_mse"
+    )
+
+    pred_logit <- predict(model_logit, time = times)
+    eta_logit <- as.vector(B %*% model_logit$coefficients[[1]])
+    expect_equal(pred_logit$mean, exp(eta_logit) / (1 + exp(eta_logit)))
+    expect_true(all(pred_logit$mean >= 0 & pred_logit$mean <= 1))
+    expect_false("var" %in% names(pred_log))
+    expect_false("var" %in% names(pred_logit))
+})
