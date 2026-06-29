@@ -237,6 +237,7 @@ simulate_single_subject <- function(subject_id,
         } else {
             stop("baseline_outcome_fn must be a function or a numeric vector.")
         }
+        outcomes[1] <- baseline_outcome
     } else {
         if (link == "logit") {
             # For logit link, generate probability then binary outcome

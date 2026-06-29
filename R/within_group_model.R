@@ -181,12 +181,15 @@ fit_SensIAT_within_group_model <- function(group.data,
         intensity.formula <- update.formula(intensity.formula, intensity.args$model.modifications)
     }
 
+    message("[SensIAT] Stage 1/3: fitting intensity model ...")
+    t0 <- proc.time()
     intensity.model <- rlang::inject(
         coxph(intensity.formula,
             id = ..id.., data = followup_data,
             !!!purrr::discard_at(intensity.args, c("bandwidth", "kernel", "model.modifications"))
         )
     )
+    message(sprintf("[SensIAT] intensity model done  (%.1f s)", (proc.time() - t0)[[3]]))
     # baseline_intensity_all <-
     #     estimate_baseline_intensity(
     #         intensity.model = intensity.model,
@@ -208,12 +211,15 @@ fit_SensIAT_within_group_model <- function(group.data,
         outcome.formula <- update.formula(outcome.formula, outcome.args$model.modifications)
     }
 
+    message("[SensIAT] Stage 2/3: fitting outcome model ...")
+    t0 <- proc.time()
     outcome.model <- rlang::inject(
         outcome_modeler(outcome.formula,
             data = filter(followup_data, !is.na(..outcome..)),
             !!!purrr::discard_at(outcome.args, "model.modifications")
         )
     )
+    message(sprintf("[SensIAT] outcome model done  (%.1f s)", (proc.time() - t0)[[3]]))
 
 
     # Compute value of the influence function: -----------------------------
@@ -228,6 +234,9 @@ fit_SensIAT_within_group_model <- function(group.data,
     #' * **`fix_discontinuity`** Whether to account for the discontinuity in the influence at observation times.
     
     # Route to either the original (identity link) or generalized marginal model
+    message(sprintf("[SensIAT] Stage 3/3: marginal mean solver  [link=%s, loss=%s, term2=%s, n_alpha=%d] ...",
+        link, loss, term2_method, length(alpha)))
+    t0 <- proc.time()
     if (use_generalized) {
         # Create default impute_data function if not provided
         if (is.null(impute_data)) {
@@ -278,6 +287,7 @@ fit_SensIAT_within_group_model <- function(group.data,
         ))
     }
 
+    message(sprintf("[SensIAT] solver done  (%.1f s)", (proc.time() - t0)[[3]]))
     structure(
         list(
             models = list(

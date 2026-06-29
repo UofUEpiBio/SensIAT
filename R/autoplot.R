@@ -109,6 +109,42 @@ autoplot.SensIAT_withingroup_jackknife_results <- function(object, level = 0.95,
         )
 }
 
+
+#' Plot Bootstrap Marginal Mean Curves with Confidence Bands
+#'
+#' @param object A `SensIAT_withingroup_bootstrap_results` object.
+#' @param time Optional vector of times. If `NULL`, uses an internal regular grid.
+#' @param level Confidence level used for bootstrap intervals.
+#' @param ... Ignored.
+#' @return A `ggplot2` object.
+#' @export
+autoplot.SensIAT_withingroup_bootstrap_results <- function(object, time = NULL, level = 0.95, ...) {
+    if (is.null(time)) {
+        lower <- object$base@knots[object$base@order]
+        upper <- object$base@knots[length(object$base@knots) - object$base@order + 1]
+        time <- seq(lower, upper, length.out = 100)
+    }
+
+    df <- predict(object, time = time, level = level) |>
+        mutate(alpha_factor = factor(alpha))
+
+    ggplot2::ggplot(data = df, ggplot2::aes(x = .data$time, y = .data$bootstrap_mean, col = .data$alpha_factor)) +
+        ggplot2::geom_ribbon(
+            ggplot2::aes(ymin = .data$lower, ymax = .data$upper, fill = .data$alpha_factor, group = .data$alpha_factor),
+            alpha = 0.15,
+            linewidth = 0,
+            show.legend = FALSE
+        ) +
+        ggplot2::geom_line(linewidth = 0.9) +
+        ggplot2::geom_line(ggplot2::aes(y = .data$mean), linewidth = 0.7, linetype = "dashed") +
+        ggplot2::labs(
+            x = rlang::as_string(object$variables$time),
+            y = rlang::as_string(object$variables$outcome),
+            col = expression(alpha),
+            fill = expression(alpha)
+        )
+}
+
 #' Plot for Estimated Treatment Effect for `SensIAT_fulldata_model` Objects
 #'
 #' The horizontal and vertical axes represent the sensitivity parameter `alpha`

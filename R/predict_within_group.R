@@ -62,3 +62,57 @@ predict.SensIAT_within_group_model <-
         tibble(alpha = object$alpha, tmp) |>
             tidyr::unnest(tmp)
     }
+
+
+#' Predict Marginal Mean from Bootstrap Coefficient Replicates
+#'
+#' @param object A `SensIAT_withingroup_bootstrap_results` object.
+#' @param time Time points of interest.
+#' @param include.var Logical. If `TRUE` and link is identity, include the
+#'        original-model asymptotic variance column `var`.
+#' @param level Confidence level used to produce `lower` and `upper` bounds.
+#' @param ... Currently ignored.
+#' @return A `tibble` with bootstrap summaries by `alpha` and `time`.
+#' @export
+predict.SensIAT_withingroup_bootstrap_results <-
+    function(object, time, include.var = TRUE, level = 0.95, ...) {
+        B <- do.call(rbind, map(time, pcoriaccel_evaluate_basis, spline_basis = object$base))
+
+        inv.link <- switch(
+            object$link,
+            identity = identity,
+            log = exp,
+            logit = function(eta) exp(eta) / (1 + exp(eta)),
+            stop("Unsupported link: ", object$link)
+        )
+
+        out <- purrr::imap_dfr(object$bootstrap_coefficients, function(beta_draws, idx) {
+            eta_draws <- beta_draws %*% t(B)
+            mean_draws <- inv.link(eta_draws)
+
+            orig_eta <- as.vector(B %*% object$original_coefficients[[idx]])
+            orig_mean <- inv.link(orig_eta)
+
+            df <- tibble(
+                alpha = object$alpha[[idx]],
+                time = time,
+                mean = as.numeric(orig_mean),
+                bootstrap_mean = as.numeric(colMeans(mean_draws)),
+                bootstrap_var = as.numeric(apply(mean_draws, 2, var))
+            )
+
+            if (object$link == "identity" && include.var) {
+                var_beta <- object$original_coefficient.variance[[idx]]
+                df$var <- as.numeric(apply(B, 1, function(b) t(b) %*% var_beta %*% b))
+            }
+
+            df
+        })
+
+        z <- qnorm(level + (1 - level) / 2)
+        out |>
+            mutate(
+                lower = .data$bootstrap_mean - z * sqrt(.data$bootstrap_var),
+                upper = .data$bootstrap_mean + z * sqrt(.data$bootstrap_var)
+            )
+    }

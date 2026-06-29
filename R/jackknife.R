@@ -21,7 +21,10 @@ cross_validate <- function(original.object, progress = interactive(), prune = TR
                 outcome.args = original.object$args$outcome,
                 influence.args = original.object$args$influence,
                 spline.degree = original.object$base@order - 1L,
-                add.terminal.observations = FALSE
+                add.terminal.observations = FALSE,
+                link         = original.object$link         %||% "identity",
+                loss         = original.object$loss         %||% "lp_mse",
+                term2_method = original.object$term2_method %||% "fast"
             )
         if (prune) {
             replication <- prune(replication)
@@ -92,9 +95,11 @@ jackknife <- function(object, ...) {
 }
 
 #' @describeIn jackknife Perform jackknife resampling on a `SensIAT_within_group_model` object.
+#' @param progress Logical. Show a progress bar while fitting leave-one-out
+#'   replications. Defaults to `TRUE` when called interactively.
 #' @export
-jackknife.SensIAT_within_group_model <- function(object, time, ...) {
-    replications <- cross_validate(object)
+jackknife.SensIAT_within_group_model <- function(object, time, progress = interactive(), ...) {
+    replications <- cross_validate(object, progress = progress)
     summarize_jackknife_replications(replications, object, time, ...)
 }
 SensIAT_jackknife <- jackknife.SensIAT_within_group_model

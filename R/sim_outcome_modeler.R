@@ -42,8 +42,14 @@
 #' }
 fit_SensIAT_single_index_fixed_coef_model <-
     function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id.., initial = NULL, ...) {
-        id <- ensym(id)
-        mf <- rlang::inject(model.frame(formula, data = data, id = !!id))
+        # Quote id to defer evaluation; check quosure, not the value
+        id_quo <- enquo(id)
+        if (!rlang::quo_is_null(id_quo)) {
+            id <- rlang::ensym(id)
+            mf <- rlang::inject(model.frame(formula, data = data, id = !!id))
+        } else {
+            mf <- model.frame(formula, data = data)
+        }
         Xi <- model.matrix(formula, data = mf)
 
         Yi <- model.response(mf)
@@ -104,7 +110,91 @@ fit_SensIAT_single_index_fixed_coef_model <-
     }
 #' @export
 `coef.SensIAT::Single-index-outcome-model` <-
-    function(object, ...) object$coef
+    function(object, ...) {
+        coefs <- object$coef
+        if (is.null(names(coefs))) {
+            X_new <- tryCatch(model.matrix(terms(object), data = model.frame(object)),
+                              error = function(e) NULL)
+            if (!is.null(X_new)) {
+                names(coefs) <- colnames(X_new)
+            }
+        }
+        coefs
+    }
+
+#' @exportS3Method vcov SensIAT::Single-index-outcome-model
+`vcov.SensIAT::Single-index-outcome-model` <- function(object, ...) {
+    coefs <- coef(object)
+    frame <- model.frame(object)
+    X <- model.matrix(terms(object), data = frame)
+    Y <- model.response(frame)
+    index_ID <- frame[["(id)"]]
+    if (is.null(index_ID)) {
+        stop("Cannot compute vcov: fitted outcome model is missing id information")
+    }
+
+    kernel <- attr(object, "kernel")
+    if (is.null(kernel)) kernel <- "dnorm"
+
+    p <- ncol(X)
+    fixed_bandwidth <- length(object$details$par) == (p - 1)
+    objective <- function(theta) {
+        beta <- c(1, theta[seq_len(p - 1)])
+        h <- if (fixed_bandwidth) object$bandwidth else exp(theta[p])
+        K <- switch(
+            kernel,
+            "dnorm" = function(x, h) stats::dnorm(x / h, 0, 1),
+            "K2_Biweight" = function(x, h) 15/16 * (1 - (x / h)^2)^2 * (abs(x) <= h),
+            "K4_Biweight" = function(x, h) 105/64 * (1 - 3 * ((x / h)^2)) * (1 - (x / h)^2)^2 * (abs(x) <= h),
+            stop("Unsupported kernel for vcov: ", kernel)
+        )
+
+        x <- as.vector(X %*% beta)
+        y <- as.vector(Y)
+        n <- length(y)
+        yo <- order(y)
+        ys <- y[yo]
+        uy <- rle(ys)[[1]]
+        cols <- cumsum(uy)
+        ei <- numeric(n)
+        for (i in seq_len(n)) {
+            Kih <- K(x - x[i], h = h)
+            index_remove <- index_ID == index_ID[i]
+            Kih[index_remove] <- 0
+            denom <- sum(Kih)
+            ei[i] <- sum(uy * (1 * (y[i] <= ys)[cols] - (denom != 0) * cumsum(Kih[yo])[cols] / (denom + (denom == 0)))^2)
+        }
+        sum(ei) / n^2
+    }
+
+    theta0 <- object$details$par
+    hess <- tryCatch(
+        stats::optimHess(theta0, fn = objective),
+        error = function(e) {
+            if (requireNamespace("numDeriv", quietly = TRUE)) {
+                numDeriv::hessian(objective, theta0)
+            } else {
+                stop("Cannot compute vcov for Single-index outcome model: ", e$message)
+            }
+        }
+    )
+    hess <- (hess + t(hess)) / 2
+    vc_theta <- tryCatch(
+        solve(hess),
+        error = function(e) {
+            solve(hess + diag(1e-8, nrow(hess)))
+        }
+    )
+
+    full_vc <- matrix(0, nrow = p, ncol = p)
+    rownames(full_vc) <- colnames(full_vc) <- colnames(X)
+    if (fixed_bandwidth) {
+        full_vc[-1, -1] <- vc_theta
+    } else {
+        full_vc[-1, -1] <- vc_theta[seq_len(p - 1), seq_len(p - 1)]
+    }
+    full_vc
+}
 
 #' @export
 `predict.SensIAT::Single-index-outcome-model` <-
@@ -325,8 +415,13 @@ Cond_mean_fn_single2 <-
 fit_SensIAT_single_index_fixed_bandwidth_model <-
     function(formula, data, kernel = "K2_Biweight", method = "nmk", id = ..id..,
              initial = NULL, ...) {
-        id <- ensym(id)
-        mf <- rlang::inject(model.frame(formula, data = data, id = !!id))
+        # Quote id to defer evaluation; check quosure, not the value
+        id_quo <- enquo(id)
+        if (!rlang::quo_is_null(id_quo)) {
+            mf <- rlang::inject(model.frame(formula, data = data, id = !!id_quo))
+        } else {
+            mf <- model.frame(formula, data = data)
+        }
         Xi <- model.matrix(formula, data = mf)
 
         Yi <- model.response(mf)

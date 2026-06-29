@@ -67,3 +67,30 @@ test_that("parametric_bootstrap_within_group runs on a small within-group model"
   expect_length(res, 1)
   expect_true(inherits(res[[1]], "data.frame"))
 })
+
+test_that("single-index outcome models support vcov() and coefficient sampling", {
+  data("SensIAT_example_data", package = "SensIAT", envir = environment())
+  fixture_data <- dplyr::filter(SensIAT_example_data, Subject_ID %in% head(unique(SensIAT_example_data$Subject_ID), 8))
+
+  model <- fit_SensIAT_within_group_model(
+    group.data = fixture_data,
+    outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
+    alpha = 0,
+    id = Subject_ID,
+    outcome = Outcome,
+    time = Time,
+    End = 830,
+    knots = c(60, 260, 460)
+  )
+
+  outcome_model <- model$models$outcome
+  vc <- vcov(outcome_model)
+
+  expect_true(is.matrix(vc))
+  expect_equal(nrow(vc), length(coef(outcome_model)))
+  expect_equal(ncol(vc), length(coef(outcome_model)))
+
+  samp <- SensIAT:::sample_parametric_coeffs(outcome_model)
+  expect_length(samp, length(coef(outcome_model)))
+  expect_equal(names(samp), names(coef(outcome_model)))
+})

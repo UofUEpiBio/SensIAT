@@ -24,46 +24,39 @@ make_single_index_simulator <- function(outcome_model, covariate_mapping = NULL)
     # Extract stored elements needed for NW sampling
     coef_vec <- coef(outcome_model)
     bandwidth <- if (!is.null(outcome_model$bandwidth)) outcome_model$bandwidth else stop("bandwidth missing in outcome_model")
-    data_orig <- outcome_model$data
 
-    # Identify default covariate names and apply mapping if provided
-    default_names <- c(prev_outcome = "prev_outcome", time = "time", delta_time = "delta_time")
-    if (!is.null(covariate_mapping)) {
-        if (!is.character(covariate_mapping) || is.null(names(covariate_mapping))) {
-            stop("covariate_mapping must be a named character vector")
-        }
-        default_names[names(covariate_mapping)] <- covariate_mapping
-    }
+    # Extract observed lp and outcomes from original data
+    X_orig <- model.matrix(outcome_model)
+    lp0 <- as.vector(X_orig %*% coef_vec)
+    Y <- model.response(model.frame(outcome_model))
+    y_seq <- sort(unique(Y))
 
-    simulator <- function(prev_outcome, time, delta_time, newdata = NULL) {
+    model_terms <- delete.response(terms(outcome_model))
+
+    simulator <- function(..., newdata = tibble::tibble(...)) {
         # Build newdata row either from provided newdata or from canonical inputs
-        if (!is.null(newdata)) {
-            if (!is.data.frame(newdata) || nrow(newdata) < 1) stop("newdata must be a data.frame with at least one row")
-            nd <- newdata[1, , drop = FALSE]
-        } else {
-            nd <- data.frame(
-                prev_outcome = prev_outcome,
-                time = time,
-                delta_time = delta_time,
-                stringsAsFactors = FALSE
-            )
-            names(nd) <- unname(default_names)
+        dots_empty <- length(list(...)) == 0
+        newdata_missing <- missing(newdata)
+
+        if (!dots_empty && !newdata_missing) {
+            rlang::abort("Specify either ... (prev_outcome, time, delta_time) or newdata, but not both")
         }
+
+        if (dots_empty && newdata_missing) {
+            rlang::abort("Must provide either ... (prev_outcome, time, delta_time) or newdata")
+        }
+
+        if (!is.data.frame(newdata) || nrow(newdata) < 1) 
+            rlang::abort("newdata must be a data.frame with at least one row")
 
         # Try to build model matrix; fall back with a helpful error if variables are missing
-        model_terms <- delete.response(terms(outcome_model))
         X_new <- tryCatch(
-            model.matrix(model_terms, data = nd),
+            model.matrix(model_terms, data = newdata),
             error = function(e) {
-                stop("Failed to construct model matrix for newdata. Check covariate names or provide 'newdata' with the same variables used to fit the outcome_model. Error: ", conditionMessage(e))
+                rlang::abort("Failed to construct model matrix for newdata. Check covariate names or provide 'newdata' with the same variables used to fit the outcome_model. Error: ", conditionMessage(e))
             }
         )
 
-        # Extract observed lp and outcomes from original data
-        X_orig <- model.matrix(model_terms, data = data_orig)
-        lp0 <- as.vector(X_orig %*% coef_vec)
-        Y <- model.response(model.frame(outcome_model))
-        y_seq <- sort(unique(Y))
 
         # Compute fitted conditional CDF at xb using pcoriaccel_NW
         xb <- as.vector(X_new %*% coef_vec)
