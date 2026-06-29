@@ -31,3 +31,9 @@ roadmap.md
 ^test-file-times\.csv$
 ^src/.*\.(o|so|dll)$
 ^src/symbols\.rds$
+^benchmark_modelmatrix_overhead\.R$
+^quick_benchmark_test\.R$
+^single_index_simulator_benchmark\.R$
+^log_link_simulation_and_bootstrap\.R$
+^model_log\.RData$
+^Rplots\.pdf$
