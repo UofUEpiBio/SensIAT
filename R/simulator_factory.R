@@ -33,25 +33,69 @@ make_single_index_simulator <- function(outcome_model, covariate_mapping = NULL)
 
     model_terms <- delete.response(terms(outcome_model))
 
-    simulator <- function(..., newdata = tibble::tibble(...)) {
-        # Build newdata row either from provided newdata or from canonical inputs
-        dots_empty <- length(list(...)) == 0
-        newdata_missing <- missing(newdata)
+    resolve_value <- function(nd, candidates, fallback = NULL) {
+        for (candidate in candidates) {
+            if (candidate %in% names(nd)) {
+                return(nd[[candidate]][1])
+            }
+        }
+        fallback
+    }
 
-        if (!dots_empty && !newdata_missing) {
-            rlang::abort("Specify either ... (prev_outcome, time, delta_time) or newdata, but not both")
+    add_covariate_aliases <- function(nd) {
+        nd$Time <- nd$time
+        nd[["..prev_outcome.."]] <- nd$prev_outcome
+        nd[["..time.."]] <- nd$time
+        nd[["..delta_time.."]] <- nd$delta_time
+
+        if (!is.null(covariate_mapping)) {
+            if (!is.character(covariate_mapping) || is.null(names(covariate_mapping))) {
+                stop("covariate_mapping must be a named character vector")
+            }
+            for (expected_name in names(covariate_mapping)) {
+                actual_name <- covariate_mapping[[expected_name]]
+                if (!expected_name %in% names(nd)) {
+                    stop("covariate_mapping refers to an unknown expected covariate: ", expected_name)
+                }
+                nd[[actual_name]] <- nd[[expected_name]]
+            }
         }
 
-        if (dots_empty && newdata_missing) {
-            rlang::abort("Must provide either ... (prev_outcome, time, delta_time) or newdata")
+        nd
+    }
+
+    simulator <- function(prev_outcome = NULL, time = NULL, Time = NULL, delta_time = NULL, newdata = NULL) {
+        if (is.null(time) && !is.null(Time)) {
+            time <- Time
         }
 
-        if (!is.data.frame(newdata) || nrow(newdata) < 1) 
-            rlang::abort("newdata must be a data.frame with at least one row")
+        if (!is.null(newdata)) {
+            if (!is.data.frame(newdata) || nrow(newdata) < 1) {
+                rlang::abort("newdata must be a data.frame with at least one row")
+            }
+            nd <- newdata[1, , drop = FALSE]
+
+            nd$prev_outcome <- resolve_value(nd, c("prev_outcome", "..prev_outcome.."), prev_outcome)
+            nd$time <- resolve_value(nd, c("time", "Time", "..time.."), time)
+            nd$delta_time <- resolve_value(nd, c("delta_time", "..delta_time.."), delta_time)
+            nd$Time <- nd$time
+            nd[["..prev_outcome.."]] <- nd$prev_outcome
+            nd[["..time.."]] <- nd$time
+            nd[["..delta_time.."]] <- nd$delta_time
+            nd <- add_covariate_aliases(nd)
+        } else {
+            nd <- data.frame(
+                prev_outcome = prev_outcome,
+                time = time,
+                delta_time = delta_time,
+                stringsAsFactors = FALSE
+            )
+            nd <- add_covariate_aliases(nd)
+        }
 
         # Try to build model matrix; fall back with a helpful error if variables are missing
         X_new <- tryCatch(
-            model.matrix(model_terms, data = newdata),
+            model.matrix(model_terms, data = nd),
             error = function(e) {
                 rlang::abort("Failed to construct model matrix for newdata. Check covariate names or provide 'newdata' with the same variables used to fit the outcome_model. Error: ", conditionMessage(e))
             }

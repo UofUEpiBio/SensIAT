@@ -249,7 +249,6 @@ simulate_single_subject <- function(subject_id,
             # For identity link, generate continuous outcome
             outcomes[1] <- stats::rnorm(1, mean = initial_outcome_mean, sd = initial_outcome_sd)
         }
-        outcomes[1] <- stats::rnorm(1, mean = initial_outcome_mean, sd = initial_outcome_sd)
     }
     
     visit_num <- 1
