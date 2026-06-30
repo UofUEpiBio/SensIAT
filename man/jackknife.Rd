@@ -8,7 +8,7 @@
 \usage{
 jackknife(object, ...)
 
-\method{jackknife}{SensIAT_within_group_model}(object, time, ...)
+\method{jackknife}{SensIAT_within_group_model}(object, time, progress = interactive(), ...)
 
 \method{jackknife}{SensIAT_fulldata_model}(object, time, ...)
 }
@@ -18,6 +18,9 @@ jackknife(object, ...)
 \item{...}{Additional arguments passed to the method.}
 
 \item{time}{Time points for which to estimate the response.}
+
+\item{progress}{Logical. Show a progress bar while fitting leave-one-out
+replications. Defaults to \code{TRUE} when called interactively.}
 }
 \value{
 A data frame of the jackknife resampling results. For \code{SensIAT} objects,

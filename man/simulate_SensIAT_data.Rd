@@ -12,6 +12,7 @@ simulate_SensIAT_data(
     -0.002, intercept = 2),
   baseline_hazard = 0.005,
   outcome_sd = 1.5,
+  baseline_outcome_fn = NULL,
   initial_outcome_mean = 5,
   initial_outcome_sd = 2,
   max_visits = 50,
@@ -43,6 +44,8 @@ Can be a scalar or vector (one per visit number stratum).}
 or a numeric value for constant baseline hazard.}
 
 \item{outcome_sd}{Standard deviation of the outcome residuals.}
+
+\item{baseline_outcome_fn}{Optional function to generate baseline outcome value for each subject.}
 
 \item{initial_outcome_mean}{Mean of the initial (baseline) outcome.}
 

@@ -9,7 +9,11 @@ parametric_bootstrap(
   intensity_model = NULL,
   outcome_model = NULL,
   simulate_args = list(),
-  seed = NULL
+  seed = NULL,
+  progress = interactive(),
+  sample_coefficients = FALSE,
+  verbosity = c("none", "basic", "detailed"),
+  verbose = NULL
 )
 }
 \arguments{
@@ -22,6 +26,18 @@ parametric_bootstrap(
 \item{simulate_args}{List of arguments to pass to \code{simulate_SensIAT_data()} (e.g., n_subjects, End, intensity_bound)}
 
 \item{seed}{Optional seed for reproducibility}
+
+\item{progress}{Logical; show progress bar when available.}
+
+\item{sample_coefficients}{Logical; if \code{TRUE}, sample coefficients from an
+asymptotic MVN when \code{vcov()} is available. If \code{FALSE} (default), use
+original fitted coefficients.}
+
+\item{verbosity}{Logging verbosity for bootstrap internals: one of
+\code{"none"}, \code{"basic"}, or \code{"detailed"}.}
+
+\item{verbose}{Deprecated shortcut; if \code{TRUE}, equivalent to
+\code{verbosity = "detailed"}.}
 }
 \value{
 A list of simulated datasets (length nboot)
