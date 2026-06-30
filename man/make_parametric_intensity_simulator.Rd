@@ -11,7 +11,7 @@ make_parametric_intensity_simulator(
 )
 }
 \arguments{
-\item{intensity_model}{A fitted model (e.g., \code{coxph}) or a function(t, prev_outcome, visit_num).}
+\item{intensity_model}{A fitted model (e.g., \code{coxph}) or a \verb{function(t, prev_outcome, visit_num)}.}
 
 \item{sampled_coef}{Named numeric vector of sampled coefficients (from \code{get_bootstrap_coeffs()}).}
 

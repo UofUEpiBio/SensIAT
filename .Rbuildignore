@@ -38,4 +38,4 @@ roadmap.md
 ^model_log\.RData$
 ^Rplots\.pdf$
 ^inst/original.*$
-^\\.lintr$
+^\.lintr$

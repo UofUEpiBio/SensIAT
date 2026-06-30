@@ -104,7 +104,7 @@ bootstrap_log <- function(verbosity, level = c("basic", "detailed"), ...) {
 #' Supports `coxph` objects: sampled coefficients are used to compute linear predictor
 #' while baseline hazard is taken from `survival::basehaz()`.
 #'
-#' @param intensity_model A fitted model (e.g., `coxph`) or a function(t, prev_outcome, visit_num).
+#' @param intensity_model A fitted model (e.g., `coxph`) or a `function(t, prev_outcome, visit_num)`.
 #' @param sampled_coef Named numeric vector of sampled coefficients (from `get_bootstrap_coeffs()`).
 #' @param covariate_mapping Optional named character vector mapping expected covariate names to model variable names.
 #' @return A function of signature `function(t, prev_outcome, visit_num)` returning non-negative numeric intensity.
