@@ -418,7 +418,8 @@ fit_SensIAT_single_index_fixed_bandwidth_model <-
         # Quote id to defer evaluation; check quosure, not the value
         id_quo <- enquo(id)
         if (!rlang::quo_is_null(id_quo)) {
-            mf <- rlang::inject(model.frame(formula, data = data, id = !!id_quo))
+            id <- rlang::ensym(id)
+            mf <- rlang::inject(model.frame(formula, data = data, id = !!id))
         } else {
             mf <- model.frame(formula, data = data)
         }

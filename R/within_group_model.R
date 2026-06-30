@@ -45,6 +45,8 @@ globalVariables(c(
 #'          Only used when `link` is not `"identity"`.
 #' @param impute_data A function that takes `(t, df)` and returns the imputed data at time `t`.
 #'          If `NULL` (default), a standard imputation function is generated automatically.
+#' @param progress Logical indicating whether to print stage progress messages.
+#'          Default is `FALSE`.
 #'
 #' @return
 #'  A `SensIAT_within_group_model` object containing:
@@ -112,7 +114,8 @@ fit_SensIAT_within_group_model <- function(group.data,
                                            loss = c("lp_mse", "quasi-likelihood"),
                                            link = c("identity", "log", "logit"),
                                            term2_method = c("fast", "original", "fixed_grid", "seeded_adaptive", "gauss_legendre"),
-                                           impute_data = NULL) {
+                                           impute_data = NULL,
+                                           progress = FALSE) {
     ###### Input clean and capture -------------------------------------------
     # Variables
     id.var <- ensym(id)
@@ -144,6 +147,12 @@ fit_SensIAT_within_group_model <- function(group.data,
     
     # Determine whether to use generalized solver
     use_generalized <- link != "identity"
+
+    progress_log <- function(...) {
+        if (isTRUE(progress)) {
+            message(...)
+        }
+    }
 
     ###### Create Model Frame -----------------------------------------------
     outcome.extra.vars <- all.vars(outcome.args$model.modifications) |>
@@ -181,7 +190,7 @@ fit_SensIAT_within_group_model <- function(group.data,
         intensity.formula <- update.formula(intensity.formula, intensity.args$model.modifications)
     }
 
-    message("[SensIAT] Stage 1/3: fitting intensity model ...")
+    progress_log("[SensIAT] Stage 1/3: fitting intensity model ...")
     t0 <- proc.time()
     intensity.model <- rlang::inject(
         coxph(intensity.formula,
@@ -189,7 +198,7 @@ fit_SensIAT_within_group_model <- function(group.data,
             !!!purrr::discard_at(intensity.args, c("bandwidth", "kernel", "model.modifications"))
         )
     )
-    message(sprintf("[SensIAT] intensity model done  (%.1f s)", (proc.time() - t0)[[3]]))
+    progress_log(sprintf("[SensIAT] intensity model done  (%.1f s)", (proc.time() - t0)[[3]]))
     # baseline_intensity_all <-
     #     estimate_baseline_intensity(
     #         intensity.model = intensity.model,
@@ -211,15 +220,16 @@ fit_SensIAT_within_group_model <- function(group.data,
         outcome.formula <- update.formula(outcome.formula, outcome.args$model.modifications)
     }
 
-    message("[SensIAT] Stage 2/3: fitting outcome model ...")
+    progress_log("[SensIAT] Stage 2/3: fitting outcome model ...")
     t0 <- proc.time()
     outcome.model <- rlang::inject(
         outcome_modeler(outcome.formula,
             data = filter(followup_data, !is.na(..outcome..)),
-            !!!purrr::discard_at(outcome.args, "model.modifications")
+            !!!purrr::discard_at(outcome.args, "model.modifications"),
+            id = '..id..'
         )
     )
-    message(sprintf("[SensIAT] outcome model done  (%.1f s)", (proc.time() - t0)[[3]]))
+    progress_log(sprintf("[SensIAT] outcome model done  (%.1f s)", (proc.time() - t0)[[3]]))
 
 
     # Compute value of the influence function: -----------------------------
@@ -234,7 +244,7 @@ fit_SensIAT_within_group_model <- function(group.data,
     #' * **`fix_discontinuity`** Whether to account for the discontinuity in the influence at observation times.
     
     # Route to either the original (identity link) or generalized marginal model
-    message(sprintf("[SensIAT] Stage 3/3: marginal mean solver  [link=%s, loss=%s, term2=%s, n_alpha=%d] ...",
+    progress_log(sprintf("[SensIAT] Stage 3/3: marginal mean solver  [link=%s, loss=%s, term2=%s, n_alpha=%d] ...",
         link, loss, term2_method, length(alpha)))
     t0 <- proc.time()
     if (use_generalized) {
@@ -287,7 +297,7 @@ fit_SensIAT_within_group_model <- function(group.data,
         ))
     }
 
-    message(sprintf("[SensIAT] solver done  (%.1f s)", (proc.time() - t0)[[3]]))
+    progress_log(sprintf("[SensIAT] solver done  (%.1f s)", (proc.time() - t0)[[3]]))
     structure(
         list(
             models = list(

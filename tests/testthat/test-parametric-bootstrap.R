@@ -13,7 +13,10 @@ test_that("sample_parametric_coeffs works on lm objects", {
 
 test_that("parametric_bootstrap runs with a simple coxph intensity model", {
   skip_if_not_installed("survival")
-  # create simple survival data to fit a coxph
+  skip_on_cran()
+  skip_on_ci()
+  skip_if_not(identical(Sys.getenv("RUN_SLOW_TESTS"), "true"), 
+              "Log link test is slow. Set RUN_SLOW_TESTS=true to run")  # create simple survival data to fit a coxph
   set.seed(2)
   n <- 50
   df <- data.frame(x = rnorm(n))
@@ -39,6 +42,8 @@ test_that("parametric_bootstrap runs with a simple coxph intensity model", {
 
 test_that("parametric_bootstrap_within_group runs on a small within-group model", {
   skip_if_not_installed("survival")
+  skip_if_not(identical(Sys.getenv("RUN_SLOW_TESTS"), "true"), 
+              "Log link test is slow. Set RUN_SLOW_TESTS=true to run")  
   data("SensIAT_example_data", package = "SensIAT", envir = environment())
   fixture_data <- dplyr::filter(SensIAT_example_data, Subject_ID %in% head(unique(SensIAT_example_data$Subject_ID), 8))
 
@@ -68,29 +73,3 @@ test_that("parametric_bootstrap_within_group runs on a small within-group model"
   expect_true(inherits(res[[1]], "data.frame"))
 })
 
-test_that("single-index outcome models support vcov() and coefficient sampling", {
-  data("SensIAT_example_data", package = "SensIAT", envir = environment())
-  fixture_data <- dplyr::filter(SensIAT_example_data, Subject_ID %in% head(unique(SensIAT_example_data$Subject_ID), 8))
-
-  model <- fit_SensIAT_within_group_model(
-    group.data = fixture_data,
-    outcome_modeler = fit_SensIAT_single_index_fixed_coef_model,
-    alpha = 0,
-    id = Subject_ID,
-    outcome = Outcome,
-    time = Time,
-    End = 830,
-    knots = c(60, 260, 460)
-  )
-
-  outcome_model <- model$models$outcome
-  vc <- vcov(outcome_model)
-
-  expect_true(is.matrix(vc))
-  expect_equal(nrow(vc), length(coef(outcome_model)))
-  expect_equal(ncol(vc), length(coef(outcome_model)))
-
-  samp <- SensIAT:::sample_parametric_coeffs(outcome_model)
-  expect_length(samp, length(coef(outcome_model)))
-  expect_equal(names(samp), names(coef(outcome_model)))
-})

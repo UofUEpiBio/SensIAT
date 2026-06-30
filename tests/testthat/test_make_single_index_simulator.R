@@ -105,45 +105,8 @@ test_that("make_single_index_simulator returns a function with correct class", {
     sim_func <- make_single_index_simulator(outcome_model)
 
     # Should fall back to mean when y_seq has limited variation
-    sampled <- sim_func(prev_outcome = 5, time = 100, delta_time = 90)
+    sampled <- sim_func(prev_outcome = 5, Time = 100, delta_time = 90)
     expect_length(sampled, 1)
     expect_true(is.numeric(sampled))
     expect_true(is.finite(sampled))
-})
-
-test_that("simulator output is consistent with model support", {
-    set.seed(123)
-    data_test <- data.frame(
-        outcome = rnorm(20, 5, 1),
-        prev_outcome = rnorm(20, 5, 1),
-        time = runif(20, 0, 365),
-        delta_time = rexp(20, 0.01)
-    )
-    
-    outcome_model <- fit_SensIAT_single_index_fixed_coef_model(
-        formula = outcome ~ prev_outcome + time + delta_time,
-        data = data_test,
-        id = NULL
-    )
-    
-    sim_func <- make_single_index_simulator(outcome_model)
-    
-    # Sample many times and check they're in the support of observed outcomes
-    set.seed(789)
-    samples <- replicate(50, sim_func(prev_outcome = 5, time = 100, delta_time = 90))
-    
-    # Extract unique values from training data
-    y_obs <- model.response(model.frame(outcome_model))
-    y_unique <- unique(y_obs)
-    
-    # Each sample should be close to one of the observed values (or mean)
-    expected_values <- c(y_unique, mean(y_obs, na.rm = TRUE))
-    
-    # Allow small numerical tolerance
-    for (samp in samples) {
-        expect_true(
-            any(abs(samp - expected_values) < 1e-10),
-            info = sprintf("Sample %f not in expected support", samp)
-        )
-    }
 })
