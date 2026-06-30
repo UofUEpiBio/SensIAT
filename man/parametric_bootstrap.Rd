@@ -2,7 +2,8 @@
 % Please edit documentation in R/parametric_bootstrap.R
 \name{parametric_bootstrap}
 \alias{parametric_bootstrap}
-\title{Parametric bootstrap orchestration}
+\title{Parametric bootstrap orchestration
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}}
 \usage{
 parametric_bootstrap(
   nboot = 100,
@@ -19,7 +20,7 @@ parametric_bootstrap(
 \arguments{
 \item{nboot}{Number of bootstrap replicates}
 
-\item{intensity_model}{Fitted intensity model (coxph) or function}
+\item{intensity_model}{Fitted intensity model (\link[survival:coxph]{survival::coxph}) or function}
 
 \item{outcome_model}{Fitted outcome model (single-index) or NULL}
 
@@ -30,7 +31,7 @@ parametric_bootstrap(
 \item{progress}{Logical; show progress bar when available.}
 
 \item{sample_coefficients}{Logical; if \code{TRUE}, sample coefficients from an
-asymptotic MVN when \code{vcov()} is available. If \code{FALSE} (default), use
+asymptotic multivariate normal distribution when \code{vcov()} is available. If \code{FALSE} (default), use
 original fitted coefficients.}
 
 \item{verbosity}{Logging verbosity for bootstrap internals: one of
@@ -40,8 +41,9 @@ original fitted coefficients.}
 \code{verbosity = "detailed"}.}
 }
 \value{
-A list of simulated datasets (length nboot)
+A list of simulated datasets (length \code{nboot})
 }
 \description{
 Parametric bootstrap orchestration
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 }

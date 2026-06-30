@@ -1,6 +1,6 @@
 ## Parametric bootstrap orchestration and helpers
 
-#' Sample parametric coefficients from a fitted model using asymptotic MVN
+#' Sample parametric coefficients from a fitted model using asymptotic multivariate normal distribution.
 #'
 #' @param model A fitted model with `coef()` and `vcov()` methods
 #' @return Named numeric vector of sampled coefficients
@@ -30,7 +30,11 @@ sample_parametric_coeffs <- function(model) {
 #' Get coefficients for bootstrap simulation.
 #'
 #' By default this returns original fitted coefficients. If sampling is requested,
-#' coefficients are sampled from an asymptotic MVN only when `vcov()` is available.
+#' coefficients are sampled from an asymptotic multivariate normal distribution only when `vcov()` is available.
+#'
+#' @param model A fitted model with `coef()` and `vcov()` methods.
+#' @param sample_coefficients Logical; if `TRUE`, sample coefficients from an asymptotic multivariate normal distribution when `vcov()` is available. If `FALSE` (default), use original fitted coefficients.
+#' @param model_label Character; label for the model used in warning messages.
 get_bootstrap_coeffs <- function(model, sample_coefficients = FALSE, model_label = "model") {
     coefs <- tryCatch(coef(model), error = function(e) NULL)
     if (is.null(coefs)) stop("Model does not provide coef()")
@@ -100,6 +104,12 @@ bootstrap_log <- function(verbosity, level = c("basic", "detailed"), ...) {
 #' Supports `coxph` objects: sampled coefficients are used to compute linear predictor
 #' while baseline hazard is taken from `survival::basehaz()`.
 #'
+#' @param intensity_model A fitted model (e.g., `coxph`) or a function(t, prev_outcome, visit_num).
+#' @param sampled_coef Named numeric vector of sampled coefficients (from `get_bootstrap_coeffs()`).
+#' @param covariate_mapping Optional named character vector mapping expected covariate names to model variable names.
+#' @return A function of signature `function(t, prev_outcome, visit_num)` returning non-negative numeric intensity.
+#' 
+#' `r lifecycle::badge("experimental")`
 make_parametric_intensity_simulator <- function(intensity_model, sampled_coef, covariate_mapping = NULL) {
     if (!inherits(intensity_model, "coxph")) stop("Only coxph intensity_model supported for parametric sampling currently")
 
@@ -174,6 +184,11 @@ make_parametric_intensity_simulator <- function(intensity_model, sampled_coef, c
 
 #' Build a parametric outcome simulator from a fitted single-index outcome model
 #' using sampled coefficients for the single-index projection.
+#' 
+#' @param outcome_model A fitted `SensIAT::Single-index-outcome-model` object.
+#' @param sampled_coef Named numeric vector of sampled coefficients (from `get_bootstrap_coeffs()`).
+#' @param covariate_mapping Optional named character vector mapping expected covariate names to model variable names.
+#' `r lifecycle::badge("experimental")` 
 make_parametric_single_index_simulator <- function(outcome_model, sampled_coef, covariate_mapping = NULL) {
     if (!inherits(outcome_model, "SensIAT::Single-index-outcome-model")) stop("outcome_model must be a fitted single-index outcome model")
     bandwidth <- if (!is.null(outcome_model$bandwidth)) outcome_model$bandwidth else stop("bandwidth missing in outcome_model")
@@ -221,21 +236,22 @@ make_parametric_single_index_simulator <- function(outcome_model, sampled_coef, 
 
 
 #' Parametric bootstrap orchestration
-#'
+#' `r lifecycle::badge("experimental")`
+#' 
 #' @param nboot Number of bootstrap replicates
-#' @param intensity_model Fitted intensity model (coxph) or function
+#' @param intensity_model Fitted intensity model ([coxph]) or function
 #' @param outcome_model Fitted outcome model (single-index) or NULL
 #' @param simulate_args List of arguments to pass to `simulate_SensIAT_data()` (e.g., n_subjects, End, intensity_bound)
 #' @param seed Optional seed for reproducibility
 #' @param progress Logical; show progress bar when available.
 #' @param sample_coefficients Logical; if `TRUE`, sample coefficients from an
-#'        asymptotic MVN when `vcov()` is available. If `FALSE` (default), use
+#'        asymptotic multivariate normal distribution when `vcov()` is available. If `FALSE` (default), use
 #'        original fitted coefficients.
 #' @param verbosity Logging verbosity for bootstrap internals: one of
 #'        `"none"`, `"basic"`, or `"detailed"`.
 #' @param verbose Deprecated shortcut; if `TRUE`, equivalent to
 #'        `verbosity = "detailed"`.
-#' @return A list of simulated datasets (length nboot)
+#' @return A list of simulated datasets (length `nboot`)
 parametric_bootstrap <- function(nboot = 100,
                                  intensity_model = NULL,
                                  outcome_model = NULL,
@@ -426,6 +442,7 @@ parametric_bootstrap <- function(nboot = 100,
 }
 
 #' Parametric bootstrap for a within-group SensIAT model
+#' `r lifecycle::badge("experimental")`
 #'
 #' @param nboot Number of bootstrap replicates.
 #' @param within_group_model A fitted `SensIAT_within_group_model` object.
@@ -435,7 +452,7 @@ parametric_bootstrap <- function(nboot = 100,
 #' @param seed Optional seed for reproducibility.
 #' @param progress Logical; show progress bar when available.
 #' @param sample_coefficients Logical; if `TRUE`, sample coefficients from an
-#'        asymptotic MVN when `vcov()` is available. If `FALSE` (default), use
+#'        asymptotic multivariate normal distribution when `vcov()` is available. If `FALSE` (default), use
 #'        original fitted coefficients.
 #' @param refit Logical; if `TRUE` (default), fit a `SensIAT_within_group_model`
 #'        on each simulated replicate using the original model's settings.

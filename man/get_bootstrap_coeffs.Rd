@@ -6,7 +6,14 @@
 \usage{
 get_bootstrap_coeffs(model, sample_coefficients = FALSE, model_label = "model")
 }
+\arguments{
+\item{model}{A fitted model with \code{coef()} and \code{vcov()} methods.}
+
+\item{sample_coefficients}{Logical; if \code{TRUE}, sample coefficients from an asymptotic multivariate normal distribution when \code{vcov()} is available. If \code{FALSE} (default), use original fitted coefficients.}
+
+\item{model_label}{Character; label for the model used in warning messages.}
+}
 \description{
 By default this returns original fitted coefficients. If sampling is requested,
-coefficients are sampled from an asymptotic MVN only when \code{vcov()} is available.
+coefficients are sampled from an asymptotic multivariate normal distribution only when \code{vcov()} is available.
 }

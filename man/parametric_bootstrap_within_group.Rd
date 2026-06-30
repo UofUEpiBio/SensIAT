@@ -2,7 +2,8 @@
 % Please edit documentation in R/parametric_bootstrap.R
 \name{parametric_bootstrap_within_group}
 \alias{parametric_bootstrap_within_group}
-\title{Parametric bootstrap for a within-group SensIAT model}
+\title{Parametric bootstrap for a within-group SensIAT model
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}}
 \usage{
 parametric_bootstrap_within_group(
   within_group_model,
@@ -33,7 +34,7 @@ If not specified, \code{End}, \code{n_subjects}, \code{initial_outcome_mean}, an
 \item{progress}{Logical; show progress bar when available.}
 
 \item{sample_coefficients}{Logical; if \code{TRUE}, sample coefficients from an
-asymptotic MVN when \code{vcov()} is available. If \code{FALSE} (default), use
+asymptotic multivariate normal distribution when \code{vcov()} is available. If \code{FALSE} (default), use
 original fitted coefficients.}
 
 \item{refit}{Logical; if \code{TRUE} (default), fit a \code{SensIAT_within_group_model}
@@ -63,6 +64,7 @@ list of replicated fitted models (\code{"models"}) or simulated datasets
 }
 \description{
 Parametric bootstrap for a within-group SensIAT model
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 }
 \examples{
 \dontrun{

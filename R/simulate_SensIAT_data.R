@@ -24,9 +24,9 @@
 #' @param link Link function for outcome model. One of "identity", "log", or "logit".
 #'        Determines the scale on which the outcome model operates.
 #' @param intensity_fn Optional function to compute intensity (hazard) of observation.
-#'        If provided, should take arguments (time, prev_outcome, visit_num) and return
-#'        a scalar intensity value. If NULL (default), intensity is computed from
-#'        intensity_coef and baseline_hazard.
+#'        If provided, should take arguments (`time`, `prev_outcome`, `visit_num`) and return
+#'        a scalar intensity value. If `NULL` (default), intensity is computed from
+#'        `intensity_coef` and `baseline_hazard`.
 #' @param intensity_bound Upper bound on intensity for rejection sampling.
 #'        Required if intensity_fn is provided. Represents the supremum of the intensity
 #'        function on the interval of interest.

@@ -135,7 +135,7 @@ make_single_index_simulator <- function(outcome_model, covariate_mapping = NULL)
 #' Supports user-supplied functions and `coxph` fitted models (approximate
 #' baseline hazard via `survival::basehaz`).
 #'
-#' @param intensity_model A fitted model (e.g., `coxph`) or a function(t, prev_outcome, visit_num).
+#' @param intensity_model A fitted model (e.g., `coxph`) or a `function(t, prev_outcome, visit_num)`.
 #' @param covariate_mapping Optional named character vector mapping expected covariate names to model variable names.
 #' @return A function of signature `function(t, prev_outcome, visit_num)` returning non-negative numeric intensity.
 #' @keywords internal

@@ -37,3 +37,5 @@ roadmap.md
 ^log_link_simulation_and_bootstrap\.R$
 ^model_log\.RData$
 ^Rplots\.pdf$
+^inst/original.*$
+^\\.lintr$

@@ -31,9 +31,9 @@ or a numeric value for constant baseline hazard.}
 \item{End}{Maximum follow-up time.}
 
 \item{intensity_fn}{Optional function to compute intensity (hazard) of observation.
-If provided, should take arguments (time, prev_outcome, visit_num) and return
-a scalar intensity value. If NULL (default), intensity is computed from
-intensity_coef and baseline_hazard.}
+If provided, should take arguments (\code{time}, \code{prev_outcome}, \code{visit_num}) and return
+a scalar intensity value. If \code{NULL} (default), intensity is computed from
+\code{intensity_coef} and \code{baseline_hazard}.}
 
 \item{intensity_bound}{Upper bound on intensity for rejection sampling.
 Required if intensity_fn is provided. Represents the supremum of the intensity

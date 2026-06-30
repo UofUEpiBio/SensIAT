@@ -2,7 +2,7 @@
 % Please edit documentation in R/parametric_bootstrap.R
 \name{sample_parametric_coeffs}
 \alias{sample_parametric_coeffs}
-\title{Sample parametric coefficients from a fitted model using asymptotic MVN}
+\title{Sample parametric coefficients from a fitted model using asymptotic multivariate normal distribution.}
 \usage{
 sample_parametric_coeffs(model)
 }
@@ -13,5 +13,5 @@ sample_parametric_coeffs(model)
 Named numeric vector of sampled coefficients
 }
 \description{
-Sample parametric coefficients from a fitted model using asymptotic MVN
+Sample parametric coefficients from a fitted model using asymptotic multivariate normal distribution.
 }

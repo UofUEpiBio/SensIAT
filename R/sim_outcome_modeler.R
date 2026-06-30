@@ -122,7 +122,7 @@ fit_SensIAT_single_index_fixed_coef_model <-
         coefs
     }
 
-#' @exportS3Method vcov SensIAT::Single-index-outcome-model
+#' @exportS3Method vcov "SensIAT::Single-index-outcome-model"
 `vcov.SensIAT::Single-index-outcome-model` <- function(object, ...) {
     coefs <- coef(object)
     frame <- model.frame(object)
@@ -171,7 +171,7 @@ fit_SensIAT_single_index_fixed_coef_model <-
     hess <- tryCatch(
         stats::optimHess(theta0, fn = objective),
         error = function(e) {
-            if (requireNamespace("numDeriv", quietly = TRUE)) {
+            if (rlang::is_installed("numDeriv")) {
                 numDeriv::hessian(objective, theta0)
             } else {
                 stop("Cannot compute vcov for Single-index outcome model: ", e$message)

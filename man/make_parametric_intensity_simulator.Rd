@@ -10,6 +10,18 @@ make_parametric_intensity_simulator(
   covariate_mapping = NULL
 )
 }
+\arguments{
+\item{intensity_model}{A fitted model (e.g., \code{coxph}) or a function(t, prev_outcome, visit_num).}
+
+\item{sampled_coef}{Named numeric vector of sampled coefficients (from \code{get_bootstrap_coeffs()}).}
+
+\item{covariate_mapping}{Optional named character vector mapping expected covariate names to model variable names.}
+}
+\value{
+A function of signature \verb{function(t, prev_outcome, visit_num)} returning non-negative numeric intensity.
+
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
 \description{
 Supports \code{coxph} objects: sampled coefficients are used to compute linear predictor
 while baseline hazard is taken from \code{survival::basehaz()}.

@@ -7,7 +7,7 @@
 make_intensity_simulator(intensity_model, covariate_mapping = NULL)
 }
 \arguments{
-\item{intensity_model}{A fitted model (e.g., \code{coxph}) or a function(t, prev_outcome, visit_num).}
+\item{intensity_model}{A fitted model (e.g., \code{coxph}) or a \verb{function(t, prev_outcome, visit_num)}.}
 
 \item{covariate_mapping}{Optional named character vector mapping expected covariate names to model variable names.}
 }

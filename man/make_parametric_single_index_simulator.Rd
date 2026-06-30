@@ -11,6 +11,14 @@ make_parametric_single_index_simulator(
   covariate_mapping = NULL
 )
 }
+\arguments{
+\item{outcome_model}{A fitted \code{SensIAT::Single-index-outcome-model} object.}
+
+\item{sampled_coef}{Named numeric vector of sampled coefficients (from \code{get_bootstrap_coeffs()}).}
+
+\item{covariate_mapping}{Optional named character vector mapping expected covariate names to model variable names.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}}
+}
 \description{
 Build a parametric outcome simulator from a fitted single-index outcome model
 using sampled coefficients for the single-index projection.
