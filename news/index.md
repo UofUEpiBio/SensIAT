@@ -2,6 +2,19 @@
 
 ## SensIAT (development version)
 
+- Added generalized fitting support across marginal mean and
+  within-group workflows, including flexible link/loss handling and GLM
+  outcome-model support.
+- Added new simulation and resampling capabilities, including
+  intensity/outcome simulator factories and a parametric bootstrap
+  workflow.
+- Improved performance and numerical stability for generalized fitting
+  and influence-term computation, including caching and additional
+  integration-method support.
+- Expanded tests, CI checks, and documentation, alongside multiple bug
+  fixes discovered during broader generalized-model and bootstrap
+  development.
+
 ## SensIAT 0.3.0
 
 CRAN release: 2025-09-05
