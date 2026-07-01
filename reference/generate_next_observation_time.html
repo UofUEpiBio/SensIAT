@@ -52,9 +52,11 @@ The hazard depends on the previous outcome value and is stratified by visit numb
 <span>  <span class="va">current_time</span>,</span>
 <span>  <span class="va">current_outcome</span>,</span>
 <span>  <span class="va">visit_num</span>,</span>
-<span>  <span class="va">intensity_coef</span>,</span>
-<span>  <span class="va">baseline_hazard</span>,</span>
-<span>  <span class="va">End</span></span>
+<span>  intensity_coef <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  baseline_hazard <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">End</span>,</span>
+<span>  intensity_fn <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  intensity_bound <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -86,6 +88,19 @@ or a numeric value for constant baseline hazard.</p></dd>
 
 <dt id="arg-end">End<a class="anchor" aria-label="anchor" href="#arg-end"></a></dt>
 <dd><p>Maximum follow-up time.</p></dd>
+
+
+<dt id="arg-intensity-fn">intensity_fn<a class="anchor" aria-label="anchor" href="#arg-intensity-fn"></a></dt>
+<dd><p>Optional function to compute intensity (hazard) of observation.
+If provided, should take arguments (<code>time</code>, <code>prev_outcome</code>, <code>visit_num</code>) and return
+a scalar intensity value. If <code>NULL</code> (default), intensity is computed from
+<code>intensity_coef</code> and <code>baseline_hazard</code>.</p></dd>
+
+
+<dt id="arg-intensity-bound">intensity_bound<a class="anchor" aria-label="anchor" href="#arg-intensity-bound"></a></dt>
+<dd><p>Upper bound on intensity for rejection sampling.
+Required if intensity_fn is provided. Represents the supremum of the intensity
+function on the interval of interest.</p></dd>
 
 </dl></div>
     <div class="section level2">

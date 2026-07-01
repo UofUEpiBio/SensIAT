@@ -55,10 +55,14 @@ alternating between the two processes.</p>
 <span>  <span class="va">outcome_coef</span>,</span>
 <span>  <span class="va">baseline_hazard</span>,</span>
 <span>  <span class="va">outcome_sd</span>,</span>
+<span>  <span class="va">max_visits</span>,</span>
+<span>  baseline_outcome_fn <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">initial_outcome_mean</span>,</span>
 <span>  <span class="va">initial_outcome_sd</span>,</span>
-<span>  <span class="va">max_visits</span>,</span>
-<span>  link <span class="op">=</span> <span class="st">"identity"</span></span>
+<span>  link <span class="op">=</span> <span class="st">"identity"</span>,</span>
+<span>  intensity_fn <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  intensity_bound <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  outcome_simulator <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -96,6 +100,14 @@ or a numeric value for constant baseline hazard.</p></dd>
 <dd><p>Standard deviation of the outcome residuals.</p></dd>
 
 
+<dt id="arg-max-visits">max_visits<a class="anchor" aria-label="anchor" href="#arg-max-visits"></a></dt>
+<dd><p>Maximum number of visits per subject (to prevent infinite loops).</p></dd>
+
+
+<dt id="arg-baseline-outcome-fn">baseline_outcome_fn<a class="anchor" aria-label="anchor" href="#arg-baseline-outcome-fn"></a></dt>
+<dd><p>Optional function to generate baseline outcome value for each subject.</p></dd>
+
+
 <dt id="arg-initial-outcome-mean">initial_outcome_mean<a class="anchor" aria-label="anchor" href="#arg-initial-outcome-mean"></a></dt>
 <dd><p>Mean of the initial (baseline) outcome.</p></dd>
 
@@ -104,13 +116,29 @@ or a numeric value for constant baseline hazard.</p></dd>
 <dd><p>Standard deviation of the initial outcome.</p></dd>
 
 
-<dt id="arg-max-visits">max_visits<a class="anchor" aria-label="anchor" href="#arg-max-visits"></a></dt>
-<dd><p>Maximum number of visits per subject (to prevent infinite loops).</p></dd>
-
-
 <dt id="arg-link">link<a class="anchor" aria-label="anchor" href="#arg-link"></a></dt>
 <dd><p>Link function for outcome model. One of "identity", "log", or "logit".
 Determines the scale on which the outcome model operates.</p></dd>
+
+
+<dt id="arg-intensity-fn">intensity_fn<a class="anchor" aria-label="anchor" href="#arg-intensity-fn"></a></dt>
+<dd><p>Optional function to compute intensity (hazard) of observation.
+If provided, should take arguments (<code>time</code>, <code>prev_outcome</code>, <code>visit_num</code>) and return
+a scalar intensity value. If <code>NULL</code> (default), intensity is computed from
+<code>intensity_coef</code> and <code>baseline_hazard</code>.</p></dd>
+
+
+<dt id="arg-intensity-bound">intensity_bound<a class="anchor" aria-label="anchor" href="#arg-intensity-bound"></a></dt>
+<dd><p>Upper bound on intensity for rejection sampling.
+Required if intensity_fn is provided. Represents the supremum of the intensity
+function on the interval of interest.</p></dd>
+
+
+<dt id="arg-outcome-simulator">outcome_simulator<a class="anchor" aria-label="anchor" href="#arg-outcome-simulator"></a></dt>
+<dd><p>Optional simulator function for follow-up outcomes.
+When provided, it overrides the internal outcome generation function.
+This function should accept <code>prev_outcome</code>, <code>time</code>, <code>delta_time</code>, and
+optionally <code>newdata</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

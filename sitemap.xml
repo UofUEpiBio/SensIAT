@@ -18,6 +18,7 @@
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/autoplot.SensIAT_fulldata_jackknife_results.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/autoplot.SensIAT_fulldata_model.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/autoplot.SensIAT_within_group_model.html</loc></url>
+<url><loc>https://uofuepibio.github.io/SensIAT/reference/autoplot.SensIAT_withingroup_bootstrap_results.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/autoplot.SensIAT_withingroup_jackknife_results.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/benchmark_term2_methods.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/compare_term2_methods.html</loc></url>
@@ -51,10 +52,17 @@
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/format_cache_key.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/generate_next_observation_time.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/generate_outcome.html</loc></url>
+<url><loc>https://uofuepibio.github.io/SensIAT/reference/get_bootstrap_coeffs.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/index.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/integrate_term2_vectorized_alpha.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/jackknife.html</loc></url>
+<url><loc>https://uofuepibio.github.io/SensIAT/reference/make_intensity_simulator.html</loc></url>
+<url><loc>https://uofuepibio.github.io/SensIAT/reference/make_parametric_intensity_simulator.html</loc></url>
+<url><loc>https://uofuepibio.github.io/SensIAT/reference/make_parametric_single_index_simulator.html</loc></url>
+<url><loc>https://uofuepibio.github.io/SensIAT/reference/make_single_index_simulator.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/make_term2_integrand_fast.html</loc></url>
+<url><loc>https://uofuepibio.github.io/SensIAT/reference/parametric_bootstrap.html</loc></url>
+<url><loc>https://uofuepibio.github.io/SensIAT/reference/parametric_bootstrap_within_group.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/pcori_control.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/pcoriaccel_NW.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/pcoriaccel_NW_basic.html</loc></url>
@@ -65,7 +73,9 @@
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/pcoriaccel_integrate_simp.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/pre_compute_gauss_legendre_grid.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/predict.SensIAT_within_group_model.html</loc></url>
+<url><loc>https://uofuepibio.github.io/SensIAT/reference/predict.SensIAT_withingroup_bootstrap_results.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/prepare_SensIAT_data.html</loc></url>
+<url><loc>https://uofuepibio.github.io/SensIAT/reference/sample_parametric_coeffs.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/seeded_adaptive_simpson.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/simulate_SensIAT_data.html</loc></url>
 <url><loc>https://uofuepibio.github.io/SensIAT/reference/simulate_SensIAT_two_groups.html</loc></url>

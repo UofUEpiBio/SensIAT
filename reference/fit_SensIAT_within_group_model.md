@@ -25,7 +25,8 @@ fit_SensIAT_within_group_model(
   loss = c("lp_mse", "quasi-likelihood"),
   link = c("identity", "log", "logit"),
   term2_method = c("fast", "original", "fixed_grid", "seeded_adaptive", "gauss_legendre"),
-  impute_data = NULL
+  impute_data = NULL,
+  progress = FALSE
 )
 ```
 
@@ -128,6 +129,11 @@ fit_SensIAT_within_group_model(
   A function that takes `(t, df)` and returns the imputed data at time
   `t`. If `NULL` (default), a standard imputation function is generated
   automatically.
+
+- progress:
+
+  Logical indicating whether to print stage progress messages. Default
+  is `FALSE`.
 
 ## Value
 

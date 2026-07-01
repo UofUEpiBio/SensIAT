@@ -59,11 +59,16 @@ and outcome generation.</p>
 <span>    <span class="op">-</span><span class="fl">0.002</span>, intercept <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>  baseline_hazard <span class="op">=</span> <span class="fl">0.005</span>,</span>
 <span>  outcome_sd <span class="op">=</span> <span class="fl">1.5</span>,</span>
+<span>  baseline_outcome_fn <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  initial_outcome_mean <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  initial_outcome_sd <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  max_visits <span class="op">=</span> <span class="fl">50</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  link <span class="op">=</span> <span class="st">"identity"</span></span>
+<span>  link <span class="op">=</span> <span class="st">"identity"</span>,</span>
+<span>  intensity_fn <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  intensity_bound <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  outcome_model <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  outcome_simulator <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -101,6 +106,10 @@ or a numeric value for constant baseline hazard.</p></dd>
 <dd><p>Standard deviation of the outcome residuals.</p></dd>
 
 
+<dt id="arg-baseline-outcome-fn">baseline_outcome_fn<a class="anchor" aria-label="anchor" href="#arg-baseline-outcome-fn"></a></dt>
+<dd><p>Optional function to generate baseline outcome value for each subject.</p></dd>
+
+
 <dt id="arg-initial-outcome-mean">initial_outcome_mean<a class="anchor" aria-label="anchor" href="#arg-initial-outcome-mean"></a></dt>
 <dd><p>Mean of the initial (baseline) outcome.</p></dd>
 
@@ -121,6 +130,32 @@ or a numeric value for constant baseline hazard.</p></dd>
 <dd><p>Link function for outcome model. One of "identity", "log", or "logit".
 Determines the scale on which the outcome model operates.</p></dd>
 
+
+<dt id="arg-intensity-fn">intensity_fn<a class="anchor" aria-label="anchor" href="#arg-intensity-fn"></a></dt>
+<dd><p>Optional function to compute intensity (hazard) of observation.
+If provided, should take arguments (<code>time</code>, <code>prev_outcome</code>, <code>visit_num</code>) and return
+a scalar intensity value. If <code>NULL</code> (default), intensity is computed from
+<code>intensity_coef</code> and <code>baseline_hazard</code>.</p></dd>
+
+
+<dt id="arg-intensity-bound">intensity_bound<a class="anchor" aria-label="anchor" href="#arg-intensity-bound"></a></dt>
+<dd><p>Upper bound on intensity for rejection sampling.
+Required if intensity_fn is provided. Represents the supremum of the intensity
+function on the interval of interest.</p></dd>
+
+
+<dt id="arg-outcome-model">outcome_model<a class="anchor" aria-label="anchor" href="#arg-outcome-model"></a></dt>
+<dd><p>Optional fitted single-index outcome model. If provided,
+outcomes for follow-up visits are generated from the fitted model via
+<code><a href="make_single_index_simulator.html">make_single_index_simulator()</a></code>.</p></dd>
+
+
+<dt id="arg-outcome-simulator">outcome_simulator<a class="anchor" aria-label="anchor" href="#arg-outcome-simulator"></a></dt>
+<dd><p>Optional simulator function for follow-up outcomes.
+When provided, it overrides the internal outcome generation function.
+This function should accept <code>prev_outcome</code>, <code>time</code>, <code>delta_time</code>, and
+optionally <code>newdata</code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -133,7 +168,7 @@ Determines the scale on which the outcome model operates.</p></dd>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="co"># Simulate data with default parameters</span></span></span>
+<span class="r-in"><span><span class="co"># Default usage (uses exponential gaps derived from intensity_coef and baseline_hazard)</span></span></span>
 <span class="r-in"><span><span class="va">sim_data</span> <span class="op">&lt;-</span> <span class="fu">simulate_SensIAT_data</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    n_subjects <span class="op">=</span> <span class="fl">100</span>,</span></span>
 <span class="r-in"><span>    End <span class="op">=</span> <span class="fl">830</span>,</span></span>
@@ -147,6 +182,44 @@ Determines the scale on which the outcome model operates.</p></dd>
 <span class="r-in"><span>    baseline_hazard <span class="op">=</span> <span class="fl">0.005</span>,</span></span>
 <span class="r-in"><span>    outcome_sd <span class="op">=</span> <span class="fl">1.5</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Example with custom intensity function and thinning (Exp(lambda_star))</span></span></span>
+<span class="r-in"><span><span class="va">intensity_fn</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">t</span>, <span class="va">prev_outcome</span>, <span class="va">visit_num</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">lambda0</span> <span class="op">&lt;-</span> <span class="fl">0.005</span></span></span>
+<span class="r-in"><span>  <span class="va">gamma</span>  <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">0.05</span></span></span>
+<span class="r-in"><span>  <span class="va">lambda0</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">gamma</span> <span class="op">*</span> <span class="va">prev_outcome</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span><span class="va">sim_data2</span> <span class="op">&lt;-</span> <span class="fu">simulate_SensIAT_data</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    n_subjects <span class="op">=</span> <span class="fl">50</span>,</span></span>
+<span class="r-in"><span>    End <span class="op">=</span> <span class="fl">200</span>,</span></span>
+<span class="r-in"><span>    seed <span class="op">=</span> <span class="fl">123</span>,</span></span>
+<span class="r-in"><span>    intensity_fn <span class="op">=</span> <span class="va">intensity_fn</span>,</span></span>
+<span class="r-in"><span>    intensity_bound <span class="op">=</span> <span class="fl">0.05</span>,</span></span>
+<span class="r-in"><span>    max_visits <span class="op">=</span> <span class="fl">20</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Example using a fitted single-index outcome model to generate outcomes</span></span></span>
+<span class="r-in"><span><span class="co"># via the fitted conditional distribution.</span></span></span>
+<span class="r-in"><span><span class="co">#</span></span></span>
+<span class="r-in"><span><span class="co"># Note: this example uses a fitted model object and is intended for</span></span></span>
+<span class="r-in"><span><span class="co"># parametric bootstrap-style simulation.</span></span></span>
+<span class="r-in"><span><span class="co">#</span></span></span>
+<span class="r-in"><span><span class="co"># </span></span></span>
+<span class="r-in"><span><span class="co"># </span></span></span>
+<span class="r-in"><span><span class="co"># outcome_model &lt;- fit_SensIAT_single_index_fixed_coef_model(</span></span></span>
+<span class="r-in"><span><span class="co">#     Outcome ~ prev_outcome + time + delta_time,</span></span></span>
+<span class="r-in"><span><span class="co">#     data = training_data,</span></span></span>
+<span class="r-in"><span><span class="co">#     id = Subject_ID</span></span></span>
+<span class="r-in"><span><span class="co"># )</span></span></span>
+<span class="r-in"><span><span class="co"># sim_data3 &lt;- simulate_SensIAT_data(</span></span></span>
+<span class="r-in"><span><span class="co">#     n_subjects = 50,</span></span></span>
+<span class="r-in"><span><span class="co">#     End = 200,</span></span></span>
+<span class="r-in"><span><span class="co">#     seed = 123,</span></span></span>
+<span class="r-in"><span><span class="co">#     outcome_model = outcome_model,</span></span></span>
+<span class="r-in"><span><span class="co">#     intensity_fn = intensity_fn,</span></span></span>
+<span class="r-in"><span><span class="co">#     intensity_bound = 0.05,</span></span></span>
+<span class="r-in"><span><span class="co">#     max_visits = 20</span></span></span>
+<span class="r-in"><span><span class="co"># )</span></span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

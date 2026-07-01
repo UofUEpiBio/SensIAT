@@ -320,7 +320,7 @@ Based on this analysis, here are recommended integration methods:
 ``` r
 
 sessionInfo()
-#> R version 4.6.0 (2026-04-24)
+#> R version 4.6.1 (2026-06-24)
 #> Platform: x86_64-pc-linux-gnu
 #> Running under: Ubuntu 24.04.4 LTS
 #> 
@@ -348,27 +348,27 @@ sessionInfo()
 #>  [3] tidyr_1.3.2                 KernSmooth_2.23-26         
 #>  [5] lattice_0.22-9              pracma_2.4.6               
 #>  [7] digest_0.6.39               magrittr_2.0.5             
-#>  [9] evaluate_1.0.5              grid_4.6.0                 
+#>  [9] evaluate_1.0.5              grid_4.6.1                 
 #> [11] RColorBrewer_1.1-3          fastmap_1.2.0              
 #> [13] jsonlite_2.0.0              Matrix_1.7-5               
 #> [15] survival_3.8-6              purrr_1.2.2                
 #> [17] orthogonalsplinebasis_0.1.7 scales_1.4.0               
 #> [19] textshaping_1.0.5           jquerylib_0.1.4            
 #> [21] cli_3.6.6                   rlang_1.2.0                
-#> [23] splines_4.6.0               withr_3.0.2                
+#> [23] splines_4.6.1               withr_3.0.3                
 #> [25] cachem_1.1.0                yaml_2.3.12                
-#> [27] tools_4.6.0                 assertthat_0.2.1           
-#> [29] vctrs_0.7.3                 R6_2.6.1                   
-#> [31] lifecycle_1.0.5             fs_2.1.0                   
-#> [33] MASS_7.3-65                 ragg_1.5.2                 
-#> [35] pkgconfig_2.0.3             desc_1.4.3                 
-#> [37] pkgdown_2.2.0               pillar_1.11.1              
-#> [39] bslib_0.11.0                gtable_0.3.6               
-#> [41] glue_1.8.1                  Rcpp_1.1.1-1.1             
-#> [43] systemfonts_1.3.2           xfun_0.57                  
-#> [45] tibble_3.3.1                tidyselect_1.2.1           
-#> [47] knitr_1.51                  farver_2.1.2               
-#> [49] htmltools_0.5.9             rmarkdown_2.31             
-#> [51] labeling_0.4.3              compiler_4.6.0             
-#> [53] S7_0.2.2
+#> [27] otel_0.2.0                  tools_4.6.1                
+#> [29] assertthat_0.2.1            vctrs_0.7.3                
+#> [31] R6_2.6.1                    lifecycle_1.0.5            
+#> [33] fs_2.1.0                    MASS_7.3-65                
+#> [35] ragg_1.5.2                  pkgconfig_2.0.3            
+#> [37] desc_1.4.3                  pkgdown_2.2.0              
+#> [39] pillar_1.11.1               bslib_0.11.0               
+#> [41] gtable_0.3.6                glue_1.8.1                 
+#> [43] Rcpp_1.1.1-1.1              systemfonts_1.3.2          
+#> [45] xfun_0.59                   tibble_3.3.1               
+#> [47] tidyselect_1.2.1            knitr_1.51                 
+#> [49] farver_2.1.2                htmltools_0.5.9            
+#> [51] labeling_0.4.3              rmarkdown_2.31             
+#> [53] compiler_4.6.1              S7_0.2.2
 ```

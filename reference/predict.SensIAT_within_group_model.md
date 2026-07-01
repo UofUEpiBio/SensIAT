@@ -36,9 +36,11 @@ predict(object, time, include.var = TRUE, ..., base = object$base)
 
 ## Value
 
-If include.var is TRUE, a `tibble` with columns time, mean, and var is
-returned. otherwise if include.var is FALSE, only the mean vector is
-returned.
+If include.var is TRUE and the fitted model uses the identity link, a
+`tibble` with columns `time`, `mean`, and `var` is returned. For
+non-identity links, variance estimation is not supported and only `time`
+and `mean` are returned. If include.var is FALSE, only the mean vector
+is returned.
 
 ## Functions
 

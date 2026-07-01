@@ -11,9 +11,11 @@ generate_next_observation_time(
   current_time,
   current_outcome,
   visit_num,
-  intensity_coef,
-  baseline_hazard,
-  End
+  intensity_coef = NULL,
+  baseline_hazard = NULL,
+  End,
+  intensity_fn = NULL,
+  intensity_bound = NULL
 )
 ```
 
@@ -44,6 +46,19 @@ generate_next_observation_time(
 - End:
 
   Maximum follow-up time.
+
+- intensity_fn:
+
+  Optional function to compute intensity (hazard) of observation. If
+  provided, should take arguments (`time`, `prev_outcome`, `visit_num`)
+  and return a scalar intensity value. If `NULL` (default), intensity is
+  computed from `intensity_coef` and `baseline_hazard`.
+
+- intensity_bound:
+
+  Upper bound on intensity for rejection sampling. Required if
+  intensity_fn is provided. Represents the supremum of the intensity
+  function on the interval of interest.
 
 ## Value
 

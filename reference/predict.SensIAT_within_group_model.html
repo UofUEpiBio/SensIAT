@@ -78,8 +78,10 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>If include.var is TRUE, a <code>tibble</code> with columns time, mean, and var is returned.
-otherwise if include.var is FALSE, only the mean vector is returned.</p>
+    <p>If include.var is TRUE and the fitted model uses the identity link, a <code>tibble</code>
+with columns <code>time</code>, <code>mean</code>, and <code>var</code> is returned. For non-identity links,
+variance estimation is not supported and only <code>time</code> and <code>mean</code> are returned.
+If include.var is FALSE, only the mean vector is returned.</p>
     </div>
     <div class="section level2">
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>

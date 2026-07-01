@@ -8,7 +8,7 @@ Perform Jackknife Resampling on an Object
 jackknife(object, ...)
 
 # S3 method for class 'SensIAT_within_group_model'
-jackknife(object, time, ...)
+jackknife(object, time, progress = interactive(), ...)
 
 # S3 method for class 'SensIAT_fulldata_model'
 jackknife(object, time, ...)
@@ -27,6 +27,11 @@ jackknife(object, time, ...)
 - time:
 
   Time points for which to estimate the response.
+
+- progress:
+
+  Logical. Show a progress bar while fitting leave-one-out replications.
+  Defaults to `TRUE` when called interactively.
 
 ## Value
 

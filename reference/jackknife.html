@@ -48,7 +48,7 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">jackknife</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'SensIAT_within_group_model'</span></span>
-<span><span class="fu">jackknife</span><span class="op">(</span><span class="va">object</span>, <span class="va">time</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">jackknife</span><span class="op">(</span><span class="va">object</span>, <span class="va">time</span>, progress <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'SensIAT_fulldata_model'</span></span>
 <span><span class="fu">jackknife</span><span class="op">(</span><span class="va">object</span>, <span class="va">time</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
@@ -68,6 +68,11 @@
 
 <dt id="arg-time">time<a class="anchor" aria-label="anchor" href="#arg-time"></a></dt>
 <dd><p>Time points for which to estimate the response.</p></dd>
+
+
+<dt id="arg-progress">progress<a class="anchor" aria-label="anchor" href="#arg-progress"></a></dt>
+<dd><p>Logical. Show a progress bar while fitting leave-one-out
+replications. Defaults to <code>TRUE</code> when called interactively.</p></dd>
 
 </dl></div>
     <div class="section level2">
