@@ -34,6 +34,11 @@ pcoriRPackage.Rproj
 src/*.o
 src/*.so
 src/*.dll
+src/symbols.rds
+# Temporary output files
+test-file-times.csv
+check_*.log
+tmp_*
 # produced vignettes
 vignettes/*.html
 vignettes/*.pdf

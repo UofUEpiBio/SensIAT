@@ -11,10 +11,14 @@ simulate_single_subject(
   outcome_coef,
   baseline_hazard,
   outcome_sd,
+  max_visits,
+  baseline_outcome_fn = NULL,
   initial_outcome_mean,
   initial_outcome_sd,
-  max_visits,
-  link = "identity"
+  link = "identity",
+  intensity_fn = NULL,
+  intensity_bound = NULL,
+  outcome_simulator = NULL
 )
 }
 \arguments{
@@ -38,14 +42,30 @@ or a numeric value for constant baseline hazard.}
 
 \item{outcome_sd}{Standard deviation of the outcome residuals.}
 
+\item{max_visits}{Maximum number of visits per subject (to prevent infinite loops).}
+
+\item{baseline_outcome_fn}{Optional function to generate baseline outcome value for each subject.}
+
 \item{initial_outcome_mean}{Mean of the initial (baseline) outcome.}
 
 \item{initial_outcome_sd}{Standard deviation of the initial outcome.}
 
-\item{max_visits}{Maximum number of visits per subject (to prevent infinite loops).}
-
 \item{link}{Link function for outcome model. One of "identity", "log", or "logit".
 Determines the scale on which the outcome model operates.}
+
+\item{intensity_fn}{Optional function to compute intensity (hazard) of observation.
+If provided, should take arguments (\code{time}, \code{prev_outcome}, \code{visit_num}) and return
+a scalar intensity value. If \code{NULL} (default), intensity is computed from
+\code{intensity_coef} and \code{baseline_hazard}.}
+
+\item{intensity_bound}{Upper bound on intensity for rejection sampling.
+Required if intensity_fn is provided. Represents the supremum of the intensity
+function on the interval of interest.}
+
+\item{outcome_simulator}{Optional simulator function for follow-up outcomes.
+When provided, it overrides the internal outcome generation function.
+This function should accept \code{prev_outcome}, \code{time}, \code{delta_time}, and
+optionally \code{newdata}.}
 }
 \value{
 A tibble with the subject's longitudinal data.

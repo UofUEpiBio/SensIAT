@@ -317,7 +317,7 @@ test_that("fixed_bandwidth model formula and coef methods", {
     # Test coef method
     model_coef <- coef(outcome_model)
     expect_true(is.numeric(model_coef))
-    expect_equal(model_coef, outcome_model$coefficients)
+    expect_equal(unname(model_coef), outcome_model$coefficients)
     expect_true(model_coef[1] > 0)  # First coefficient should be positive
     
     # Test that all coefficients are finite

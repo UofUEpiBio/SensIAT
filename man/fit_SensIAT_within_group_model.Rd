@@ -24,7 +24,8 @@ fit_SensIAT_within_group_model(
   loss = c("lp_mse", "quasi-likelihood"),
   link = c("identity", "log", "logit"),
   term2_method = c("fast", "original", "fixed_grid", "seeded_adaptive", "gauss_legendre"),
-  impute_data = NULL
+  impute_data = NULL,
+  progress = FALSE
 )
 }
 \arguments{
@@ -85,6 +86,9 @@ Only used when \code{link} is not \code{"identity"}.}
 
 \item{impute_data}{A function that takes \verb{(t, df)} and returns the imputed data at time \code{t}.
 If \code{NULL} (default), a standard imputation function is generated automatically.}
+
+\item{progress}{Logical indicating whether to print stage progress messages.
+Default is \code{FALSE}.}
 }
 \value{
 a list with class \code{SensIAT-fulldata-fitted-model} with two components,

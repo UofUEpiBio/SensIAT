@@ -4,6 +4,7 @@ skip_on_cran()
 skip_on_ci()
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + identity produces valid results", {
+    skip_on_cran()
     skip_on_ci()
     setup <- generate_test_data(link = "identity", n_subjects = 10)
     
@@ -49,6 +50,8 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + identity produc
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + log", {
     # Log link with term2 integration is computationally expensive
+    skip_on_cran()
+    skip_on_ci()
     skip_if_not(identical(Sys.getenv("RUN_SLOW_TESTS"), "true"), 
                 "Log link test is slow. Set RUN_SLOW_TESTS=true to run")
     
@@ -104,6 +107,8 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + logit", {
     # Skip unless explicitly enabled via environment variable
     skip_if_not(identical(Sys.getenv("RUN_SLOW_TESTS"), "true"), 
                 "Logit link test is slow. Set RUN_SLOW_TESTS=true to run")
+    skip_on_cran()
+    skip_on_ci()
     
     setup <- generate_test_data(link = "logit", n_subjects = 10)
     
@@ -128,6 +133,7 @@ test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + logit", {
 })
 
 test_that("fit_SensIAT_marginal_mean_model_generalized: lp_mse + identity with multiple alphas", {
+    skip_on_cran()
     skip_on_ci()
     # Reduced parameters to keep test under 60 seconds
     setup <- generate_test_data(link = "identity", n_subjects = 8)

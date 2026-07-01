@@ -33,7 +33,12 @@ estimate_baseline_intensity <-
 
 
         ############  Estimated baseline intensities for each stratum ############
-        data_surv <- survfit(intensity.model, newdata = construct_baseline_df(intensity.model))
+        # survfit.coxph -> agsurv warns "no non-missing arguments to min" when a
+        # visit-number stratum contains only one event time (diff() -> numeric(0)).
+        # This is harmless: the cumulative hazard is still computed correctly.
+        data_surv <- suppressWarnings(
+            survfit(intensity.model, newdata = construct_baseline_df(intensity.model))
+        )
         strata <- data_surv$strata
         
         # Handle case where survfit doesn't return strata (unstratified model)

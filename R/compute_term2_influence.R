@@ -6,7 +6,7 @@
 #
 # ## Comparison with Simulation Code Approaches
 #
-# Simulation code (e.g., inst/3. Simu_point_estimate_fast.R) uses a pre-computation
+# Simulation code (e.g., inst/Simu_point_estimate_fast.R) uses a pre-computation
 # strategy that is highly efficient for specific single-index model formulas but
 # lacks the generality of this implementation:
 #

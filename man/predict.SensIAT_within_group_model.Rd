@@ -21,8 +21,10 @@
 \item{base}{A \code{SplineBasis} object used to evaluate the basis functions.}
 }
 \value{
-If include.var is TRUE, a \code{tibble} with columns time, mean, and var is returned.
-otherwise if include.var is FALSE, only the mean vector is returned.
+If include.var is TRUE and the fitted model uses the identity link, a \code{tibble}
+with columns \code{time}, \code{mean}, and \code{var} is returned. For non-identity links,
+variance estimation is not supported and only \code{time} and \code{mean} are returned.
+If include.var is FALSE, only the mean vector is returned.
 }
 \description{
 Give the marginal mean model estimate

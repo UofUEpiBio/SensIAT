@@ -2,17 +2,19 @@ Package: SensIAT
 Title: Sensitivity Analysis for Irregular Assessment Times
 Version: 0.3.0.9000
 Authors@R: c(
-    person("Andrew", "Redd", , "andrew.redd@hsc.utah.edu", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-6149-2438")),
-    person("Yujing", "Gao", , "ygao39@ncsu.edu", role = c("aut")),
-    person("Shu", "Yang", , "syang24@ncsu.edu", role = c("aut")),
-    person("Bonnie", "Smith", , "bsmit179@jhmi.edu", role = c("aut")),
-    person("Ravi", "Varadhan", , "ravi.varadhan@jhu.edu", role = c("aut")),
-    person("Agatha", "Mallett", , "agatha@geometrian.com", role = c("ctb", "ctr")),
-    person("Daniel", "Scharfstein", , "daniel.scharfstein@hsc.utah.edu", role = c("pdr", "aut"),
-           comment = c(ORCID = "0000-0001-7482-9653")),
-    person("University of Utah", role="cph")
+    person("Andrew", "Redd", email = "andrew.redd@hsc.utah.edu", role = c("aut", "cre"),
+        comment = c(ORCID = "0000-0002-6149-2438")),
+    person("Yujing", "Gao", email = "ygao39@ncsu.edu", role = c("aut")),
+    person("Shu", "Yang", email = "syang24@ncsu.edu", role = c("aut")),
+    person("Bonnie", "Smith", email = "bsmit179@jhmi.edu", role = c("aut")),
+    person("Ravi", "Varadhan", email = "ravi.varadhan@jhu.edu", role = c("aut")),
+    person("Agatha", "Mallett", email = "agatha@geometrian.com", role = c("ctb", "ctr")),
+    person("Daniel", "Scharfstein", email = "daniel.scharfstein@hsc.utah.edu", role = c("pdr", "aut"),
+        comment = c(ORCID = "0000-0001-7482-9653")),
+    person("University of Utah", role = "cph")
     )
+Author: Andrew Redd [aut, cre], Yujing Gao [aut], Shu Yang [aut], Bonnie Smith [aut], Ravi Varadhan [aut], Agatha Mallett [ctb, ctr], Daniel Scharfstein [pdr, aut], University of Utah [cph]
+Maintainer: Andrew Redd <andrew.redd@hsc.utah.edu>
 Description: Sensitivity analysis for trials with irregular and informative 
     assessment times, based on a new influence function-based, augmented 
     inverse intensity-weighted estimator.
@@ -29,6 +31,7 @@ Imports:
     ggplot2,
     glue,
     KernSmooth,
+    lifecycle,
     MASS,
     MAVE,
     methods,
@@ -53,6 +56,7 @@ Suggests:
     knitr,
     ManifoldOptim,
     metR,
+    numDeriv,
     progress,
     quarto,
     rmarkdown,

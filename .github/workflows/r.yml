@@ -49,7 +49,8 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          # Ensure suggested packages required by package checks are installed
+          extra-packages: any::rcmdcheck,metR
           needs: check
 
       - name: Set up Quarto

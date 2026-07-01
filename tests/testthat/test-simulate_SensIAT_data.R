@@ -329,6 +329,33 @@ test_that("simulate_SensIAT_data: baseline_hazard affects visit frequency", {
                 info = "Higher baseline hazard should produce more visits")
 })
 
+test_that("simulate_SensIAT_data: custom intensity_fn uses thinning", {
+    set.seed(1010)
+    intensity_fn <- function(t, prev_outcome, visit_num) {
+        0.02 + 0.005 * abs(prev_outcome)
+    }
+
+    data <- simulate_SensIAT_data(
+        n_subjects = 5,
+        End = 100,
+        intensity_fn = intensity_fn,
+        intensity_bound = 0.2,
+        max_visits = 10,
+        link = "identity"
+    )
+
+    expect_s3_class(data, "tbl_df")
+    expect_named(data, c("Subject_ID", "Time", "Outcome"))
+    expect_true(all(data$Time >= 0), info = "Times should be non-negative")
+    expect_true(all(data$Time <= 100), info = "Times should not exceed End")
+
+    time_checks <- data |> 
+        dplyr::group_by(Subject_ID) |> 
+        dplyr::summarise(times_increasing = all(diff(Time) > 0))
+    expect_true(all(time_checks$times_increasing),
+                info = "Times should be strictly increasing within subject")
+})
+
 test_that("simulate_SensIAT_data: validates inputs", {
     expect_error(
         simulate_SensIAT_data(n_subjects = 0, End = 500),
@@ -366,4 +393,72 @@ test_that("simulate_SensIAT_two_groups: validates inputs", {
         simulate_SensIAT_two_groups(n_subjects = 10, End = 500, link = "invalid"),
         "'arg' should be one of"
     )
+})
+
+test_that("make_single_index_simulator: creates a simulator from fitted single-index model", {
+    skip_if_not_installed("MAVE")
+
+    set.seed(31415)
+    n_subjects <- 4
+    visits_per_subject <- 4
+    df <- data.frame(
+        Subject_ID = rep(1:n_subjects, each = visits_per_subject),
+        time = rep(0:(visits_per_subject - 1), times = n_subjects),
+        delta_time = rep(c(0, 1, 1, 1), times = n_subjects),
+        prev_outcome = rep(c(0, 1, 2, 3), times = n_subjects) + rnorm(n_subjects * visits_per_subject, 0, 0.1)
+    )
+    df$Outcome <- 1 + 0.4 * df$prev_outcome + 0.2 * df$time - 0.1 * df$delta_time + rnorm(nrow(df), 0, 0.1)
+
+    outcome_model <- fit_SensIAT_single_index_fixed_coef_model(
+        Outcome ~ prev_outcome + time + delta_time,
+        data = df,
+        id = Subject_ID,
+        method = "optim",
+        initial = rep(1, 4)
+    )
+
+    simulator <- make_single_index_simulator(outcome_model)
+    expect_true(is.function(simulator))
+
+    sampled_value <- simulator(prev_outcome = 1, time = 1, delta_time = 1)
+    expect_true(is.numeric(sampled_value) && length(sampled_value) == 1)
+    expect_true(is.finite(sampled_value))
+})
+
+test_that("simulate_SensIAT_data: uses fitted outcome_model for follow-up outcomes", {
+    skip_if_not_installed("MAVE")
+
+    set.seed(27182)
+    n_subjects <- 4
+    visits_per_subject <- 4
+    df <- data.frame(
+        Subject_ID = rep(1:n_subjects, each = visits_per_subject),
+        time = rep(0:(visits_per_subject - 1), times = n_subjects),
+        delta_time = rep(c(0, 1, 1, 1), times = n_subjects),
+        prev_outcome = rep(c(0, 1, 2, 3), times = n_subjects) + rnorm(n_subjects * visits_per_subject, 0, 0.1)
+    )
+    df$Outcome <- 1 + 0.4 * df$prev_outcome + 0.2 * df$time - 0.1 * df$delta_time + rnorm(nrow(df), 0, 0.1)
+
+    outcome_model <- fit_SensIAT_single_index_fixed_coef_model(
+        Outcome ~ prev_outcome + time + delta_time,
+        data = df,
+        id = Subject_ID,
+        method = "optim",
+        initial = rep(1, 4)
+    )
+
+    sim_data <- simulate_SensIAT_data(
+        n_subjects = 3,
+        End = 20,
+        outcome_model = outcome_model,
+        intensity_fn = function(t, prev_outcome, visit_num) 0.02,
+        intensity_bound = 0.05,
+        max_visits = 5,
+        link = "identity"
+    )
+
+    expect_s3_class(sim_data, "tbl_df")
+    expect_true(all(sim_data$Time >= 0))
+    expect_true(all(sim_data$Time <= 20))
+    expect_true(all(is.finite(sim_data$Outcome)))
 })

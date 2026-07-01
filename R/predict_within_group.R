@@ -10,8 +10,10 @@
 #' @param base A `SplineBasis` object used to evaluate the basis functions.
 #'
 #' @return
-#' If include.var is TRUE, a `tibble` with columns time, mean, and var is returned.
-#' otherwise if include.var is FALSE, only the mean vector is returned.
+#' If include.var is TRUE and the fitted model uses the identity link, a `tibble`
+#' with columns `time`, `mean`, and `var` is returned. For non-identity links,
+#' variance estimation is not supported and only `time` and `mean` are returned.
+#' If include.var is FALSE, only the mean vector is returned.
 #' @export
 #'
 #' @examples
@@ -32,18 +34,85 @@
 predict.SensIAT_within_group_model <-
     function(object, time, include.var = TRUE, ..., base = object$base) {
         B <- do.call(rbind, map(time, pcoriaccel_evaluate_basis, spline_basis = base))
+
+        link <- if (is.null(object$link)) "identity" else object$link
+        inv.link <- switch(
+            link,
+            identity = identity,
+            log = exp,
+            logit = function(eta) exp(eta) / (1 + exp(eta)),
+            stop("Unsupported link: ", link)
+        )
+
         tmp <- purrr::map2(
             object$coefficients, object$coefficient.variance,
             function(beta, var_beta) {
-                mean <- as.vector(B %*% beta)
-                if (!include.var) {
+                eta <- as.vector(B %*% beta)
+                mean <- inv.link(eta)
+
+                if (link != "identity" || !include.var) {
                     return(tibble(time, mean))
                 }
-                var <- apply(B, 1, function(b) t(b) %*% var_beta %*% b)
-                tibble(time, mean, var)
+
+                var_eta <- apply(B, 1, function(b) t(b) %*% var_beta %*% b)
+                tibble(time, mean, var = var_eta)
             }
         )
 
         tibble(alpha = object$alpha, tmp) |>
             tidyr::unnest(tmp)
+    }
+
+
+#' Predict Marginal Mean from Bootstrap Coefficient Replicates
+#'
+#' @param object A `SensIAT_withingroup_bootstrap_results` object.
+#' @param time Time points of interest.
+#' @param include.var Logical. If `TRUE` and link is identity, include the
+#'        original-model asymptotic variance column `var`.
+#' @param level Confidence level used to produce `lower` and `upper` bounds.
+#' @param ... Currently ignored.
+#' @return A `tibble` with bootstrap summaries by `alpha` and `time`.
+#' @export
+predict.SensIAT_withingroup_bootstrap_results <-
+    function(object, time, include.var = TRUE, level = 0.95, ...) {
+        B <- do.call(rbind, map(time, pcoriaccel_evaluate_basis, spline_basis = object$base))
+
+        inv.link <- switch(
+            object$link,
+            identity = identity,
+            log = exp,
+            logit = function(eta) exp(eta) / (1 + exp(eta)),
+            stop("Unsupported link: ", object$link)
+        )
+
+        out <- purrr::imap_dfr(object$bootstrap_coefficients, function(beta_draws, idx) {
+            eta_draws <- beta_draws %*% t(B)
+            mean_draws <- inv.link(eta_draws)
+
+            orig_eta <- as.vector(B %*% object$original_coefficients[[idx]])
+            orig_mean <- inv.link(orig_eta)
+
+            df <- tibble(
+                alpha = object$alpha[[idx]],
+                time = time,
+                mean = as.numeric(orig_mean),
+                bootstrap_mean = as.numeric(colMeans(mean_draws)),
+                bootstrap_var = as.numeric(apply(mean_draws, 2, var))
+            )
+
+            if (object$link == "identity" && include.var) {
+                var_beta <- object$original_coefficient.variance[[idx]]
+                df$var <- as.numeric(apply(B, 1, function(b) t(b) %*% var_beta %*% b))
+            }
+
+            df
+        })
+
+        z <- qnorm(level + (1 - level) / 2)
+        out |>
+            mutate(
+                lower = .data$bootstrap_mean - z * sqrt(.data$bootstrap_var),
+                upper = .data$bootstrap_mean + z * sqrt(.data$bootstrap_var)
+            )
     }
