@@ -1,6 +1,5 @@
-This is an update for consistent naming across functions alongside small feature improvements.
-
-Re-submission with tests that took too long removed for CRAN testing.
+This update adds features for generalized outcomes as well as simulation utilities.
+Many examples and tests have to be disabled due to excessivly large computational costs.
 
 ## R CMD check results
 
